@@ -1,5 +1,7 @@
 package uk.ac.ox.ctl.canvasproxy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
@@ -7,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -17,6 +20,8 @@ import java.net.URISyntaxException;
  */
 @RestController
 public class ProxyController {
+
+    private final Logger log = LoggerFactory.getLogger(ProxyController.class);
 
     private RestTemplate restTemplate;
     private String token;
@@ -38,6 +43,13 @@ public class ProxyController {
         headers.remove("Host");
         headers.setBearerAuth(token);
         RequestEntity<?> proxyEntity = new RequestEntity<>(requestEntity.getBody(), new HttpHeaders(headers), requestEntity.getMethod(), thirdPartyApi);
-        return restTemplate.exchange(proxyEntity, Object.class);
+        try {
+            return restTemplate.exchange(proxyEntity, Object.class);
+        } catch (ResourceAccessException e) {
+            log.warn("Failed to load {} exception is: {}", thirdPartyApi, e.getMessage());
+            // TODO - Need to fix this so we don't log exception as this will be expected in production
+            //  We shouldn't fill the logs with this. We may want a metric on failures.
+            throw new RuntimeException(e);
+        }
     }
 }
