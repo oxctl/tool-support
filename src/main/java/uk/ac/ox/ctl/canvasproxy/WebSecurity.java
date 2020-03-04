@@ -43,6 +43,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .authorizationCodeGrant()
                 .accessTokenResponseClient(accessTokenResponseClient());
         http.cors();
+        // We are not using cookies here.
+        http.csrf().disable();
     }
 
     @Bean("corsConfigurationSource")
