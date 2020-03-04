@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResp
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -43,6 +44,12 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .authorizationCodeGrant()
                 .accessTokenResponseClient(accessTokenResponseClient());
         http.cors();
+        http.oauth2ResourceServer().jwt();
+        DefaultBearerTokenResolver tokenResolver = new DefaultBearerTokenResolver();
+        // We need this, but it's not ideal
+        tokenResolver.setAllowUriQueryParameter(true);
+        http.oauth2ResourceServer().bearerTokenResolver(tokenResolver);
+        http.authorizeRequests().anyRequest().authenticated();
         // We are not using cookies here.
         http.csrf().disable();
     }
