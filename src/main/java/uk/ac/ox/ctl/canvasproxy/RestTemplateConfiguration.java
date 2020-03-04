@@ -33,6 +33,7 @@ public class RestTemplateConfiguration {
 
             @Override
             public void handleError(ClientHttpResponse response) throws IOException {
+                throw new UnsupportedOperationException("This should never get called as it doesn't handle any errors.");
 
             }
         });
