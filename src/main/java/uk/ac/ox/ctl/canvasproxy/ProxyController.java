@@ -36,6 +36,7 @@ public class ProxyController {
     public ResponseEntity<?> proxy(RequestEntity<?> requestEntity) throws URISyntaxException {
         URI remoteService = URI.create("https://oxeval.instructure.com");
         URI requestUrl = requestEntity.getUrl();
+        URI localService = new URI(requestUrl.getScheme(), requestUrl.getUserInfo(), requestUrl.getHost(), requestUrl.getPort(), null, null, null);
         URI thirdPartyApi = new URI(requestUrl.getScheme(), requestUrl.getUserInfo(), remoteService.getHost(), remoteService.getPort(), requestUrl.getPath(), requestUrl.getQuery(), requestUrl.getFragment());
         HttpHeaders headers = new HttpHeaders();
         headers.addAll(requestEntity.getHeaders());
@@ -44,7 +45,12 @@ public class ProxyController {
         headers.setBearerAuth(token);
         RequestEntity<?> proxyEntity = new RequestEntity<>(requestEntity.getBody(), new HttpHeaders(headers), requestEntity.getMethod(), thirdPartyApi);
         try {
-            return restTemplate.exchange(proxyEntity, Object.class);
+            ResponseEntity<Object> exchange = restTemplate.exchange(proxyEntity, Object.class);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.addAll(exchange.getHeaders());
+            exchange.getHeaders().getOrEmpty("Link").stream().map(header -> header.replaceAll(remoteService.toString(), localService.toString())).forEach(header -> httpHeaders.set("Link", header));
+
+            return new ResponseEntity<>(exchange.getBody(), httpHeaders, exchange.getStatusCode());
         } catch (ResourceAccessException e) {
             log.warn("Failed to load {} exception is: {}", thirdPartyApi, e.getMessage());
             // TODO - Need to fix this so we don't log exception as this will be expected in production
