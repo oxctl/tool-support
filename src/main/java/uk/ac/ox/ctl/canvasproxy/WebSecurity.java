@@ -48,6 +48,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         DefaultBearerTokenResolver tokenResolver = new DefaultBearerTokenResolver();
         // We need this, but it's not ideal
         tokenResolver.setAllowUriQueryParameter(true);
+        // However I'm not sure we will fit the whole JWT in the URL.
+        tokenResolver.setAllowFormEncodedBodyParameter(true);
         http.oauth2ResourceServer().bearerTokenResolver(tokenResolver);
         http.authorizeRequests().anyRequest().authenticated();
         // We are not using cookies here.
