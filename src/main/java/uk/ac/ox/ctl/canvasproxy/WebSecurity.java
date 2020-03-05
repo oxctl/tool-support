@@ -2,59 +2,40 @@ package uk.ac.ox.ctl.canvasproxy;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import uk.ac.ox.ctl.oauth2.client.endpoint.CanvasOAuth2AuthorizationCodeGrantRequestEntityConverter;
 import uk.ac.ox.ctl.oauth2.client.userinfo.CanvasUserService;
 import uk.ac.ox.ctl.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
 
+import javax.mail.Session;
 import java.time.Duration;
 import java.util.Arrays;
 
 @EnableWebSecurity
 @Configuration
-public class WebSecurity extends WebSecurityConfigurerAdapter {
-
-    private final OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository;
-
-    public WebSecurity(OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository) {
-        this.oAuth2AuthorizedClientRepository = oAuth2AuthorizedClientRepository;
-    }
-
-    protected void configure(HttpSecurity http) throws Exception {
-//        http.authorizeRequests((requests) -> requests.anyRequest().authenticated());
-        http.oauth2Client()
-                .authorizedClientRepository(oAuth2AuthorizedClientRepository)
-                .authorizationCodeGrant()
-                .accessTokenResponseClient(accessTokenResponseClient());
-        http.cors();
-        http.oauth2ResourceServer().jwt();
-        DefaultBearerTokenResolver tokenResolver = new DefaultBearerTokenResolver();
-        // We need this, but it's not ideal
-        tokenResolver.setAllowUriQueryParameter(true);
-        // However I'm not sure we will fit the whole JWT in the URL.
-        tokenResolver.setAllowFormEncodedBodyParameter(true);
-        http.oauth2ResourceServer().bearerTokenResolver(tokenResolver);
-        http.authorizeRequests().anyRequest().authenticated();
-        // We are not using cookies here.
-        http.csrf().disable();
-    }
+public class WebSecurity {
 
     @Bean("corsConfigurationSource")
     public CorsConfigurationSource corsConfigurationSource() {
@@ -80,8 +61,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     }
 
     // This is so we can remove old tokens.
-    private OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
-    accessTokenResponseClient() {
+    @Bean
+    public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient() {
         DefaultAuthorizationCodeTokenResponseClient client =
                 new DefaultAuthorizationCodeTokenResponseClient();
         client.setRequestEntityConverter(
@@ -97,6 +78,68 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
         client.setRestOperations(restTemplate);
         return client;
+    }
+
+    @Bean
+    public BearerTokenResolver bearerTokenResolver() {
+        DefaultBearerTokenResolver tokenResolver = new DefaultBearerTokenResolver();
+        // We need this, but it's not ideal
+        tokenResolver.setAllowUriQueryParameter(true);
+        // However I'm not sure we will fit the whole JWT in the URL.
+        tokenResolver.setAllowFormEncodedBodyParameter(true);
+        return tokenResolver;
+    }
+
+    @Configuration
+    @Order(1)
+    public static class ApiConfiguration extends WebSecurityConfigurerAdapter {
+        @Autowired
+        private OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository;
+        @Autowired
+        private OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient;
+        @Autowired
+        private BearerTokenResolver tokenResolver;
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http.antMatcher("/api/**")
+                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                    .oauth2Client()
+                    .authorizedClientRepository(oAuth2AuthorizedClientRepository)
+                    .authorizationCodeGrant()
+                    .accessTokenResponseClient(accessTokenResponseClient).and().and()
+                    .cors().and()
+                    .csrf().disable()
+                    .oauth2ResourceServer().jwt().and().bearerTokenResolver(tokenResolver).and()
+                    .authorizeRequests().anyRequest().authenticated()
+            ;
+        }
+    }
+
+    @Configuration
+    @Order(2)
+    public static class DefaultConfiguration extends WebSecurityConfigurerAdapter {
+        @Autowired
+        private OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository;
+        @Autowired
+        private OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient;
+        @Autowired
+        private BearerTokenResolver tokenResolver;
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http
+                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).and()
+                    .oauth2Client()
+                    .authorizedClientRepository(oAuth2AuthorizedClientRepository)
+                    .authorizationCodeGrant()
+                    .accessTokenResponseClient(accessTokenResponseClient).and().and()
+                    .cors().and()
+                    .csrf().disable()
+                    .oauth2ResourceServer().jwt().and().bearerTokenResolver(tokenResolver).and()
+                    .authorizeRequests().anyRequest().authenticated();
+
+        }
     }
 
 
