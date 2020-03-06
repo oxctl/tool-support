@@ -63,7 +63,7 @@ public class ProxyController {
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.addAll(exchange.getHeaders());
             exchange.getHeaders().getOrEmpty("Link").stream().map(header -> header.replaceAll(remoteService.toString(), localService.toString())).forEach(header -> httpHeaders.set("Link", header));
-            // We don't want to pass through cookies
+            // We don't want to pass through cookies from Canvas.
             httpHeaders.remove("Set-Cookie");
 
             return new ResponseEntity<>(exchange.getBody(), httpHeaders, exchange.getStatusCode());

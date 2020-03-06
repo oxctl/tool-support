@@ -18,8 +18,10 @@ import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResp
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -110,15 +112,21 @@ public class WebSecurity {
                     .accessTokenResponseClient(accessTokenResponseClient).and().and()
                     .cors().and()
                     .csrf().disable()
-                    .oauth2ResourceServer().jwt().and().bearerTokenResolver(tokenResolver).and()
+                    .oauth2ResourceServer().jwt().and().bearerTokenResolver(tokenResolver).authenticationEntryPoint(authenticationEntryPoint()).and()
                     .authorizeRequests().anyRequest().authenticated()
             ;
+        }
+
+        protected AuthenticationEntryPoint authenticationEntryPoint() {
+            BearerTokenAuthenticationEntryPoint entryPoint = new BearerTokenAuthenticationEntryPoint();
+            entryPoint.setRealmName("proxy");
+            return entryPoint;
         }
     }
 
     @Configuration
     @Order(2)
-    public static class DefaultConfiguration extends WebSecurityConfigurerAdapter {
+    public static class TokenConfiguration extends WebSecurityConfigurerAdapter {
         @Autowired
         private OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository;
         @Autowired
