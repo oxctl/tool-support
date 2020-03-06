@@ -48,9 +48,10 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>uk.ac.ox.it.lti</groupId>
-            <artifactId>lti-launch</artifactId>
-            <version>1.7.1</version>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.3.6</version>
+        </dependency>
         <!-- Using H2 in development/test -->
         <dependency>
             <groupId>com.h2database</groupId>
