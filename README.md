@@ -11,3 +11,28 @@ There is a small proxy controller that sends requests on the Canvas with a hard 
 
 Lifetime on tokens is currently pretty low. JS OAuth library?
 
+We are going to want to support multiple tenants and so will want to be able to map from a JWT to a Canvas endpoint to use. 
+
+## TODO
+
+### Refresh/Access tokens
+
+Handling refresh/access tokens and updating them in the DB, at the moment we have to re-ask every 1 hour.
+
+### Error Handling
+
+If the user removes their token then we get a 401 back from Canvas with a body of:
+{"errors":[{"message":"Invalid access token."}]}
+We need to be careful with this as when our JWT is invalid we will also get 401, one difference is that the error proxied from canvas is the header
+
+    WWW-Authenticate: Bearer realm="canvas-lms"
+
+but when it's from an missing JWT it's:
+
+     WWW-Authenticate: Bearer realm="proxy"
+    
+and if it's an invalid JWT it's something along the lines of:
+
+    WWW-Authenticate: Bearer error="invalid_token", error_description="An error occurred while attempting to decode the Jwt: Signed JWT rejected: Another algorithm expected, or no matching key(s) found", error_uri="https://tools.ietf.org/html/rfc6750#section-3.1"
+ 
+
