@@ -3,25 +3,19 @@ package uk.ac.ox.ctl.canvasproxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequest;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ox.ctl.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -95,7 +89,6 @@ public class ProxyController {
         while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
             buffer.write(data, 0, nRead);
         }
-
         buffer.flush();
         return buffer.toByteArray();
     }
