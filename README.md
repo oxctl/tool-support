@@ -23,7 +23,7 @@ Handling refresh/access tokens and updating them in the DB, at the moment we hav
 
 If the user removes their token then we get a 401 back from Canvas with a body of:
 {"errors":[{"message":"Invalid access token."}]}
-We need to be careful with this as when our JWT is invalid we will also get 401, one difference is that the error proxied from canvas is the header
+We need to be careful with this as when our JWT is invalid we will also get 401, one difference is that the error proxied from canvas is the header:
 
     WWW-Authenticate: Bearer realm="canvas-lms"
 
@@ -34,5 +34,10 @@ but when it's from an missing JWT it's:
 and if it's an invalid JWT it's something along the lines of:
 
     WWW-Authenticate: Bearer error="invalid_token", error_description="An error occurred while attempting to decode the Jwt: Signed JWT rejected: Another algorithm expected, or no matching key(s) found", error_uri="https://tools.ietf.org/html/rfc6750#section-3.1"
+
+
  
+### Request Body
+
+Need to test the handling of request bodies and if they get correctly mapped through the proxy to Canvas.
 
