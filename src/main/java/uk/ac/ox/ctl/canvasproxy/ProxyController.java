@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ox.ctl.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 
 import java.io.ByteArrayOutputStream;
@@ -48,7 +49,7 @@ public class ProxyController {
             HttpHeaders httpHeaders = new HttpHeaders();
             // Ideally the client should use this URL to get the user to give consent.
             httpHeaders.add("Location", "/tokens/check");
-            return new ResponseEntity<>(null, httpHeaders, HttpStatus.FORBIDDEN);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No JWT supplied");
         }
         String canvasApiBaseUrl = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get("canvas_api_base_url");
         URI remoteService = URI.create(canvasApiBaseUrl);
