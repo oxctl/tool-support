@@ -33,11 +33,9 @@ public class ProxyController {
     private final Logger log = LoggerFactory.getLogger(ProxyController.class);
 
     private RestTemplate restTemplate;
-    private String token;
 
-    public ProxyController(RestTemplate restTemplate, @Value("${token}") String token) {
+    public ProxyController(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.token = token;
     }
 
     @RequestMapping("/api/**")
