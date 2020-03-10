@@ -41,7 +41,6 @@ public class ProxyController {
     @RequestMapping("/api/**")
     @ResponseBody
     public ResponseEntity<?> proxy(JwtAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AuthorizedClient(registrationId = "canvas", required = false) OAuth2AuthorizedClient client) throws URISyntaxException {
-        log.info("It's {}", principal.getName());
         if (client == null) {
             // This is how we signal to the client that we don't have a OAuth token for them.
             HttpHeaders httpHeaders = new HttpHeaders();
