@@ -9,7 +9,7 @@ global:
   application_name: ${AWS_EB_APPLICATION}
   default_ec2_keyname: ctl-sys-apps
   default_platform: docker
-  default_region: ${LTIAUTHSERVERCONFIG_POINTER_REGION}
+  default_region: ${AWS_REGION}
   include_git_submodules: true
   instance_profile: null
   platform_name: null
