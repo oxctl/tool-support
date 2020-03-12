@@ -28,6 +28,30 @@ This application needs a database to store the OAuth tokens it gets granted. Rec
 - RDS_USERNAME - The username to use to connect to the MySQL database.
 - RDS_PASSWORD - The password to use to connect to the MySQL database.
 
+#### Client Configuration
+
+For each client that can use the tool there needs to be an entry in the client configuration file. This file then needs to be updated to S3. To download the current clients:
+
+    aws s3 cp s3://elasticbeanstalk-eu-west-1-075499702012/files/proxy.canvas.ox.ac.uk-client.properties
+
+then you can edit the file and upload it to S3 again:
+
+    aws s3 cp proxy.canvas.ox.ac.uk-client.properties s3://elasticbeanstalk-eu-west-1-075499702012/files/
+
+The client will probably also want to have it's HTTPS endpoint added to the CORS configuration in the same file.
+
+#### HTTPS
+
+A public private keypair needs to be generated for TLS. There are configurations for TLS in `proxy.canvas.ox.ac.uk.cfg` to create a new private key and CSR use:
+
+    openssl req -nodes -new -keyout proxy.canvas.ox.ac.uk-key.pem -out proxy.canvas.ox.ac.uk.csr -config proxy.canvas.ox.ac.uk.cfg -batch -verbose
+
+This CSR can then be used to request a certificate from the certificate service: https://wiki.it.ox.ac.uk/itss/CertificateService 
+Once a certificate is issued they should be uploaded to the S3 bucket:
+
+    aws s3 cp proxy.canvas.ox.ac.uk-chain.crt  s3://elasticbeanstalk-eu-west-1-075499702012/certificates/
+    aws s3 cp proxy.canvas.ox.ac.uk-key.pem s3://elasticbeanstalk-eu-west-1-075499702012/certificates/
+
 ## TODO
 
 ### Refresh/Access tokens
