@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
@@ -14,8 +15,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 // WebMvdTest doesn't pull the OAuth configuration in by default
-@ImportAutoConfiguration(OAuth2ClientAutoConfiguration.class)
 @WebMvcTest()
+@ImportAutoConfiguration({OAuth2ClientAutoConfiguration.class, WebSecurity.class, JwtConfiguration.class })
+@TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
 public class ProxyControllerTest {
 
     @Autowired
