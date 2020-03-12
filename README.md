@@ -13,6 +13,21 @@ Lifetime on tokens is currently pretty low. JS OAuth library?
 
 We are going to want to support multiple tenants and so will want to be able to map from a JWT to a Canvas endpoint to use. 
 
+## Deployment Configuration
+
+### AWS Elastic Beanstalk
+
+This application needs a database to store the OAuth tokens it gets granted. Recovery for this database isn't critical at the moment as if wee lost it then everyone would need to confirm that they wanted to grant access to their account again.
+
+#### Environmental Variables
+
+- HOSTNAME - The hostname that the server is running on, used to get TLS/config files.
+- RDS_HOSTNAME - The MySQL hostname to connect to for the database.
+- RDS_PORT - The MySQL port to use in the connection to thee database.
+- RDS_DB_NAME - The name of the MySQL database to use.
+- RDS_USERNAME - The username to use to connect to the MySQL database.
+- RDS_PASSWORD - The password to use to connect to the MySQL database.
+
 ## TODO
 
 ### Refresh/Access tokens
@@ -35,9 +50,11 @@ and if it's an invalid JWT it's something along the lines of:
 
     WWW-Authenticate: Bearer error="invalid_token", error_description="An error occurred while attempting to decode the Jwt: Signed JWT rejected: Another algorithm expected, or no matching key(s) found", error_uri="https://tools.ietf.org/html/rfc6750#section-3.1"
 
-
- 
 ### Request Body
 
 Need to test the handling of request bodies and if they get correctly mapped through the proxy to Canvas.
+
+### Frontend from config
+
+We need to pull the frontend application from configuration so that we can support multiple frontends.
 

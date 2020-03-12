@@ -52,6 +52,10 @@
             <artifactId>httpclient</artifactId>
             <version>4.3.6</version>
         </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
         <!-- Using H2 in development/test -->
         <dependency>
             <groupId>com.h2database</groupId>
