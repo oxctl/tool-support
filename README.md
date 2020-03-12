@@ -32,7 +32,7 @@ This application needs a database to store the OAuth tokens it gets granted. Rec
 
 For each client that can use the tool there needs to be an entry in the client configuration file. This file then needs to be updated to S3. To download the current clients:
 
-    aws s3 cp s3://elasticbeanstalk-eu-west-1-075499702012/files/proxy.canvas.ox.ac.uk-client.properties
+    aws s3 cp s3://elasticbeanstalk-eu-west-1-075499702012/files/proxy.canvas.ox.ac.uk-client.properties .
 
 then you can edit the file and upload it to S3 again:
 
