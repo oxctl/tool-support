@@ -52,13 +52,13 @@ resources:
       params:
         PORT: 8080
         # We currently don't have a dev env
-        AWS_EB_ENVIRONMENT: "canvas-proxy-production"
+        AWS_EB_ENVIRONMENT: "canvas-proxy-prod"
         AWS_EB_APPLICATION: "canvas-proxy"
   - name: canvas-proxy-env-params-prod
     type: params
     version:
       params:
-        AWS_EB_ENVIRONMENT: "canvas-proxy-production"
+        AWS_EB_ENVIRONMENT: "canvas-proxy-prod"
 
   - name: canvas-proxy-repo
     type: gitRepo
