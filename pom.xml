@@ -16,6 +16,7 @@
 
     <properties>
         <java.version>11</java.version>
+        <jib.tag>unknown</jib.tag>
     </properties>
 
     <dependencies>
@@ -84,6 +85,47 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                        <configuration>
+                            <additionalProperties>
+                                <!-- This is set by the git-commit-id-plugin -->
+                                <!--suppress UnresolvedMavenProperty -->
+                                <git.commit.id>${git.commit.id}</git.commit.id>
+                            </additionalProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <configuration>
+                    <verbose>false</verbose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>2.1.0</version>
+                <configuration>
+                    <to>
+                        <image>075499702012.dkr.ecr.eu-west-1.amazonaws.com/ctl/${project.artifactId}</image>
+                        <tags>
+                            <tag>${project.version}</tag>
+                            <!--suppress UnresolvedMavenProperty -->
+                            <tag>${git.commit.id}</tag>
+                            <tag>${jib.tag}</tag>
+                        </tags>
+                    </to>
+                    <container>
+                        <!-- As we're in docker we really don't want to be running as root -->
+                        <user>nobody:nobody</user>
+                    </container>
+                </configuration>
             </plugin>
         </plugins>
     </build>
