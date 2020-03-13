@@ -25,6 +25,7 @@ public class JwtConfiguration {
     @Value("${jwt.jwks.uri}")
     private String jwksUri;
 
+    // This is useful if we aren't doing doing JWT -> client ID mapping, but in most instances probably can be null
     @Value("${jwt.audience:#{null}}")
     private String audience;
 
@@ -38,7 +39,7 @@ public class JwtConfiguration {
         if (audience != null) {
             validators.add(new JwtAudienceValidator(audience));
         } else {
-            log.warn("No audience configured, accepting all JWTs");
+            log.info("No audience configured, accepting all JWTs");
         }
         validators.add(new JwtIssuerValidator(issuer));
         DelegatingOAuth2TokenValidator<Jwt> jwtValidators = new DelegatingOAuth2TokenValidator<>(validators);

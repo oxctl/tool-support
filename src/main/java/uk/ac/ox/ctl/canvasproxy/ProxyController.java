@@ -2,7 +2,6 @@ package uk.ac.ox.ctl.canvasproxy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
@@ -38,9 +37,10 @@ public class ProxyController {
         this.restTemplate = restTemplate;
     }
 
+    // If we can control the response when there isn't a token for the current user we may want to make the token required.
     @RequestMapping("/api/**")
     @ResponseBody
-    public ResponseEntity<?> proxy(JwtAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AuthorizedClient(registrationId = "canvas", required = false) OAuth2AuthorizedClient client) throws URISyntaxException {
+    public ResponseEntity<?> proxy(JwtAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AuthorizedClient(required = false) OAuth2AuthorizedClient client) throws URISyntaxException {
         if (client == null) {
             // This is how we signal to the client that we don't have a OAuth token for them.
             HttpHeaders httpHeaders = new HttpHeaders();
@@ -54,7 +54,7 @@ public class ProxyController {
         URI localService = new URI(requestUrl.getScheme(), requestUrl.getUserInfo(), requestUrl.getHost(), requestUrl.getPort(), null, null, null);
         URI thirdPartyApi = new URI(requestUrl.getScheme(), requestUrl.getUserInfo(), remoteService.getHost(), remoteService.getPort(), requestUrl.getPath(), requestUrl.getQuery(), requestUrl.getFragment());
         try {
-            ResponseEntity responseEntity = restTemplate.execute(thirdPartyApi, requestEntity.getMethod(), request -> {
+            return restTemplate.execute(thirdPartyApi, requestEntity.getMethod(), request -> {
                 HttpHeaders requestHeaders = request.getHeaders();
                 requestHeaders.addAll(requestEntity.getHeaders());
                 // If we pass through the wrong host then canvas returns different information.
@@ -71,7 +71,6 @@ public class ProxyController {
                 httpHeaders.remove("Set-Cookie");
                 return new ResponseEntity<>(toByteArray(response.getBody()), httpHeaders, response.getStatusCode());
             });
-            return responseEntity;
         } catch (ResourceAccessException e) {
             log.warn("Failed to load {} exception is: {}", thirdPartyApi, e.getMessage());
             // TODO - Need to fix this so we don't log exception as this will be expected in production
