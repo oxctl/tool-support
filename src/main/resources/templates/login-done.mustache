@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link type="text/css" href="{{{canvasCommonCss}}}" rel="stylesheet"/>
+    <link type="text/css" href="{{{canvasBrandCss}}}" rel="stylesheet"/>
+    <link type="text/css" href="/resources/login-done.css" rel="stylesheet"/>
+    <title>{{applicationName}}: Done</title>
+    <script type="text/javascript">
+        if (window.opener) {
+          window.opener.postMessage("token", '{{target}}');
+        }
+    </script>
+</head>
+<body class="full-width modal body--error-confirmation no-headers  primary-nav-transitions full-width lato-font-not-loaded-yet webkit chrome no-touch">
+
+<div id="application" class="ic-app">
+
+    <div id="wrapper" class="ic-Layout-wrapper">
+        <div id="main" class="ic-Layout-columns">
+            <div id="not_right_side" class="ic-app-main-content">
+                <div id="content-wrapper" class="ic-Layout-contentWrapper">
+
+                    <div id="content" class="ic-Layout-contentMain" role="main">
+
+                        <div id="modal-box" class="ic-Error-confirmation">
+                            <header class="ic-Error-confirmation__header">
+                                <h2>{{applicationName}}</h2>
+                            </header>
+                            <div class="ic-Error-confirmation__content">
+
+                                <h2 class="ic-Error-confirmation__headline">
+                                    Login Done
+                                </h2>
+                                <p>
+                                    <strong>Token has been successfully granted.</strong>
+                                </p>
+                                <p>
+                                    Please close this window and you should be logged in.
+                                </p>
+                                {{#reloginUrl}}
+                                    <a class="Button Button--block" href="{{reloginUrl}}">Retry Authorization</a>
+                                {{/reloginUrl}}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- #application -->
+
+</body>
+</html>
