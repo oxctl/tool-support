@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 // WebMvdTest doesn't pull the OAuth configuration in by default
-@WebMvcTest()
+@WebMvcTest(properties = "proxy.origins=https://localhost:3000")
 @ImportAutoConfiguration({OAuth2ClientAutoConfiguration.class, WebSecurity.class, JwtConfiguration.class })
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
 public class ProxyControllerTest {
