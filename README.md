@@ -11,7 +11,9 @@ There is a small proxy controller that sends requests on the Canvas with a hard 
 
 Lifetime on tokens is currently pretty low. JS OAuth library?
 
-We are going to want to support multiple tenants and so will want to be able to map from a JWT to a Canvas endpoint to use. 
+We are going to want to support multiple tenants and so will want to be able to map from a JWT to a Canvas endpoint to use. We also need to check that the audience on the JWT maps to the client ID that should be used on the OAuth token.
+
+Request comes in with a JWT and a "aud" we lookup the audience to work out the registration to use. This is similar to how we map from a LTIPrincipal to a registration.
 
 ## Deployment Configuration
 
