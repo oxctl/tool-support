@@ -3,6 +3,7 @@ package uk.ac.ox.ctl.canvasproxy;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -39,13 +40,16 @@ import java.util.Arrays;
 @Configuration
 public class WebSecurity {
 
+    @Value("${proxy.origins:*}")
+    private String[] origins;
+
     @Bean("corsConfigurationSource")
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        // TODO Pull this from the client configuration
-        // If we support multiple clients how can we have a small list here?
         // The preflight contains the origin header so we will just return rules for that.
-        corsConfiguration.addAllowedOrigin("https://localhost:3000");
+        for(String origin : origins) {
+            corsConfiguration.addAllowedOrigin(origin);
+        }
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setAllowedMethods(Arrays.asList(HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.DELETE.name(), HttpMethod.PUT.name(), HttpMethod.PATCH.name(), HttpMethod.POST.name()));
         corsConfiguration.addAllowedHeader(CorsConfiguration.ALL);
