@@ -40,7 +40,29 @@ then you can edit the file and upload it to S3 again:
 
     aws s3 cp proxy.canvas.ox.ac.uk-client.properties s3://elasticbeanstalk-eu-west-1-075499702012/files/
 
-The client will probably also want to have it's HTTPS endpoint added to the CORS configuration in the same file.
+The client will probably also want to have it's HTTPS endpoint added to the CORS configuration in the same file. To add a new client first you need to decide on the "Client Registration ID" which is a name used by the spring configuration. This will form part of all the properties. For each client you need a section in the configuration like:
+
+    # Replace [clientRegId] and [instance] with values for your tool
+    # This first section can be shared if there are multiple tools
+    spring.security.oauth2.client.provider.[instance].authorization-uri=https://[instance].instructure.com/login/oauth2/auth
+    spring.security.oauth2.client.provider.[instance].token-uri=https://[instance].instructure.com/login/oauth2/token
+    
+    # This is the details of the tool
+    # User friendly name of the registration.
+    spring.security.oauth2.client.registration.[clientRegId].client-name=
+    # The client ID from Canvas
+    spring.security.oauth2.client.registration.[clientRegId].client-id=
+    # The client secret from Canvas
+    spring.security.oauth2.client.registration.[clientRegId].client-secret=
+    spring.security.oauth2.client.registration.[clientRegId].redirect-uri={baseUrl}/login/oauth2/code/{registrationId}
+    spring.security.oauth2.client.registration.[clientRegId].authorization-grant-type=authorization_code
+    spring.security.oauth2.client.registration.[clientRegId].client-authentication-method=post
+    spring.security.oauth2.client.registration.[clientRegId].provider=[instance]
+    
+Then you will also need a mapping from the LTI Key to the Developer Key
+
+    # Set this equal to the client ID of the LTI tool.
+    proxy.mapping.[clientRegId]=
 
 #### HTTPS
 
