@@ -9,6 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ox.ctl.canvasproxy.jwt.JwtConfig;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 // WebMvdTest doesn't pull the OAuth configuration in by default
 @WebMvcTest(properties = "proxy.origins=https://localhost:3000")
-@ImportAutoConfiguration({OAuth2ClientAutoConfiguration.class, WebSecurity.class, JwtConfiguration.class })
+@ImportAutoConfiguration({OAuth2ClientAutoConfiguration.class, WebSecurity.class, JwtConfig.class })
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
 public class ProxyControllerTest {
 

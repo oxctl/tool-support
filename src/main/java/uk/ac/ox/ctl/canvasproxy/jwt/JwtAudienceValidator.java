@@ -1,4 +1,4 @@
-package uk.ac.ox.ctl.canvasproxy;
+package uk.ac.ox.ctl.canvasproxy.jwt;
 
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
