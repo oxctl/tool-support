@@ -62,7 +62,7 @@ The client will probably also want to have it's HTTPS endpoint added to the CORS
 Then you will also need a mapping from the LTI Key to the Developer Key
 
     # Set this equal to the client ID of the LTI tool.
-    proxy.mapping.[clientRegId]=
+    proxy.mapping.[ltiClientId]=[clientRegId]
 
 #### HTTPS
 
@@ -77,6 +77,10 @@ Once a certificate is issued they should be uploaded to the S3 bucket:
     aws s3 cp proxy.canvas.ox.ac.uk-key.pem s3://elasticbeanstalk-eu-west-1-075499702012/certificates/
 
 ## TODO
+
+### Different JWT Validator
+
+live/beta/test have different JWTs, need different validators.
 
 ### Refresh/Access tokens
 
