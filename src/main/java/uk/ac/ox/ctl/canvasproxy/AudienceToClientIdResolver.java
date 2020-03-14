@@ -4,8 +4,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.validation.annotation.Validated;
 import uk.ac.ox.ctl.oauth2.client.web.method.annotation.PrincipalClientIdResolver;
 
+import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,8 +16,10 @@ import java.util.stream.Collectors;
  */
 @ConstructorBinding
 @ConfigurationProperties("proxy")
+@Validated
 public class AudienceToClientIdResolver implements PrincipalClientIdResolver {
 
+    @NotNull
     private final Map<String,String> mapping;
 
     public AudienceToClientIdResolver(Map<String, String> mapping) {
