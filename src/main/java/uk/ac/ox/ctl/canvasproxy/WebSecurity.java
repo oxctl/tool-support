@@ -55,6 +55,8 @@ public class WebSecurity {
         corsConfiguration.addAllowedHeader(CorsConfiguration.ALL);
         // On simple requests we want to expose the Link header
         corsConfiguration.addExposedHeader("Link");
+        // This is so that we can tell who is as failing the request
+        corsConfiguration.addExposedHeader("WWW-Authenticate");
         corsConfiguration.setMaxAge(Duration.ofMinutes(30));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
