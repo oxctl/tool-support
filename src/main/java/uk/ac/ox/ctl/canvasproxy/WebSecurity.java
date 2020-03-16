@@ -27,12 +27,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+import uk.ac.ox.ctl.canvasproxy.security.config.annotation.web.configurers.oauth2.client.OAuth2ClientConfigurer;
 import uk.ac.ox.ctl.oauth2.client.endpoint.CanvasOAuth2AuthorizationCodeGrantRequestEntityConverter;
 import uk.ac.ox.ctl.oauth2.client.userinfo.CanvasUserService;
 import uk.ac.ox.ctl.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
 
-import javax.mail.Session;
 import java.time.Duration;
 import java.util.Arrays;
 
@@ -110,12 +109,14 @@ public class WebSecurity {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
+            OAuth2ClientConfigurer<HttpSecurity> configurer = new OAuth2ClientConfigurer<>();
+            configurer.setBuilder(http);
+            configurer.authorizedClientRepository(oAuth2AuthorizedClientRepository)
+                    .authorizationCodeGrant()
+                    .accessTokenResponseClient(accessTokenResponseClient);
+            http.apply(configurer);
             http.antMatcher("/api/**")
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                    .oauth2Client()
-                    .authorizedClientRepository(oAuth2AuthorizedClientRepository)
-                    .authorizationCodeGrant()
-                    .accessTokenResponseClient(accessTokenResponseClient).and().and()
                     .cors().and()
                     .csrf().disable()
                     .oauth2ResourceServer().jwt().and().bearerTokenResolver(tokenResolver).authenticationEntryPoint(authenticationEntryPoint()).and()

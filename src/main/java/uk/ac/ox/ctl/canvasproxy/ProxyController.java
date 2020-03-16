@@ -7,15 +7,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ox.ctl.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,23 +33,19 @@ public class ProxyController {
 
     private final Logger log = LoggerFactory.getLogger(ProxyController.class);
 
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
-    public ProxyController(RestTemplate restTemplate) {
+    private final OAuth2AuthorizedClientRepository clientRepository;
+
+    public ProxyController(RestTemplate restTemplate, OAuth2AuthorizedClientRepository clientRepository) {
         this.restTemplate = restTemplate;
+        this.clientRepository = clientRepository;
     }
 
     // If we can control the response when there isn't a token for the current user we may want to make the token required.
     @RequestMapping("/api/**")
     @ResponseBody
-    public ResponseEntity<?> proxy(JwtAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AuthorizedClient(required = false) OAuth2AuthorizedClient client) throws URISyntaxException {
-        if (client == null) {
-            // This is how we signal to the client that we don't have a OAuth token for them.
-            HttpHeaders httpHeaders = new HttpHeaders();
-            // Ideally the client should use this URL to get the user to give consent.
-            httpHeaders.add("Location", "/tokens/check");
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No JWT supplied");
-        }
+    public ResponseEntity<?> proxy(JwtAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws URISyntaxException {
         String canvasApiBaseUrl = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get("canvas_api_base_url");
         URI remoteService = URI.create(canvasApiBaseUrl);
         URI requestUrl = requestEntity.getUrl();
@@ -67,6 +65,11 @@ public class ProxyController {
                 HttpHeaders httpHeaders = new HttpHeaders();
                 httpHeaders.addAll(response.getHeaders());
                 response.getHeaders().getOrEmpty("Link").stream().map(header -> header.replaceAll(remoteService.toString(), localService.toString())).forEach(header -> httpHeaders.set("Link", header));
+                if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
+                    // Remove the token we have
+                    log.info("Removed token for {} as we got an unauthorized response", principal.getName());
+                    clientRepository.removeAuthorizedClient(client.getClientRegistration().getClientId(), principal, servletRequest, servletResponse);
+                }
                 // We don't want to pass through cookies from Canvas.
                 httpHeaders.remove("Set-Cookie");
                 return new ResponseEntity<>(toByteArray(response.getBody()), httpHeaders, response.getStatusCode());
