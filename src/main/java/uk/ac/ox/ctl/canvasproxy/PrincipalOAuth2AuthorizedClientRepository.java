@@ -11,7 +11,6 @@ import uk.ac.ox.ctl.canvasproxy.repository.PrincipalTokensRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.security.Principal;
 
 /**
  * This persists the OAuth2 tokens in the DB, this means we don't have to get the user to
