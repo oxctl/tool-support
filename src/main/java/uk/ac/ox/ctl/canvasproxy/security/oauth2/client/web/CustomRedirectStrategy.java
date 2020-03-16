@@ -28,11 +28,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Simple implementation of <tt>RedirectStrategy</tt> which is the default used throughout
- * the framework.
- *
- * @author Luke Taylor
- * @since 3.0
+ * Because we are making XHR requests rather than document requests we need to send a different response, rather
+ * than directly redirecting the client. So we set a custom error code so the client knows to open browser window
+ * where the user can authorize the application.
  */
 public class CustomRedirectStrategy implements RedirectStrategy {
 
@@ -55,8 +53,7 @@ public class CustomRedirectStrategy implements RedirectStrategy {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Redirecting to '" + redirectUrl + "'");
 		}
-
 		response.addHeader("Location", redirectUrl);
-		response.sendError(HttpStatus.FORBIDDEN.value(), "No JWT supplied");
+		response.sendError(HttpStatus.FORBIDDEN.value(), "No client found");
 	}
 }
