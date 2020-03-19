@@ -65,7 +65,7 @@ public class ProxyController {
         URI localService = new URI(requestUrl.getScheme(), requestUrl.getUserInfo(), requestUrl.getHost(), requestUrl.getPort(), null, null, null);
         URI thirdPartyApi = new URI(requestUrl.getScheme(), requestUrl.getUserInfo(), remoteService.getHost(), remoteService.getPort(), requestUrl.getPath(), requestUrl.getQuery(), requestUrl.getFragment());
 
-        if (client.getAccessToken().getExpiresAt().isBefore(Instant.now().minus(EAGAR_TOKEN_RENEWAL))) {
+        if (client.getAccessToken().getExpiresAt().isBefore(Instant.now().plus(EAGAR_TOKEN_RENEWAL))) {
             // Need to refresh token.
             OAuth2RefreshTokenGrantRequest refreshTokenGrantRequest = new OAuth2RefreshTokenGrantRequest(
                     client.getClientRegistration(), client.getAccessToken(),
