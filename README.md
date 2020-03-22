@@ -19,7 +19,7 @@ Request comes in with a JWT and a "aud" we lookup the audience to work out the r
 
 ### AWS Elastic Beanstalk
 
-This application needs a database to store the OAuth tokens it gets granted. Recovery for this database isn't critical at the moment as if wee lost it then everyone would need to confirm that they wanted to grant access to their account again.
+This application needs a database to store the OAuth tokens it gets granted. Recovery for this database isn't critical at the moment as if wee lost it then everyone would need to confirm that they wanted to grant access to their account again. We have enabled swap on the instance so for test instances we can use low memory machines and still be able to deploy new version without running out of memory.
 
 #### Environmental Variables
 
