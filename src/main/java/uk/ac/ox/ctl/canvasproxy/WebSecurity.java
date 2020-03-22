@@ -119,7 +119,8 @@ public class WebSecurity {
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                     .cors().and()
                     .csrf().disable()
-                    .oauth2ResourceServer().jwt().and().bearerTokenResolver(tokenResolver).authenticationEntryPoint(authenticationEntryPoint()).and()
+                    .oauth2ResourceServer().jwt().and()
+                    .bearerTokenResolver(tokenResolver).authenticationEntryPoint(authenticationEntryPoint()).and()
                     .authorizeRequests().anyRequest().authenticated()
             ;
         }
