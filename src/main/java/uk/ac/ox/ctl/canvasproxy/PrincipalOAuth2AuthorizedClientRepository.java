@@ -5,12 +5,14 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import uk.ac.ox.ctl.canvasproxy.model.PrincipalTokens;
 import uk.ac.ox.ctl.canvasproxy.repository.PrincipalTokensRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * This persists the OAuth2 tokens in the DB, this means we don't have to get the user to
@@ -68,8 +70,21 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
     }
 
     private String toPrincipal(Authentication authentication) {
-        // For a JWT this is the ID
-        String name = authentication.getName();
-        return name;
+        if (authentication instanceof JwtAuthenticationToken) {
+            JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication;
+            List<String> aud = jwtAuthenticationToken.getToken().getAudience();
+            if (aud.isEmpty()) {
+                throw new IllegalStateException("JWT must have an audience set.");
+            }
+            if (aud.size() > 1) {
+                // At some point we should support this and use something other than the audience on the JWT so we can
+                // support tokens with multiple audiences
+                throw new IllegalStateException("JWT cannot have multiple audiences set.");
+            }
+            // This is so that if we have multiple tools in the same Canvas instance each tool has a separate pool
+            // of tokens it uses.
+            return aud.get(0) + ":"+ jwtAuthenticationToken.getName();
+        }
+        return authentication.getName();
     }
 }
