@@ -11,12 +11,14 @@
     <groupId>uk.ac.ox.ctl</groupId>
     <artifactId>canvas-proxy</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>canvas-proxy</name>
+    <name>Canvas Proxy</name>
     <description>OAuth2 proxy to Canvas</description>
 
     <properties>
         <java.version>11</java.version>
         <jib.tag>unknown</jib.tag>
+        <git.commit.id>unknown</git.commit.id>
+        <git.commit.id.abbrev>unknown</git.commit.id.abbrev>
     </properties>
 
     <dependencies>
@@ -91,6 +93,14 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!-- This is needed otherwise the filtering doesn't appear to happen despite messages to the contrary -->
+                <!-- This is used to get the git SHA into the index.html file -->
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
