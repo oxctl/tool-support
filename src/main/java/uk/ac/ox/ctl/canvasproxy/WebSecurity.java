@@ -158,5 +158,15 @@ public class WebSecurity {
         }
     }
 
+    @Configuration
+    @Order(3)
+    public static class InfoConfiguration extends WebSecurityConfigurerAdapter {
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            // Allow access to our info page.
+            http.authorizeRequests().antMatchers("/", "/images/**").permitAll();
+        }
+    }
+
 
 }
