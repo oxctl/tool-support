@@ -46,10 +46,9 @@ public class TokenController {
         String canvasJson = null;
         if (principal != null && principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom") != null) {
             canvasJson = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get("com_instructure_brand_config_json_url");
-
-            if (canvasJson == null) {
-                canvasJson = defaultBrandJson;
-            }
+        }
+        if (canvasJson == null) {
+            canvasJson = defaultBrandJson;
         }
         // This is a fudge as at the moment a CSS version exists alongside the JS version.
         String canvasCss = null;

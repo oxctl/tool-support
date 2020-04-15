@@ -121,7 +121,7 @@ public class WebSecurity {
                     .csrf().disable()
                     .oauth2ResourceServer().jwt().and()
                     .bearerTokenResolver(tokenResolver).authenticationEntryPoint(authenticationEntryPoint())
-                    .and().antMatcher("/**").authorizeRequests().antMatchers("/", "/images/**").permitAll()
+//                    .and().antMatcher("/**").authorizeRequests().antMatchers("/", "/images/**").permitAll()
                     .and().authorizeRequests().anyRequest().authenticated()
             ;
         }
