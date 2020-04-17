@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2RefreshTokenGrantRequest;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.DefaultRefreshTokenTokenResponseClient;
 import uk.ac.ox.ctl.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 
@@ -70,12 +72,17 @@ public class ProxyController {
             OAuth2RefreshTokenGrantRequest refreshTokenGrantRequest = new OAuth2RefreshTokenGrantRequest(
                     client.getClientRegistration(), client.getAccessToken(),
                     client.getRefreshToken(), Collections.emptySet());
-            OAuth2AccessTokenResponse tokenResponse =
-                    this.accessTokenResponseClient.getTokenResponse(refreshTokenGrantRequest);
-            OAuth2AuthorizedClient oAuth2AuthorizedClient = new OAuth2AuthorizedClient(client.getClientRegistration(),
-                    principal.getName(), tokenResponse.getAccessToken(), tokenResponse.getRefreshToken());
-            client = oAuth2AuthorizedClient;
-            clientRepository.saveAuthorizedClient(oAuth2AuthorizedClient, principal, servletRequest, servletResponse);
+            try {
+                OAuth2AccessTokenResponse tokenResponse =
+                        this.accessTokenResponseClient.getTokenResponse(refreshTokenGrantRequest);
+                OAuth2AuthorizedClient oAuth2AuthorizedClient = new OAuth2AuthorizedClient(client.getClientRegistration(),
+                        principal.getName(), tokenResponse.getAccessToken(), tokenResponse.getRefreshToken());
+                client = oAuth2AuthorizedClient;
+                clientRepository.saveAuthorizedClient(oAuth2AuthorizedClient, principal, servletRequest, servletResponse);
+            } catch (OAuth2AuthorizationException e) {
+                clientRepository.removeAuthorizedClient(client.getClientRegistration().getClientId(), principal, servletRequest, servletResponse);
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Failed to get access token with refresh token");
+            }
         }
 
         String accessToken = client.getAccessToken().getTokenValue();
