@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.DefaultRefreshTokenTokenResponseClient;
 import uk.ac.ox.ctl.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 
@@ -80,8 +79,8 @@ public class ProxyController {
                 client = oAuth2AuthorizedClient;
                 clientRepository.saveAuthorizedClient(oAuth2AuthorizedClient, principal, servletRequest, servletResponse);
             } catch (OAuth2AuthorizationException e) {
-                clientRepository.removeAuthorizedClient(client.getClientRegistration().getClientId(), principal, servletRequest, servletResponse);
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Failed to get access token with refresh token");
+                //noinspection PlaceholderCountMatchesArgumentCount
+                log.info("Failed to renew token for {}, we expect that the proxied request will fail.", principal, (log.isDebugEnabled())?e:null);
             }
         }
 
