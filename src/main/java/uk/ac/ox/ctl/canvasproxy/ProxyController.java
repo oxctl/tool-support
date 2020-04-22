@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.DefaultRefreshTokenTokenResponseClient;
 import uk.ac.ox.ctl.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 
@@ -61,6 +62,9 @@ public class ProxyController {
     @ResponseBody
     public ResponseEntity<?> proxy(JwtAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws URISyntaxException {
         String canvasApiBaseUrl = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get("canvas_api_base_url");
+        if (canvasApiBaseUrl == null || canvasApiBaseUrl.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "canvas_api_base_url"+ " was not in LTI custom claims. Please update LTI configuration.");
+        }
         URI remoteService = URI.create(canvasApiBaseUrl);
         URI requestUrl = requestEntity.getUrl();
         URI localService = new URI(requestUrl.getScheme(), requestUrl.getUserInfo(), requestUrl.getHost(), requestUrl.getPort(), null, null, null);
