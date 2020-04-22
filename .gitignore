@@ -37,3 +37,5 @@ proxy.canvas.ox.ac.uk-chain.crt
 proxy.canvas.ox.ac.uk-client.properties
 proxy.mv.db
 proxy.trace.db
+proxy-dev.canvas.ox.ac.uk-key.pem
+proxy-dev.canvas.ox.ac.uk.csr
