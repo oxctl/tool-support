@@ -34,11 +34,11 @@ This application needs a database to store the OAuth tokens it gets granted. Rec
 
 For each client that can use the tool there needs to be an entry in the client configuration file. This file then needs to be updated to S3. To download the current clients:
 
-    aws s3 cp s3://elasticbeanstalk-eu-west-1-075499702012/files/proxy.canvas.ox.ac.uk-client.properties .
+    aws s3 cp s3://elasticbeanstalk-eu-west-1-211318693510/files/proxy.canvas.ox.ac.uk-client.properties .
 
 then you can edit the file and upload it to S3 again:
 
-    aws s3 cp proxy.canvas.ox.ac.uk-client.properties s3://elasticbeanstalk-eu-west-1-075499702012/files/
+    aws s3 cp proxy.canvas.ox.ac.uk-client.properties s3://elasticbeanstalk-eu-west-1-211318693510/files/
 
 The client will probably also want to have it's HTTPS endpoint added to the CORS configuration in the same file. To add a new client first you need to decide on the "Client Registration ID" which is a name used by the spring configuration. This will form part of all the properties. For each client you need a section in the configuration like:
 
@@ -73,8 +73,8 @@ A public private keypair needs to be generated for TLS. There are configurations
 This CSR can then be used to request a certificate from the certificate service: https://wiki.it.ox.ac.uk/itss/CertificateService 
 Once a certificate is issued they should be uploaded to the S3 bucket:
 
-    aws s3 cp proxy.canvas.ox.ac.uk-chain.crt  s3://elasticbeanstalk-eu-west-1-075499702012/certificates/
-    aws s3 cp proxy.canvas.ox.ac.uk-key.pem s3://elasticbeanstalk-eu-west-1-075499702012/certificates/
+    aws s3 cp proxy.canvas.ox.ac.uk-chain.crt  s3://elasticbeanstalk-eu-west-1-211318693510/certificates/
+    aws s3 cp proxy.canvas.ox.ac.uk-key.pem s3://elasticbeanstalk-eu-west-1-211318693510/certificates/
 
 ## TODO
 

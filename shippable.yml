@@ -16,11 +16,11 @@ build:
     - cp -r target/surefire-reports shippable/testresults
   post_ci:
     - if [ "$IS_PULL_REQUEST" == false ]; then mvn -Djib.tag=${BRANCH}.${BUILD_NUMBER} pl.project13.maven:git-commit-id-plugin:revision jib:build; fi
-    - if [ "$IS_PULL_REQUEST" == false ]; then shipctl post_resource_state_multi "canvas-proxy-image" "075499702012.dkr.ecr.eu-west-1.amazonaws.com/ctl/canvas-proxy versionName=$BRANCH.$BUILD_NUMBER"; fi
+    - if [ "$IS_PULL_REQUEST" == false ]; then shipctl post_resource_state_multi "canvas-proxy-image" "sourceName=211318693510.dkr.ecr.eu-west-1.amazonaws.com/ctl/canvas-proxy versionName=$BRANCH.$BUILD_NUMBER"; fi
 
 integrations:
   hub:
-    - integrationName: AWS(dev)
+    - integrationName: AWS
       region: eu-west-1
       type: ecr
   notifications:
@@ -37,13 +37,13 @@ integrations:
 resources:
   - name: canvas-proxy-image
     type: image
-    integration: AWS(dev)
+    integration: AWS
     versionTemplate:
-      sourceName: "075499702012.dkr.ecr.eu-west-1.amazonaws.com/ctl/canvas-proxy"
+      sourceName: "211318693510.dkr.ecr.eu-west-1.amazonaws.com/ctl/canvas-proxy"
       versionName: "latest"
   - name: aws-config
     type: cliConfig
-    integration: AWS(dev)
+    integration: AWS
     pointer:
       region: eu-west-1
   - name: canvas-proxy-env-params-dev
@@ -52,13 +52,13 @@ resources:
       params:
         PORT: 8080
         # We currently don't have a dev env
-        AWS_EB_ENVIRONMENT: "canvas-proxy-prod"
-        AWS_EB_APPLICATION: "canvas-proxy"
+        AWS_EB_ENVIRONMENT: "canvas-oauth-proxy-prod-env"
+        AWS_EB_APPLICATION: "canvas-oauth-proxy"
   - name: canvas-proxy-env-params-prod
     type: params
     version:
       params:
-        AWS_EB_ENVIRONMENT: "canvas-proxy-prod"
+        AWS_EB_ENVIRONMENT: "canvas-oauth-proxy-prod-env"
 
   - name: canvas-proxy-repo
     type: gitRepo
