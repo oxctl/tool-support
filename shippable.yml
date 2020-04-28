@@ -52,7 +52,7 @@ resources:
       params:
         PORT: 8080
         # We currently don't have a dev env
-        AWS_EB_ENVIRONMENT: "canvas-oauth-proxy-prod-env"
+        AWS_EB_ENVIRONMENT: "canvas-oauth-proxy-dev-env"
         AWS_EB_APPLICATION: "canvas-oauth-proxy"
   - name: canvas-proxy-env-params-prod
     type: params
@@ -113,5 +113,5 @@ jobs:
           - script: aws elasticbeanstalk describe-applications
           - script: pushd $CANVASPROXYREPO_STATE/elasticbeanstalk && ls -al
           - script: shippable_replace .elasticbeanstalk/config.yml
-          - script: version="$(shipctl get_resource_version_key canvas-proxy-deploy version)"
+          - script: version="$(shipctl get_resource_version_key canvas-proxy-deploy-dev version)"
           - script: eb deploy -v -l "${version}"
