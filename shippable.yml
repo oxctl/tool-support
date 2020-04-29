@@ -51,7 +51,6 @@ resources:
     version:
       params:
         PORT: 8080
-        # We currently don't have a dev env
         AWS_EB_ENVIRONMENT: "canvas-oauth-proxy-dev-env"
         AWS_EB_APPLICATION: "canvas-oauth-proxy"
   - name: canvas-proxy-env-params-prod
