@@ -43,7 +43,7 @@ public class ProxyController {
 
     // This is how many minutes before a token expires that we renew it using an access token.
     // We may want to make this configurable in the future
-    public static final Duration EAGAR_TOKEN_RENEWAL = Duration.ofMinutes(5);
+    public static final Duration EAGER_TOKEN_RENEWAL = Duration.ofMinutes(5);
 
     private final Logger log = LoggerFactory.getLogger(ProxyController.class);
 
@@ -70,7 +70,7 @@ public class ProxyController {
         URI localService = new URI(requestUrl.getScheme(), requestUrl.getUserInfo(), requestUrl.getHost(), requestUrl.getPort(), null, null, null);
         URI thirdPartyApi = new URI(requestUrl.getScheme(), requestUrl.getUserInfo(), remoteService.getHost(), remoteService.getPort(), requestUrl.getPath(), requestUrl.getQuery(), requestUrl.getFragment());
 
-        if (client.getAccessToken().getExpiresAt().isBefore(Instant.now().plus(EAGAR_TOKEN_RENEWAL))) {
+        if (client.getAccessToken().getExpiresAt().isBefore(Instant.now().plus(EAGER_TOKEN_RENEWAL))) {
             // Need to refresh token.
             OAuth2RefreshTokenGrantRequest refreshTokenGrantRequest = new OAuth2RefreshTokenGrantRequest(
                     client.getClientRegistration(), client.getAccessToken(),
