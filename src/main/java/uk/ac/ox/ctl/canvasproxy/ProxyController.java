@@ -108,11 +108,9 @@ public class ProxyController {
                 HttpHeaders httpHeaders = new HttpHeaders();
                 httpHeaders.addAll(response.getHeaders());
                 response.getHeaders().getOrEmpty("Link").stream().map(header -> header.replaceAll(remoteService.toString(), localService.toString())).forEach(header -> httpHeaders.set("Link", header));
-                if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
-                    // Remove the token we have
-                    log.info("Removed token for {} as we got an unauthorized response", principal.getName());
-                    clientRepository.removeAuthorizedClient(clientId, principal, servletRequest, servletResponse);
-                }
+                // We used to check the response status and if it was unauthorized assume that the token was no longer valid.
+                // However Canvas returns unauthorized when a permission check has failed (and it should really be forbidden).
+
                 // We don't want to pass through cookies from Canvas.
                 httpHeaders.remove("Set-Cookie");
                 return new ResponseEntity<>(toByteArray(response.getBody()), httpHeaders, response.getStatusCode());
