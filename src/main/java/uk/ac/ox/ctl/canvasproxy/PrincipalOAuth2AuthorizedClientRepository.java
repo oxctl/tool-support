@@ -81,6 +81,10 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
                 // support tokens with multiple audiences
                 throw new IllegalStateException("JWT cannot have multiple audiences set.");
             }
+            // We want to be double sure that we have a name.
+            if (jwtAuthenticationToken.getName() == null) {
+                throw new IllegalStateException("JWT name cannot be null");
+            }
             // This is so that if we have multiple tools in the same Canvas instance each tool has a separate pool
             // of tokens it uses.
             return aud.get(0) + ":"+ jwtAuthenticationToken.getName();
