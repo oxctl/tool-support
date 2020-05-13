@@ -44,6 +44,7 @@ public class ProxyController {
     // This is how many minutes before a token expires that we renew it using an access token.
     // We may want to make this configurable in the future
     public static final Duration EAGER_TOKEN_RENEWAL = Duration.ofMinutes(5);
+    public static final String CANVAS_API_BASE_URL = "canvas_api_base_url";
 
     private final Logger log = LoggerFactory.getLogger(ProxyController.class);
 
@@ -61,9 +62,11 @@ public class ProxyController {
     @RequestMapping("/api/**")
     @ResponseBody
     public ResponseEntity<?> proxy(JwtAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws URISyntaxException {
-        String canvasApiBaseUrl = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get("canvas_api_base_url");
+        String canvasApiBaseUrl = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get(CANVAS_API_BASE_URL);
         if (canvasApiBaseUrl == null || canvasApiBaseUrl.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "canvas_api_base_url"+ " was not in LTI custom claims. Please update LTI configuration.");
+            // The message doesn't make it into he HTTP status, but is in the JSON
+            // https://bz.apache.org/bugzilla/show_bug.cgi?id=60362
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CANVAS_API_BASE_URL + " was not in LTI custom claims. Please update LTI configuration.");
         }
         URI remoteService = URI.create(canvasApiBaseUrl);
         URI requestUrl = requestEntity.getUrl();
