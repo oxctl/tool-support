@@ -21,14 +21,13 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // WebMvdTest doesn't pull the OAuth configuration in by default
 @WebMvcTest(controllers = TokenController.class, properties = "proxy.origins=https://localhost:3000")
-@ImportAutoConfiguration({OAuth2ClientAutoConfiguration.class, WebSecurity.class, JwtConfig.class })
+@ImportAutoConfiguration({OAuth2ClientAutoConfiguration.class, WebSecurity.class, JwtConfig.class})
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
 class TokenControllerTest {
 
@@ -84,7 +83,8 @@ class TokenControllerTest {
                         .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")
                 );
         mvc.perform(post("/tokens/check").with(jwt))
-                .andExpect(status().isOk());
+                .andExpect(status().is3xxRedirection());
+        verify(authorizedClientRepository).removeAuthorizedClient(eq("1234"), any(), any(), any());
     }
 
 
