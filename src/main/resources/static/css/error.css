@@ -1,0 +1,52 @@
+@media all {
+    .ic-Layout-contentMain {
+        padding: 0;
+        margin: 1em;
+    }
+    .ic-Error-confirmation__headline {
+        margin: 0 0 12px;
+    }
+    .ic-Error-confirmation__actions {
+        margin-top: 24px;
+        text-align: right;
+    }
+    body.body--error-confirmation {
+        background: #2e3c46;
+    }
+    .ic-Error-confirmation {
+        box-sizing: border-box;
+        border-radius: 3px;
+        box-shadow: 0 1px 4px 1px rgba(0, 0, 0, 0.4);
+        margin: 36px auto 0;
+        max-width: 696px;
+    }
+    .ic-Error-confirmation form {
+        margin-bottom: 0;
+    }
+    .ic-Error-confirmation__header {
+        background: #34444f;
+        color: #fff;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        padding: 18px;
+    }
+    .ic-Error-confirmation__logo {
+        width: 57px;
+        height: 57px;
+        padding: 0 7px;
+    }
+    .ic-Error-confirmation__content {
+        padding: 24px;
+        background: #fff;
+        border-bottom-left-radius: 3px;
+        border-bottom-right-radius: 3px;
+    }
+    .ic-Error-confirmation__auth-icon {
+        display: inline-block;
+        max-width: 72px;
+        height: auto;
+        vertical-align: middle;
+        margin-right: 12px;
+    }
+}
+

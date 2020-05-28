@@ -1,6 +1,8 @@
 package uk.ac.ox.ctl.canvasproxy;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
@@ -23,11 +25,19 @@ public class WebConfig implements WebMvcConfigurer {
     @Autowired
     private PrincipalClientIdResolver principalClientIdResolver;
 
+    @Autowired
+    private ServerProperties serverProperties;
+
     @Override
     public void addArgumentResolvers(
             List<HandlerMethodArgumentResolver> argumentResolvers) {
         OAuth2AuthorizedClientArgumentResolver resolver = new OAuth2AuthorizedClientArgumentResolver(clientRegistrationRepository, oAuth2AuthorizedClientRepository);
         resolver.setPrincipalClientIdResolver(principalClientIdResolver);
         argumentResolvers.add(resolver);
+    }
+
+    @Bean
+    public CustomErrorAttributes errorAttributes() {
+        return new CustomErrorAttributes(this.serverProperties.getError().isIncludeException());
     }
 }
