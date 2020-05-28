@@ -44,7 +44,8 @@ public class DefaultModelAttributes {
     if (canvasJson == null) {
       canvasJson = defaultBrandJson;
     }
-    // This is a fudge as at the moment a CSS version exists alongside the JS version.
+    // There isn't a CSS brand LTI variable so we just get the path to the .json file and assume there is a .css version
+    // deployed at the same location.
     String canvasCss = null;
     if (canvasJson != null) {
       if (canvasJson.endsWith(".json")) {
