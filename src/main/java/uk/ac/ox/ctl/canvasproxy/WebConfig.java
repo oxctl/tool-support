@@ -28,6 +28,11 @@ public class WebConfig implements WebMvcConfigurer {
     public void addArgumentResolvers(
             List<HandlerMethodArgumentResolver> argumentResolvers) {
         {
+            OAuth2AuthorizedClientArgumentResolver resolver = new OAuth2AuthorizedClientArgumentResolver(clientRegistrationRepository, oAuth2AuthorizedClientRepository);
+            resolver.setPrincipalClientIdResolver(principalClientIdResolver);
+            argumentResolvers.add(resolver);
+        }
+        {
             OAuth2AccessTokenArgumentResolver accessTokenArgumentResolver = new OAuth2AccessTokenArgumentResolver(clientRegistrationRepository, oAuth2AuthorizedClientRepository);
             accessTokenArgumentResolver.setPrincipalClientIdResolver(principalClientIdResolver);
             argumentResolvers.add(accessTokenArgumentResolver);
