@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * This configures JWT validation to allow any of the Canvas instances to sign a JWT.
+ */
 @Configuration
 public class JwtConfig {
 

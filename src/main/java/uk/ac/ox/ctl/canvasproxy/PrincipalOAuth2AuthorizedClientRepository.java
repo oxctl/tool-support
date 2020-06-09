@@ -5,10 +5,15 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import uk.ac.ox.ctl.canvasproxy.model.PrincipalTokens;
 import uk.ac.ox.ctl.canvasproxy.repository.PrincipalTokensRepository;
+import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.OAuth2AccessTokenRefresher;
+import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.RefreshOAuth2AuthorizedClient;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,17 +24,18 @@ import java.util.List;
  * authenticate each time they use the tool.
  */
 @Service
-public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2AuthorizedClientRepository {
+public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2AuthorizedClientRepository, RefreshOAuth2AuthorizedClient {
 
     private final PrincipalTokensRepository principalTokensRepository;
-
     private final ClientRegistrationRepository clientRegistrationRepository;
+    private final OAuth2AccessTokenRefresher auth2AccessTokenRefresher;
 
     public PrincipalOAuth2AuthorizedClientRepository(
             PrincipalTokensRepository principalTokensRepository,
-            ClientRegistrationRepository clientRegistrationRepository) {
+            ClientRegistrationRepository clientRegistrationRepository, OAuth2AccessTokenRefresher auth2AccessTokenRefresher) {
         this.principalTokensRepository = principalTokensRepository;
         this.clientRegistrationRepository = clientRegistrationRepository;
+        this.auth2AccessTokenRefresher = auth2AccessTokenRefresher;
     }
 
     @Override
@@ -49,6 +55,56 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
         }
         return (T) oAuth2AuthorizedClient;
     }
+
+    /**
+     * This refreshes the access token associated with the authentication.
+     *
+     * @param clientRegistrationId The client registration ID.
+     * @param authentication The authentication for the current user.
+     * @param request The HTTP Servlet Request.
+     * @param response The HTTP Servlet Response.
+     * @param <T>
+     * @return The refreshed Oauth2AuthorizedClient or null if the refresh fails.
+     */
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public <T extends OAuth2AuthorizedClient> T renewAccessToken(
+            String clientRegistrationId, Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
+        OAuth2AuthorizedClient oAuth2AuthorizedClient = null;
+        ClientRegistration clientRegistration =
+                clientRegistrationRepository.findByRegistrationId(clientRegistrationId);
+        if (clientRegistration != null) {
+            String principal = toPrincipal(authentication);
+            oAuth2AuthorizedClient =
+                    // Second level caching should catch this lookup by ID.
+                    principalTokensRepository
+                            // This should aquire a lock which prevents another
+                            .lockById(principal)
+                            .map(userTokens -> userTokens.toOAuth2AuthorizedClient(clientRegistration, principal))
+                            .orElse(null);
+
+            if (oAuth2AuthorizedClient != null) {
+                // Now we have the lock we check again if it needs refreshing
+                if (needsRenewal(oAuth2AuthorizedClient)) {
+                    OAuth2AccessTokenResponse refresh = auth2AccessTokenRefresher.refresh(oAuth2AuthorizedClient);
+                    if (refresh != null) {
+                        OAuth2AuthorizedClient renewed = new OAuth2AuthorizedClient(oAuth2AuthorizedClient.getClientRegistration(),
+                                principal, refresh.getAccessToken(), refresh.getRefreshToken());
+                        saveAuthorizedClient(renewed, authentication, request, response);
+                        return (T) renewed;
+                    }
+                } else {
+                    // Looks like another thread renewed the token so just return the new one.
+                    return (T)oAuth2AuthorizedClient;
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean needsRenewal(OAuth2AuthorizedClient oAuth2AuthorizedClient) {
+        return auth2AccessTokenRefresher.needsRefresh(oAuth2AuthorizedClient);
+    }
+
 
     @Override
     public void saveAuthorizedClient(

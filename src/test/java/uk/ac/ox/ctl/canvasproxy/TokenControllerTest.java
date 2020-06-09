@@ -1,11 +1,14 @@
 package uk.ac.ox.ctl.canvasproxy;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -15,6 +18,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 import uk.ac.ox.ctl.canvasproxy.jwt.JwtConfig;
+import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.RefreshOAuth2AuthorizedClient;
 
 import java.util.Collections;
 
@@ -37,8 +41,18 @@ class TokenControllerTest {
     @Autowired
     private ClientRegistrationRepository clientRegistrationRepository;
 
-    @MockBean
+    @Autowired
     private OAuth2AuthorizedClientRepository authorizedClientRepository;
+
+    @TestConfiguration
+    public static class Config {
+        @Bean
+        public RefreshOAuth2AuthorizedClient refreshOAuth2AuthorizedClient() {
+            // Mockbean annotation doesn't prevent autoconfiguration from creating a bean as well.
+            return Mockito.mock(RefreshOAuth2AuthorizedClient.class);
+        }
+
+    }
 
     @Test
     public void testNoToken() throws Exception {

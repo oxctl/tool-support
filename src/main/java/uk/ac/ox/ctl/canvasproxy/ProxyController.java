@@ -6,12 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
-import org.springframework.security.oauth2.client.endpoint.OAuth2RefreshTokenGrantRequest;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -19,19 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
-import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.DefaultRefreshTokenTokenResponseClient;
-import uk.ac.ox.ctl.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
+import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.annotation.RegisteredOAuth2AccessToken;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
-import java.time.Instant;
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -41,27 +31,20 @@ import java.util.Map;
 @RestController
 public class ProxyController {
 
-    // This is how many minutes before a token expires that we renew it using an access token.
-    // We may want to make this configurable in the future
-    public static final Duration EAGER_TOKEN_RENEWAL = Duration.ofMinutes(5);
     public static final String CANVAS_API_BASE_URL = "canvas_api_base_url";
 
     private final Logger log = LoggerFactory.getLogger(ProxyController.class);
 
     private final RestTemplate restTemplate;
 
-    private final OAuth2AuthorizedClientRepository clientRepository;
-    private OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> accessTokenResponseClient = new DefaultRefreshTokenTokenResponseClient();
-
-    public ProxyController(RestTemplate restTemplate, OAuth2AuthorizedClientRepository clientRepository) {
+    public ProxyController(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.clientRepository = clientRepository;
     }
 
     // If we can control the response when there isn't a token for the current user we may want to make the token required.
     @RequestMapping("/api/**")
     @ResponseBody
-    public ResponseEntity<?> proxy(JwtAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws URISyntaxException {
+    public ResponseEntity<?> proxy(JwtAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AccessToken() OAuth2AccessToken accessToken) throws URISyntaxException {
         String canvasApiBaseUrl = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get(CANVAS_API_BASE_URL);
         if (canvasApiBaseUrl == null || canvasApiBaseUrl.isEmpty()) {
             // The message doesn't make it into he HTTP status, but is in the JSON
@@ -73,34 +56,13 @@ public class ProxyController {
         URI localService = new URI(requestUrl.getScheme(), requestUrl.getUserInfo(), requestUrl.getHost(), requestUrl.getPort(), null, null, null);
         URI thirdPartyApi = new URI(requestUrl.getScheme(), requestUrl.getUserInfo(), remoteService.getHost(), remoteService.getPort(), requestUrl.getPath(), requestUrl.getQuery(), requestUrl.getFragment());
 
-        if (client.getAccessToken().getExpiresAt().isBefore(Instant.now().plus(EAGER_TOKEN_RENEWAL))) {
-            // Need to refresh token.
-            OAuth2RefreshTokenGrantRequest refreshTokenGrantRequest = new OAuth2RefreshTokenGrantRequest(
-                    client.getClientRegistration(), client.getAccessToken(),
-                    client.getRefreshToken(), Collections.emptySet());
-            try {
-                OAuth2AccessTokenResponse tokenResponse =
-                        this.accessTokenResponseClient.getTokenResponse(refreshTokenGrantRequest);
-                OAuth2AuthorizedClient oAuth2AuthorizedClient = new OAuth2AuthorizedClient(client.getClientRegistration(),
-                        principal.getName(), tokenResponse.getAccessToken(), tokenResponse.getRefreshToken());
-                client = oAuth2AuthorizedClient;
-                clientRepository.saveAuthorizedClient(oAuth2AuthorizedClient, principal, servletRequest, servletResponse);
-            } catch (OAuth2AuthorizationException e) {
-                //noinspection PlaceholderCountMatchesArgumentCount
-                log.info("Failed to renew token for {}, we expect that the proxied request will fail.", principal, (log.isDebugEnabled())?e:null);
-            }
-        }
-
-        String accessToken = client.getAccessToken().getTokenValue();
-        String clientId = client.getClientRegistration().getClientId();
-
         try {
             return restTemplate.execute(thirdPartyApi, requestEntity.getMethod(), request -> {
                 HttpHeaders requestHeaders = request.getHeaders();
                 requestHeaders.addAll(requestEntity.getHeaders());
                 // If we pass through the wrong host then canvas returns different information.
                 requestHeaders.remove("Host");
-                requestHeaders.setBearerAuth(accessToken);
+                requestHeaders.setBearerAuth(accessToken.getTokenValue());
                 if (requestEntity.getBody() != null) {
                     request.getBody().write(requestEntity.getBody());
                 }
