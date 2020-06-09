@@ -39,3 +39,4 @@ proxy.mv.db
 proxy.trace.db
 proxy-dev.canvas.ox.ac.uk-key.pem
 proxy-dev.canvas.ox.ac.uk.csr
+proxy-dev.canvas.ox.ac.uk-client.properties
