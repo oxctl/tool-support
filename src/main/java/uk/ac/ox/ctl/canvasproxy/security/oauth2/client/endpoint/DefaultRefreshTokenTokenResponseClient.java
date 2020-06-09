@@ -44,7 +44,7 @@ import java.util.Arrays;
  * This implementation uses a {@link RestOperations} when requesting
  * an access token credential at the Authorization Server's Token Endpoint.
  *
- * We have copied this class in because we need custom parsing of the response as it doesn't work with Canvsa refresh
+ * We have copied this class in because we need custom parsing of the response as it doesn't work with Canvas refresh
  * tokens by default.
  *
  * @author Joe Grandja
