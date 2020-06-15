@@ -1,8 +1,8 @@
 #!/bin/bash
 
 SWAPFILE=/var/swapfile
-# Create a swapfile the same size as the physical memory
-SWAP_MEGABYTES=$(free -m | awk '$0 ~ /Mem/ {print $2;}')
+# Create a swapfile twice the physical size
+SWAP_MEGABYTES=$(free -m | awk '$0 ~ /Mem/ {print $2 * 2;}')
 
 if [ -f $SWAPFILE ]; then
   echo "Swapfile $SWAPFILE found, assuming already setup"
