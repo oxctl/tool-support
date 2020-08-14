@@ -19,6 +19,7 @@ import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.annotation.RegisteredOAut
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -78,6 +79,10 @@ public class ProxyController {
                 return new ResponseEntity<>(toByteArray(response.getBody()), httpHeaders, response.getStatusCode());
             });
         } catch (ResourceAccessException e) {
+            // When we get a timeout we should translate it to the correct HTTP message.
+            if (e.getCause() instanceof SocketTimeoutException) {
+                throw new ResponseStatusException(HttpStatus.GATEWAY_TIMEOUT);
+            }
             log.warn("Failed to load {} exception is: {}", thirdPartyApi, e.getMessage());
             // TODO - Need to fix this so we don't log exception as this will be expected in production
             //  We shouldn't fill the logs with this. We may want a metric on failures.
