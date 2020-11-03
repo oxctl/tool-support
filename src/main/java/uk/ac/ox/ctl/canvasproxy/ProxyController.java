@@ -64,6 +64,10 @@ public class ProxyController {
                 // If we pass through the wrong host then canvas returns different information.
                 requestHeaders.remove("Host");
                 requestHeaders.setBearerAuth(accessToken.getTokenValue());
+                // Client browsers will say they accept brotli encoding, but we can't proxy that so we only allow gzip and deflate.
+                // Really we shouldn't be trying to de-compress the response and should just pass it straight through.
+                // This is a quick fix.
+                requestHeaders.set("Accept-Encoding", "gzip");
                 if (requestEntity.getBody() != null) {
                     request.getBody().write(requestEntity.getBody());
                 }
