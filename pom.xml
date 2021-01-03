@@ -138,6 +138,7 @@
                 <artifactId>git-commit-id-plugin</artifactId>
                 <configuration>
                     <verbose>false</verbose>
+                    <offline>true</offline>
                 </configuration>
             </plugin>
             <plugin>
