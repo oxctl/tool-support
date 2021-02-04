@@ -65,12 +65,12 @@
         <dependency>
             <groupId>io.sentry</groupId>
             <artifactId>sentry-spring-boot-starter</artifactId>
-            <version>3.1.3</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>io.sentry</groupId>
             <artifactId>sentry-logback</artifactId>
-            <version>3.1.3</version>
+            <version>4.0.0</version>
         </dependency>
         <!-- Using H2 in development/test -->
         <dependency>
