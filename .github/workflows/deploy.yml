@@ -1,0 +1,59 @@
+# This is to deploy a tagged version to production.
+
+name: Production Deployment
+
+env:
+  AWS_REGION: "eu-west-1"
+  # If AWS account/project changes this should too
+  DOCKER_REPO: 211318693510.dkr.ecr.eu-west-1.amazonaws.com/ctl/canvas-proxy
+  EB_APPLICATION: canvas-oauth-proxy
+  # For testing we're deploying to dev
+  EB_ENVIRONMENT: canvas-oauth-proxy-dev
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deploy'
+        required: true
+
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+      TAG: ${{ github.event.inputs.tag }}
+    steps:
+      - name: Start deployment
+        uses: bobheadxi/deployments@v0.4.3
+        id: deployment
+        with:
+          step: start
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: prod
+          desc: Production deploy of ${{ env.TAG }}
+          ref: refs/tags/${{ env.TAG }}
+      - uses: shogo82148/actions-mutex@v1
+        timeout-minutes: 5
+        with:
+          key: prod
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v16
+        timeout-minutes: 5
+        with:
+          aws_access_key: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ env.EB_APPLICATION }}
+          environment_name: ${{ env.EB_ENVIRONMENT }}
+          version_label: github.${{ env.TAG }}
+          region: ${{ env.AWS_REGION }}
+      - name: Update deployment status
+        uses: bobheadxi/deployments@v0.4.3
+        if: always()
+        with:
+          step: finish
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
