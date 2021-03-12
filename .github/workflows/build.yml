@@ -1,0 +1,125 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Java CI with Maven
+
+env:
+  AWS_REGION: "eu-west-1"
+  # If AWS account/project changes this should too
+  DOCKER_REPO: 211318693510.dkr.ecr.eu-west-1.amazonaws.com/ctl/canvas-proxy
+  EB_APPLICATION: canvas-oauth-proxy
+  EB_ENVIRONMENT: canvas-oauth-proxy-dev
+
+on:
+  push:
+    branches: [ master ]
+    tags: [ '*' ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    outputs:
+      tag: ${{ steps.output-tag.outputs.tag }}
+      message: ${{ steps.output-message.outputs.message }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+      - name: Set docker tag
+        # We need a prefix on the tag so that we don't overwrite the shippable tags
+        # This only works on branches.
+        run: echo "DOCKER_TAG=github.${GITHUB_REF##*/}.${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+      - name: Set docker tag for git tag
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        # We don't want the run number in the tag.
+        run: echo "DOCKER_TAG=github.${GITHUB_REF##*/}" >> $GITHUB_ENV
+      - name: Login to Amazon ECR
+        id: login-ecr
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Push to docker repository (ECR)
+        id: push
+        # We set the commit ID on the command line rather than using the plugin.
+        run: mvn -B -Dimage=${DOCKER_REPO} -Djib.tag=${DOCKER_TAG} -Dgit.commit.id=${GITHUB_SHA} jib:build
+      - name: Set image tag output
+        id: output-tag
+        run: echo "::set-output name=tag::${DOCKER_TAG}"
+      - name: Set message output
+        id: output-message
+        run: echo "::set-output name=message::$(git log --format=%s -n 1 ${GITHUB_SHA})"
+      - name: Upload Elastic Beanstalk Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: elasticbeanstalk
+          path: elasticbeanstalk
+          retention-days: 1
+
+  deploy-dev:
+    timeout-minutes: 10
+    runs-on: ubuntu-20.04
+    needs: build
+    env:
+      TAG: ${{ needs.build.outputs.tag }}
+      MESSAGE: ${{ needs.build.outputs.message }}
+      PORT: 8080
+    steps:
+      - name: Download a Elastic Beanstalk artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: elasticbeanstalk
+      - name: Start deployment
+        uses: bobheadxi/deployments@v0.4.3
+        id: deployment
+        with:
+          step: start
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: dev
+      - name: Replace the image in the files
+        env:
+          IMAGE: ${{ env.DOCKER_REPO }}:${{ needs.build.outputs.tag }}
+        run: envsubst < Dockerrun-template.aws.json > Dockerrun.aws.json
+      - name: Generate deployment package
+        run: zip -r deploy.zip . -x '*.git*'
+        # Deployments have to be done under a mutex as otherwise they will fail when there are multiple
+        # deployments happen at the same time. This is a common problem when using the maven release plugin.
+      - uses: shogo82148/actions-mutex@v1
+        timeout-minutes: 5
+        with:
+          key: dev
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v16
+        timeout-minutes: 5
+        with:
+          aws_access_key: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ env.EB_APPLICATION }}
+          environment_name: ${{ env.EB_ENVIRONMENT }}
+          version_label: ${{ env.TAG }}
+          version_description: ${{ env.MESSAGE }}
+          region: ${{ env.AWS_REGION }}
+          deployment_package: deploy.zip
+      - name: Update deployment status
+        uses: bobheadxi/deployments@v0.4.3
+        if: always()
+        with:
+          step: finish
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+
+
+
