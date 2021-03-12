@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.2.11.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>uk.ac.ox.ctl</groupId>
     <artifactId>canvas-proxy</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>Canvas Proxy</name>
     <description>OAuth2 proxy to Canvas</description>
 
@@ -24,7 +23,7 @@
         <connection>scm:git:ssh://git@github.com/oxctl/canvas-proxy</connection>
         <developerConnection>scm:git:ssh://git@github.com/oxctl/canvas-proxy</developerConnection>
         <url>https://github.com/oxctl/canvas-proxy</url>
-        <tag>HEAD</tag>
+        <tag>0.0.1</tag>
     </scm>
 
     <dependencies>
