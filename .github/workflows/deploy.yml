@@ -20,6 +20,7 @@ jobs:
   deploy-prod:
     runs-on: ubuntu-20.04
     timeout-minutes: 10
+    concurrency: prod
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
@@ -34,10 +35,6 @@ jobs:
           env: prod
           desc: Production deploy of ${{ env.TAG }}
           ref: refs/tags/${{ env.TAG }}
-      - uses: shogo82148/actions-mutex@v1
-        timeout-minutes: 5
-        with:
-          key: prod
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v16
         timeout-minutes: 5

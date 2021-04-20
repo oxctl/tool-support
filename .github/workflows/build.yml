@@ -70,6 +70,7 @@ jobs:
 
   deploy-dev:
     timeout-minutes: 10
+    concurrency: dev
     runs-on: ubuntu-20.04
     needs: build
     env:
@@ -94,12 +95,6 @@ jobs:
         run: envsubst < Dockerrun-template.aws.json > Dockerrun.aws.json
       - name: Generate deployment package
         run: zip -r deploy.zip . -x '*.git*'
-        # Deployments have to be done under a mutex as otherwise they will fail when there are multiple
-        # deployments happen at the same time. This is a common problem when using the maven release plugin.
-      - uses: shogo82148/actions-mutex@v1
-        timeout-minutes: 5
-        with:
-          key: dev
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v16
         timeout-minutes: 5
