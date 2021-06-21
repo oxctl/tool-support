@@ -1,5 +1,6 @@
 package uk.ac.ox.ctl.canvasproxy;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -24,6 +25,7 @@ import java.util.List;
  * authenticate each time they use the tool.
  */
 @Service
+@Primary
 public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2AuthorizedClientRepository, RefreshOAuth2AuthorizedClient {
 
     private final PrincipalTokensRepository principalTokensRepository;
@@ -38,8 +40,9 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
         this.auth2AccessTokenRefresher = auth2AccessTokenRefresher;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public <T extends OAuth2AuthorizedClient> T loadAuthorizedClient(
+    public OAuth2AuthorizedClient loadAuthorizedClient(
             String clientRegistrationId, Authentication authentication, HttpServletRequest request) {
         OAuth2AuthorizedClient oAuth2AuthorizedClient = null;
         ClientRegistration clientRegistration =
@@ -53,7 +56,7 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
                             .map(userTokens -> userTokens.toOAuth2AuthorizedClient(clientRegistration, principal))
                             .orElse(null);
         }
-        return (T) oAuth2AuthorizedClient;
+        return oAuth2AuthorizedClient;
     }
 
     /**
@@ -63,13 +66,13 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
      * @param authentication The authentication for the current user.
      * @param request The HTTP Servlet Request.
      * @param response The HTTP Servlet Response.
-     * @param <T>
      * @return The refreshed Oauth2AuthorizedClient or null if the refresh fails.
      */
+    @SuppressWarnings("unchecked")
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public <T extends OAuth2AuthorizedClient> T renewAccessToken(
+    public OAuth2AuthorizedClient renewAccessToken(
             String clientRegistrationId, Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
-        OAuth2AuthorizedClient oAuth2AuthorizedClient = null;
+        OAuth2AuthorizedClient oAuth2AuthorizedClient;
         ClientRegistration clientRegistration =
                 clientRegistrationRepository.findByRegistrationId(clientRegistrationId);
         if (clientRegistration != null) {
@@ -90,11 +93,11 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
                         OAuth2AuthorizedClient renewed = new OAuth2AuthorizedClient(oAuth2AuthorizedClient.getClientRegistration(),
                                 principal, refresh.getAccessToken(), refresh.getRefreshToken());
                         saveAuthorizedClient(renewed, authentication, request, response);
-                        return (T) renewed;
+                        return renewed;
                     }
                 } else {
                     // Looks like another thread renewed the token so just return the new one.
-                    return (T)oAuth2AuthorizedClient;
+                    return oAuth2AuthorizedClient;
                 }
             }
         }

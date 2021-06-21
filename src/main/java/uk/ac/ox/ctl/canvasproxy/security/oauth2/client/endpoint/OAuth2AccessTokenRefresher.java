@@ -3,6 +3,7 @@ package uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2RefreshTokenGrantRequest;
@@ -18,6 +19,7 @@ import java.util.Collections;
  * This class just handles the refreshing of a OAuth2AuthorizedClient.
  */
 @Service
+@Primary
 public class OAuth2AccessTokenRefresher {
 
     private final Logger log = LoggerFactory.getLogger(OAuth2AccessTokenRefresher.class);
