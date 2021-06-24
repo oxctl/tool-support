@@ -3,14 +3,12 @@ package uk.ac.ox.ctl.canvasproxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -31,7 +29,7 @@ public class TokenController {
     private OAuth2AuthorizedClientRepository clientRepository;
 
     @Autowired
-    private AudienceToClientIdResolver clientIdResolver;
+    private AudienceConfiguration clientIdResolver;
 
 
     @GetMapping("/check")
@@ -44,6 +42,12 @@ public class TokenController {
         return new ModelAndView("login-done", model);
     }
 
+    /**
+     * This removes the existing token for a user and then has them re-grant a token to the service.
+     * @param authenticationToken The JWT token from the LTI launch.
+     * @param client The existing client tokens.
+     * @throws ClientAuthorizationRequiredException So that Spring starts the process of granting a token.
+     */
     @PostMapping("/check")
     public ModelAndView delete(JwtAuthenticationToken authenticationToken, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         String clientRegistrationId = client.getClientRegistration().getClientId();

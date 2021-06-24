@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Allows the JWKs to be looked up in multiple sources depending on the issuer.
  */
-public class MultiJWKSource implements JWKSource<IssuerSecurityContext> {
+public class MultiJWKSource implements JWKSource<IssuerAndAudienceSecurityContext> {
 
     private final Map<String, JWKSource<SecurityContext>> sources;
 
@@ -23,7 +23,7 @@ public class MultiJWKSource implements JWKSource<IssuerSecurityContext> {
     }
 
     @Override
-    public List<JWK> get(JWKSelector jwkSelector, IssuerSecurityContext context) throws KeySourceException {
+    public List<JWK> get(JWKSelector jwkSelector, IssuerAndAudienceSecurityContext context) throws KeySourceException {
         JWKSource<SecurityContext> securityContextJWKSource = sources.get(context.getIssuer());
         if (securityContextJWKSource != null) {
             return securityContextJWKSource.get(jwkSelector, context);

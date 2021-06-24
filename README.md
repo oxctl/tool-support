@@ -1,19 +1,14 @@
 # Canvas Proxy
 
-This is a simple webapp that just takes a HTTP request and proxies it through to Canvas. This allows a frontend webapp to be able to make XHR requests to Canvas. It should support multiple developer keys so that it can support multiple applications using it. It needs to request tokens for users, then maybe hand them back to the client (HTML/JS) so that they can be stored in local storage. That way we don't need any persistence server side, although we don't want to pass 2 tokens so we should probably re-wrap the token from Canvas with our own so that we don't rely on the internal structure of the token we get back from canvas.
+This is a simple webapp that just takes a HTTP request and proxies it through to Canvas. This allows a frontend webapp to be able to make XHR requests to Canvas. It should support multiple developer keys so that it can support multiple applications using it. It requests tokens for users from Canvas and then stores them in a database so that the next time the user uses the tool they don't have to re-grant the tool access.
 
-To start with we should just persist the tokens in a DB.
+The JWT (from the LTI launch) client ID is used to map to a developer API key to lookup tokens for the API requests to Canvas. This also maps to some configuration so we know the host to connect to (Canvas instance).
+
+We also support serverside services having a shared secret key to sign requests (with HMAC) and this allows the services to perform requests once the JWT from the LTI launch has expired.
 
 ## Status
 
-There is a small proxy controller that sends requests on the Canvas with a hard coded token. Headers get passed through and responses get passed back. At the moment there seems to be a bug with HTML responses. There's no authentication.
-
-
-Lifetime on tokens is currently pretty low. JS OAuth library?
-
-We are going to want to support multiple tenants and so will want to be able to map from a JWT to a Canvas endpoint to use. We also need to check that the audience on the JWT maps to the client ID that should be used on the OAuth token.
-
-Request comes in with a JWT and a "aud" we lookup the audience to work out the registration to use. This is similar to how we map from a LTIPrincipal to a registration.
+There is a small proxy controller that sends requests on the Canvas with a hard coded token. Headers get passed through and responses get passed back. At the moment there seems to be a bug with HTML responses.
 
 ## Deployment Configuration
 
@@ -62,7 +57,14 @@ The client will probably also want to have it's HTTPS endpoint added to the CORS
 Then you will also need a mapping from the LTI Key to the Developer Key
 
     # Set this equal to the client ID of the LTI tool.
-    proxy.mapping.[ltiClientId]=[clientRegId]
+    proxy.mapping.[ltiClientId].clientName=[clientRegId]
+
+If you want to allow HMAC signed requests by a server also set:
+
+    # An optional shared secret for signing HMAC JWTs.
+    proxy.mapping.[ltiClientId].secret=[base64EncodedSecret]
+    # The issuer that the service will use to sign the JWTs.
+    proxy.mapping.[ltiClientId].issuer=[https://myservice.issuer]
 
 #### HTTPS
 
