@@ -83,7 +83,8 @@ public class PrincipalTokens {
     @NotNull
     private Instant expiresAt;
 
-    @Column(name = "access_scopes")
+    // HTTP headers are limited to ~8k so limiting our token scopes to around that is sensible.
+    @Column(name = "access_scopes", length = 8192)
     @NotNull
     private String scopes;
 
