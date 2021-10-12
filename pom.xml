@@ -169,8 +169,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
+                <!-- Needed to control commit comment -->
+                <version>3.0.0-M4</version>
                 <configuration>
                     <tagNameFormat>@{project.version}</tagNameFormat>
+                    <!-- This is to prevent GitHub Actions from building the next development version. If we don't do
+                         this then 3 builds will be started when releasing and we can only have one queued deployment
+                         so the last one to get to deployment gets cancelled. -->
+                    <scmDevelopmentCommitComment>@{prefix} prepare for next development iteration [skip ci]</scmDevelopmentCommitComment>
                 </configuration>
             </plugin>
         </plugins>
