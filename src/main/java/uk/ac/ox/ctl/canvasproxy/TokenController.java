@@ -3,6 +3,8 @@ package uk.ac.ox.ctl.canvasproxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
@@ -30,7 +32,24 @@ public class TokenController {
 
     @Autowired
     private AudienceConfiguration clientIdResolver;
+    
+    @Autowired
+    private PrincipalOAuth2AuthorizedClientRepository principalOAuth2AuthorizedClientRepository;
 
+    /**
+     * This allows a tool to check to see if there is a valid refresh token for the current user.
+     * This accepts a "force" parameter which if true forced the access token to be refreshed even if it is not near it's expiry
+     * @return Unauthorized if there isn't and Ok if there is.
+     */
+    @GetMapping("/refresh")
+    public ResponseEntity<Void> checkToken(JwtAuthenticationToken authenticationToken, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client, HttpServletRequest request, HttpServletResponse response) {
+        final OAuth2AuthorizedClient oAuth2AuthorizedClient = principalOAuth2AuthorizedClientRepository.renewAccessToken(client.getClientRegistration().getRegistrationId(), authenticationToken, request, response);
+        if (oAuth2AuthorizedClient == null) {
+            // If we don't have a token or if it's no longer valid return unauthorized
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("/check")
     public ModelAndView check(JwtAuthenticationToken authenticationToken, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client) {
