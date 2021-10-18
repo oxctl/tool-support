@@ -134,6 +134,36 @@ public class WebSecurity {
 
     @Configuration
     @Order(2)
+    public static class RefreshConfiguration extends WebSecurityConfigurerAdapter {
+        @Autowired
+        private OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository;
+        @Autowired
+        private OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient;
+        @Autowired
+        private BearerTokenResolver tokenResolver;
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            OAuth2ClientConfigurer<HttpSecurity> configurer = new OAuth2ClientConfigurer<>();
+            configurer.setBuilder(http);
+            configurer.authorizedClientRepository(oAuth2AuthorizedClientRepository)
+                    .authorizationCodeGrant()
+                    .accessTokenResponseClient(accessTokenResponseClient);
+            http.apply(configurer);
+            http.antMatcher("/token/refresh")
+                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                    .cors().and()
+                    .csrf().disable()
+                    .oauth2ResourceServer().jwt().and()
+                    .bearerTokenResolver(tokenResolver).and()
+                    .authorizeRequests().anyRequest().authenticated()
+            ;
+        }
+    }
+    
+
+    @Configuration
+    @Order(3)
     public static class TokenConfiguration extends WebSecurityConfigurerAdapter {
         @Autowired
         private OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository;
