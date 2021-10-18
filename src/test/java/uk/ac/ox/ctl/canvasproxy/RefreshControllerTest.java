@@ -51,7 +51,7 @@ class RefreshControllerTest {
     public static class Config {
         @Bean
         public PrincipalOAuth2AuthorizedClientRepository principalOAuth2AuthorizedClientRepository() {
-            return Mockito.mock(PrincipalOAuth2AuthorizedClientRepository.class);
+            return mock(PrincipalOAuth2AuthorizedClientRepository.class);
         }
     }
     
