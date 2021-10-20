@@ -31,7 +31,6 @@ public class TokenController {
     @Autowired
     private AudienceConfiguration clientIdResolver;
 
-
     @GetMapping("/check")
     public ModelAndView check(JwtAuthenticationToken authenticationToken, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client) {
         Map<String, Object> model = new HashMap<>();

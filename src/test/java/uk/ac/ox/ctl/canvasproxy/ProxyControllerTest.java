@@ -19,8 +19,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-// WebMvdTest doesn't pull the OAuth configuration in by default
-@WebMvcTest(properties = "proxy.origins=https://localhost:3000")
+// WebMvcTest doesn't pull the OAuth configuration in by default
+@WebMvcTest(controllers = ProxyController.class, properties = "proxy.origins=https://localhost:3000")
 @ImportAutoConfiguration({OAuth2ClientAutoConfiguration.class, WebSecurity.class, JwtConfig.class })
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
 public class ProxyControllerTest {
@@ -39,8 +39,8 @@ public class ProxyControllerTest {
             // Mockbean annotation doesn't prevent autoconfiguration from creating a bean as well.
             return Mockito.mock(RefreshOAuth2AuthorizedClient.class);
         }
-
     }
+
 
     @Test
     public void testCORS() throws Exception {

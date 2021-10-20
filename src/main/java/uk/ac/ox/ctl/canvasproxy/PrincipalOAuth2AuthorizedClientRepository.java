@@ -86,8 +86,10 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
                             .orElse(null);
 
             if (oAuth2AuthorizedClient != null) {
+                // We want a way to force a refresh, so that we can be sure that we have a valid token.
+                boolean forced = "true".equals(request.getParameter("force"));
                 // Now we have the lock we check again if it needs refreshing
-                if (needsRenewal(oAuth2AuthorizedClient)) {
+                if (forced || needsRenewal(oAuth2AuthorizedClient)) {
                     OAuth2AccessTokenResponse refresh = auth2AccessTokenRefresher.refresh(oAuth2AuthorizedClient);
                     if (refresh != null) {
                         OAuth2AuthorizedClient renewed = new OAuth2AuthorizedClient(oAuth2AuthorizedClient.getClientRegistration(),
@@ -95,6 +97,7 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
                         saveAuthorizedClient(renewed, authentication, request, response);
                         return renewed;
                     }
+                    // Should we clear out the access token at this point as we didn't manage to refresh?
                 } else {
                     // Looks like another thread renewed the token so just return the new one.
                     return oAuth2AuthorizedClient;
