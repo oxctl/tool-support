@@ -9,7 +9,7 @@
     </parent>
     <groupId>uk.ac.ox.ctl</groupId>
     <artifactId>canvas-proxy</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1-SNAPSHOT</version>
     <name>Canvas Proxy</name>
     <description>OAuth2 proxy to Canvas</description>
 
