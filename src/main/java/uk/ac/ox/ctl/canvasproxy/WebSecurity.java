@@ -46,9 +46,7 @@ public class WebSecurity {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         // The preflight contains the origin header so we will just return rules for that.
-        for(String origin : origins) {
-            corsConfiguration.addAllowedOrigin(origin);
-        }
+        corsConfiguration.setAllowedOriginPatterns(Arrays.asList(origins));
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setAllowedMethods(Arrays.asList(HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.DELETE.name(), HttpMethod.PUT.name(), HttpMethod.PATCH.name(), HttpMethod.POST.name()));
         corsConfiguration.addAllowedHeader(CorsConfiguration.ALL);

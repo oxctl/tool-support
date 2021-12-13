@@ -46,6 +46,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Bean
     public CustomErrorAttributes errorAttributes() {
-        return new CustomErrorAttributes(this.serverProperties.getError().isIncludeException());
+        return new CustomErrorAttributes();
     }
 }
