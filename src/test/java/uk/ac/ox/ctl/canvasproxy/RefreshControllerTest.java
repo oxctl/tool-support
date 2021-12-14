@@ -20,7 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 import uk.ac.ox.ctl.canvasproxy.jwt.JwtConfig;
 
-import java.text.ParseException;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
