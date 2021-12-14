@@ -81,7 +81,6 @@ public final class MultiJwtDecoder implements JwtDecoder {
     }
 
     private JWT parse(String token) {
-        log.info("token ::: " + token);
         try {
             return JWTParser.parse(token);
         } catch (Exception ex) {
