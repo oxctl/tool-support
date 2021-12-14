@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAu
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -22,6 +23,7 @@ import uk.ac.ox.ctl.canvasproxy.jwt.JwtConfig;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -43,7 +45,7 @@ class RefreshControllerTest {
 
     @Autowired
     private OAuth2AuthorizedClientRepository authorizedClientRepository;
-    
+
     @Autowired
     private PrincipalOAuth2AuthorizedClientRepository principalOAuth2AuthorizedClientRepository;
 
@@ -54,7 +56,7 @@ class RefreshControllerTest {
             return mock(PrincipalOAuth2AuthorizedClientRepository.class);
         }
     }
-    
+
     @BeforeEach
     public void setUp() {
         Mockito.reset(principalOAuth2AuthorizedClientRepository);
@@ -68,9 +70,12 @@ class RefreshControllerTest {
     }
 
     @Test
-    public void testInvalidToken() throws Exception {
-        mvc.perform(get("/tokens/refresh").param("access_token", "not.a.valid.token"))
-                .andExpect(status().isUnauthorized());
+    public void testInvalidToken() {
+        Exception exception = assertThrows(AuthenticationServiceException.class, () ->
+            mvc.perform(get("/tokens/refresh").param("access_token", "not.a.valid.token"))
+                    .andExpect(status().isUnauthorized())
+        );
+        assertNotNull(exception.getMessage());
     }
 
     @Test
