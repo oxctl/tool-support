@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepo
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.web.util.NestedServletException;
 import uk.ac.ox.ctl.canvasproxy.jwt.JwtConfig;
 
@@ -69,7 +70,8 @@ class RefreshControllerTest {
 
     @Test
     public void testInvalidToken() throws Exception {
-        mvc.perform(get("/tokens/refresh").param("access_token", "not.a.valid.token"))
+        MockHttpServletRequestBuilder request = get("/tokens/refresh").param("access_token", "not.a.valid.token");
+        mvc.perform(request)
                 .andExpect(status().isUnauthorized());
     }
 
