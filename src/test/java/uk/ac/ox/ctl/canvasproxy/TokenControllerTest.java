@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -23,9 +24,11 @@ import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.RefreshOAuth2Aut
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -62,9 +65,12 @@ class TokenControllerTest {
     }
 
     @Test
-    public void testInvalidToken() throws Exception {
-        mvc.perform(post("/tokens/check").param("access_token", "not.a.valid.token"))
-                .andExpect(status().isUnauthorized());
+    public void testInvalidToken() {
+        Exception exception = assertThrows(AuthenticationServiceException.class, () ->
+            mvc.perform(post("/tokens/check").param("access_token", "not.a.valid.token"))
+                    .andExpect(status().isUnauthorized())
+        );
+        assertNotNull(exception.getMessage());
     }
 
     @Test
