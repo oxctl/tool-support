@@ -6,7 +6,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.jwt.proc.JWTProcessor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
@@ -22,7 +21,6 @@ import java.util.Map;
 /**
  * @see NimbusJwtDecoder
  */
-@Slf4j
 public final class MultiJwtDecoder implements JwtDecoder {
     private static final String DECODING_ERROR_MESSAGE_TEMPLATE =
             "An error occurred while attempting to decode the Jwt: %s";
