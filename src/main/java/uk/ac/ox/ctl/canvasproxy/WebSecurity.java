@@ -158,7 +158,6 @@ public class WebSecurity {
             ;
         }
     }
-    
 
     @Configuration
     @Order(3)
@@ -181,8 +180,11 @@ public class WebSecurity {
                     .cors().and()
                     .csrf().disable()
                     .oauth2ResourceServer().jwt().and().bearerTokenResolver(tokenResolver).and()
-                    .authorizeRequests().anyRequest().authenticated();
-
+                    // Allow unauthenticated access to the frontpage.
+                    .authorizeRequests()
+                        .antMatchers("/", "/images/**", "/css/**", "/favicon.ico", "/error")
+                        .permitAll()
+                    .anyRequest().authenticated();
         }
     }
 
