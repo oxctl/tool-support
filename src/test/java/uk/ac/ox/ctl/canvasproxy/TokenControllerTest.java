@@ -64,12 +64,9 @@ class TokenControllerTest {
     }
 
     @Test
-    public void testInvalidToken() {
-        Exception exception = assertThrows(AuthenticationServiceException.class, () ->
-            mvc.perform(post("/tokens/check").param("access_token", "not.a.valid.token"))
-                    .andExpect(status().isUnauthorized())
-        );
-        assertNotNull(exception.getMessage());
+    public void testInvalidToken() throws Exception {
+        mvc.perform(post("/tokens/check").param("access_token", "not.a.valid.token"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
