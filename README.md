@@ -10,6 +10,37 @@ We also support serverside services having a shared secret key to sign requests 
 
 There is a small proxy controller that sends requests on the Canvas with a hard coded token. Headers get passed through and responses get passed back. At the moment there seems to be a bug with HTML responses.
 
+## Usage
+
+## Renewing a token for a user
+
+The endpoint (badly named) to renew a token for a user is `POST /tokens/check`, this attempts to remove the existing token for a user and then gets them to re-grant access to the application. The sequence is as follows:
+
+```mermaid
+sequenceDiagram
+    
+    Browser->>+Proxy: POST https://proxy/tokens/check
+    note right of Browser: This includes the JWT which is used to authenticate the request.
+    Proxy-->>-Browser: 302 https://canvas/login/oauth2/auth....
+    note over Browser,Proxy: Cookie based session established with Proxy
+    rect rgb(240,240,240)
+    note over Proxy: Standard OAuth2 Flow to Canvas
+    Browser->>+Canvas: GET https://canvas/login/oauth2/auth....
+    Canvas-->>-Browser: 302 https://canvas/login/oauth2/confirm
+    Browser->>+Canvas: GET https://canvas/login/oauth2/confirm
+    Canvas->>-Browser: 200 HTML ... Confirm/Reject
+    Browser->>+Canvas: POST https://canvas/login/oauth2/accept
+    Canvas-->>-Browser: 302 https://canvas/login/oauth2/code....
+    Browser->>+Canvas: GET https://canvas/login/oauth2/code....
+    Canvas-->>-Browser: 302 https://proxy/tokens/check
+    end
+    Browser->>+Proxy: GET https://proxy/tokens/check
+    Proxy->>+Canvas: GET https://canvas/login/oauth2/token
+    Canvas-->>-Proxy: 200 Refresh token
+    Proxy->>-Browser: 200 HTML ... Access Granted
+
+```
+
 ## Deployment Configuration
 
 ### AWS Elastic Beanstalk
