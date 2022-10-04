@@ -1,9 +1,9 @@
 package uk.ac.ox.ctl.canvasproxy;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationToken;
 
 import java.util.Map;
 
@@ -24,7 +24,7 @@ public class DefaultModelAttributes {
   private String applicationName;
 
   @ModelAttribute("canvasCommonCss")
-  public String canvasCommonCss(JwtAuthenticationToken principal) {
+  public String canvasCommonCss(PersistableJwtAuthenticationToken principal) {
     String canvasCss = null;
     if (principal != null && principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom") != null) {
       canvasCss = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get("canvas_css_common");
@@ -36,7 +36,7 @@ public class DefaultModelAttributes {
   }
 
   @ModelAttribute("canvasBrandCss")
-  public String canvasBrandCss(JwtAuthenticationToken principal) {
+  public String canvasBrandCss(PersistableJwtAuthenticationToken principal) {
     String canvasJson = null;
     if (principal != null && principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom") != null) {
       canvasJson = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get("com_instructure_brand_config_json_url");

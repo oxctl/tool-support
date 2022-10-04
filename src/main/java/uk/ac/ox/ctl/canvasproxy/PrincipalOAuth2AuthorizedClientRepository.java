@@ -7,12 +7,12 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.ox.ctl.canvasproxy.model.PrincipalTokens;
 import uk.ac.ox.ctl.canvasproxy.repository.PrincipalTokensRepository;
+import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationToken;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.OAuth2AccessTokenRefresher;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.RefreshOAuth2AuthorizedClient;
 
@@ -132,9 +132,9 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
     }
 
     private String toPrincipal(Authentication authentication) {
-        if (authentication instanceof JwtAuthenticationToken) {
-            JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication;
-            List<String> aud = jwtAuthenticationToken.getToken().getAudience();
+        if (authentication instanceof PersistableJwtAuthenticationToken) {
+            PersistableJwtAuthenticationToken persistableJwtAuthenticationToken = (PersistableJwtAuthenticationToken) authentication;
+            List<String> aud = persistableJwtAuthenticationToken.getToken().getAudience();
             if (aud.isEmpty()) {
                 throw new IllegalStateException("JWT must have an audience set.");
             }
@@ -144,12 +144,12 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
                 throw new IllegalStateException("JWT cannot have multiple audiences set.");
             }
             // We want to be double sure that we have a name.
-            if (jwtAuthenticationToken.getName() == null) {
+            if (persistableJwtAuthenticationToken.getName() == null) {
                 throw new IllegalStateException("JWT name cannot be null");
             }
             // This is so that if we have multiple tools in the same Canvas instance each tool has a separate pool
             // of tokens it uses.
-            return aud.get(0) + ":"+ jwtAuthenticationToken.getName();
+            return aud.get(0) + ":"+ persistableJwtAuthenticationToken.getName();
         }
         return authentication.getName();
     }

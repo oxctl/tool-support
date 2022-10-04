@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationToken;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -48,9 +48,9 @@ class AudienceConfigurationTest {
         assertEquals("clientRegId", resolver.findClientId(createToken("audience1", "audience2")));
     }
 
-    private JwtAuthenticationToken createToken(String... audiences) {
+    private PersistableJwtAuthenticationToken createToken(String... audiences) {
         Jwt jwt = Jwt.withTokenValue("value").header("header", "value").audience(Arrays.asList(audiences)).build();
-        return new JwtAuthenticationToken(jwt);
+        return new PersistableJwtAuthenticationToken(jwt);
     }
 
 }

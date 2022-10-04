@@ -4,8 +4,8 @@ import com.nimbusds.jose.util.Base64URL;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.validation.annotation.Validated;
+import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationToken;
 import uk.ac.ox.ctl.oauth2.client.web.method.annotation.PrincipalClientIdResolver;
 
 import javax.validation.constraints.NotNull;
@@ -47,8 +47,8 @@ public class AudienceConfiguration implements PrincipalClientIdResolver {
 
     @Override
     public String findClientId(Authentication authentication) {
-        if (authentication instanceof JwtAuthenticationToken) {
-            JwtAuthenticationToken jwt = (JwtAuthenticationToken) authentication;
+        if (authentication instanceof PersistableJwtAuthenticationToken) {
+            PersistableJwtAuthenticationToken jwt = (PersistableJwtAuthenticationToken) authentication;
             List<String> audiences = jwt.getToken().getAudience();
             Set<String> clientNames = audiences.stream().map(mapping::get).filter(Objects::nonNull).map(LtiAudience::getClientName).collect(Collectors.toSet());
             Iterator<String> iterator = clientNames.iterator();
