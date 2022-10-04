@@ -19,6 +19,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 import uk.ac.ox.ctl.canvasproxy.jwt.JwtConfig;
+import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationToken;
 
 import java.util.Collections;
 
@@ -80,7 +81,7 @@ class RefreshControllerTest {
 
     @Test
     public void testOAuthUnknown() {
-        SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwt = SecurityMockMvcRequestPostProcessors.jwt()
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder.audience(Collections.singleton("unknown")));
         // We should actually have a custom exception here and a better error message to the user.
         assertThrows(NestedServletException.class, () -> mvc.perform(get("/tokens/refresh").with(jwt)));
@@ -88,7 +89,7 @@ class RefreshControllerTest {
 
     @Test
     public void testOAuthNoToken() throws Exception {
-        SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwt = SecurityMockMvcRequestPostProcessors.jwt()
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder.audience(Collections.singleton("1234")));
         // It's possible that we should change this behaviour so that we just return unauthorized in this situation
         mvc.perform(get("/tokens/refresh").with(jwt))
@@ -105,7 +106,7 @@ class RefreshControllerTest {
         
         when(principalOAuth2AuthorizedClientRepository.renewAccessToken(eq("test"), any(), any(),any())).thenReturn(client);
 
-        SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwt = SecurityMockMvcRequestPostProcessors.jwt()
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder
                         .audience(Collections.singleton("1234"))
                         .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")

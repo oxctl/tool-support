@@ -71,7 +71,7 @@ class TokenControllerTest {
 
     @Test
     public void testOAuthUnknown() throws Exception {
-        SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwt = SecurityMockMvcRequestPostProcessors.jwt()
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder.audience(Collections.singleton("unknown")));
         // We should actually have a custom exception here and a better error message to the user.
         assertThrows(NestedServletException.class, () -> mvc.perform(post("/tokens/check").with(jwt)));
@@ -79,7 +79,7 @@ class TokenControllerTest {
 
     @Test
     public void testOAuthNoToken() throws Exception {
-        SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwt = SecurityMockMvcRequestPostProcessors.jwt()
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder.audience(Collections.singleton("1234")));
         mvc.perform(post("/tokens/check").with(jwt))
                 .andExpect(status().is3xxRedirection());
@@ -93,7 +93,7 @@ class TokenControllerTest {
         when(client.getClientRegistration()).thenReturn(registration);
         when(authorizedClientRepository.loadAuthorizedClient(eq("test"), any(), any())).thenReturn(client);
 
-        SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwt = SecurityMockMvcRequestPostProcessors.jwt()
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder
                         .audience(Collections.singleton("1234"))
                         .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")

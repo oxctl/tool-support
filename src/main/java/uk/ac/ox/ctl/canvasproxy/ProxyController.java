@@ -7,13 +7,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
+import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationToken;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.annotation.RegisteredOAuth2AccessToken;
 
 import java.io.ByteArrayOutputStream;
@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
 import java.util.Map;
 
 /**
@@ -45,7 +44,7 @@ public class ProxyController {
     // If we can control the response when there isn't a token for the current user we may want to make the token required.
     @RequestMapping("/api/**")
     @ResponseBody
-    public ResponseEntity<?> proxy(JwtAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AccessToken() OAuth2AccessToken accessToken) throws URISyntaxException {
+    public ResponseEntity<?> proxy(PersistableJwtAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AccessToken() OAuth2AccessToken accessToken) throws URISyntaxException {
         String canvasApiBaseUrl = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get(CANVAS_API_BASE_URL);
         if (canvasApiBaseUrl == null || canvasApiBaseUrl.isEmpty()) {
             // The message doesn't make it into he HTTP status, but is in the JSON

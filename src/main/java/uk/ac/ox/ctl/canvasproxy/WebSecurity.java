@@ -4,6 +4,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -27,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationConverter;
 import uk.ac.ox.ctl.canvasproxy.security.config.annotation.web.configurers.oauth2.client.OAuth2ClientConfigurer;
 import uk.ac.ox.ctl.oauth2.client.endpoint.CanvasOAuth2AuthorizationCodeGrantRequestEntityConverter;
 import uk.ac.ox.ctl.oauth2.client.userinfo.CanvasUserService;
@@ -117,7 +119,9 @@ public class WebSecurity {
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                     .cors().and()
                     .csrf().disable()
-                    .oauth2ResourceServer().jwt().and()
+                    .oauth2ResourceServer().jwt()
+                        .jwtAuthenticationConverter(new PersistableJwtAuthenticationConverter())
+                         .and()
                     .bearerTokenResolver(tokenResolver).authenticationEntryPoint(authenticationEntryPoint())
                     .and().authorizeRequests().anyRequest().authenticated()
             ;
@@ -152,7 +156,7 @@ public class WebSecurity {
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                     .cors().and()
                     .csrf().disable()
-                    .oauth2ResourceServer().jwt().and()
+                    .oauth2ResourceServer().jwt().jwtAuthenticationConverter(new PersistableJwtAuthenticationConverter()).and()
                     .bearerTokenResolver(tokenResolver).and()
                     .authorizeRequests().anyRequest().authenticated()
             ;
@@ -168,23 +172,36 @@ public class WebSecurity {
         private OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient;
         @Autowired
         private BearerTokenResolver tokenResolver;
-
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http
-                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).and()
                     .oauth2Client()
-                    .authorizedClientRepository(oAuth2AuthorizedClientRepository)
-                    .authorizationCodeGrant()
-                    .accessTokenResponseClient(accessTokenResponseClient).and().and()
-                    .cors().and()
+                        .authorizedClientRepository(oAuth2AuthorizedClientRepository)
+                            .authorizationCodeGrant()
+                            .accessTokenResponseClient(accessTokenResponseClient)
+                            .and()
+                        .and() 
+                    .cors()
+                        .and()
                     .csrf().disable()
-                    .oauth2ResourceServer().jwt().and().bearerTokenResolver(tokenResolver).and()
-                    // Allow unauthenticated access to the frontpage.
+                    // This is needed so that we look for the bearer token when starting the oauth flow.
+                    .oauth2ResourceServer()
+                        .jwt()
+                            .jwtAuthenticationConverter(new PersistableJwtAuthenticationConverter())
+                            .and()
+                        .bearerTokenResolver(tokenResolver)
+                        .and()
+                    .sessionManagement()
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .and()
                     .authorizeRequests()
+                        // Allow unauthenticated access to the frontpage.
                         .antMatchers("/", "/images/**", "/css/**", "/favicon.ico", "/error")
-                        .permitAll()
-                    .anyRequest().authenticated();
+                            .permitAll()
+                        // Everyone else must be authenticated
+                        .anyRequest()
+                            .authenticated();
+
         }
     }
 
