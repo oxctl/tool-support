@@ -43,6 +43,7 @@ public class OAuth2AccessTokenRefresher {
         if (authorizedClient.getRefreshToken() == null) {
             throw new IllegalArgumentException("Client supplied doesn't have a refresh token to use.");
         }
+        // empty collection is because when doing a grant type of "refresh_token" you can't supply any scopes https://canvas.instructure.com/doc/api/file.oauth_endpoints.html#post-login-oauth2-token
         OAuth2RefreshTokenGrantRequest refreshTokenGrantRequest = new OAuth2RefreshTokenGrantRequest(
                 authorizedClient.getClientRegistration(), authorizedClient.getAccessToken(),
                 authorizedClient.getRefreshToken(), Collections.emptySet());
