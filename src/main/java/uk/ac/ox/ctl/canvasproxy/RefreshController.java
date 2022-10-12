@@ -37,15 +37,18 @@ public class RefreshController {
             // If we don't have a token or if it's no longer valid return unauthorized
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        Set<String> existingScopes = oAuth2AuthorizedClient.getClientRegistration().getScopes();
-        Set<String> newScopes = oAuth2AuthorizedClient.getAccessToken().getScopes();
-        if(!scopesMatch(existingScopes, newScopes)){
+        Set<String> clientScopes = oAuth2AuthorizedClient.getClientRegistration().getScopes();
+        Set<String> tokenScopes = oAuth2AuthorizedClient.getAccessToken().getScopes();
+        if(!scopesMatch(clientScopes, tokenScopes)){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok().build();
     }
 
-    private boolean scopesMatch(Set<String> existingScopes, Set<String> newScopes){
-        return existingScopes.containsAll(newScopes);
+    private boolean scopesMatch(Set<String> clientScopes, Set<String> tokenScopes){
+        if(clientScopes == null){
+            return tokenScopes == null || tokenScopes.size() == 0;
+        }
+        return clientScopes.equals(tokenScopes);
     }
 }

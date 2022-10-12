@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 import uk.ac.ox.ctl.canvasproxy.jwt.JwtConfig;
@@ -90,7 +91,7 @@ class RefreshControllerTest {
     @Test
     public void testOAuthNoToken() throws Exception {
         PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
-                .jwt(builder -> builder.audience(Collections.singleton("1234")));
+                .jwt(builder -> builder.audience(Collections.singleton("1")));
         // It's possible that we should change this behaviour so that we just return unauthorized in this situation
         mvc.perform(get("/tokens/refresh").with(jwt))
                 .andExpect(status().is3xxRedirection());
@@ -104,14 +105,15 @@ class RefreshControllerTest {
 
         when(client.getClientRegistration()).thenReturn(registration);
         when(authorizedClientRepository.loadAuthorizedClient(eq("test"), any(), any())).thenReturn(client);
-        
+
         when(principalOAuth2AuthorizedClientRepository.renewAccessToken(eq("test"), any(), any(),any())).thenReturn(client);
 
         when(client.getAccessToken()).thenReturn(token);
+        when(token.getScopes()).thenReturn(Set.of("test_scope_1"));
 
         PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder
-                        .audience(Collections.singleton("1234"))
+                        .audience(Collections.singleton("1"))
                         .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")
                 );
         mvc.perform(get("/tokens/refresh").with(jwt))
@@ -119,7 +121,32 @@ class RefreshControllerTest {
     }
 
     @Test
-    public void testOAuthWithTokenDifferentScopes() throws Exception {
+    public void testOAuthIncreaseClientScopes() throws Exception {
+        OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
+        OAuth2AccessToken token = mock(OAuth2AccessToken.class);
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("twoScopes");
+
+        when(client.getClientRegistration()).thenReturn(registration);
+        when(authorizedClientRepository.loadAuthorizedClient(eq("twoScopes"), any(), any())).thenReturn(client);
+
+        when(client.getAccessToken()).thenReturn(token);
+
+        when(principalOAuth2AuthorizedClientRepository.renewAccessToken(eq("twoScopes"), any(), any(),any())).thenReturn(client);
+
+        when(token.getScopes()).thenReturn(Set.of("test_scope_1"));
+
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
+                .jwt(builder -> builder
+                        .audience(Collections.singleton("2"))
+                        .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")
+                );
+
+        mvc.perform(get("/tokens/refresh").with(jwt))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testOAuthIncreaseTokenScopes() throws Exception {
         OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
         OAuth2AccessToken token = mock(OAuth2AccessToken.class);
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("test");
@@ -127,18 +154,119 @@ class RefreshControllerTest {
         when(client.getClientRegistration()).thenReturn(registration);
         when(authorizedClientRepository.loadAuthorizedClient(eq("test"), any(), any())).thenReturn(client);
 
+        when(client.getAccessToken()).thenReturn(token);
+
         when(principalOAuth2AuthorizedClientRepository.renewAccessToken(eq("test"), any(), any(),any())).thenReturn(client);
 
-        when(client.getAccessToken()).thenReturn(token);
-        when(token.getScopes()).thenReturn(Set.of("openid", "url:GET|/api/v1/accounts"));
+        ReflectionTestUtils.setField(registration, "scopes", Set.of("test_scope_1"));
+        when(token.getScopes()).thenReturn(Set.of("test_scope_1", "test_scope_2"));
 
         PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder
-                        .audience(Collections.singleton("1234"))
+                        .audience(Collections.singleton("1"))
                         .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")
                 );
+
         mvc.perform(get("/tokens/refresh").with(jwt))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testOAuthNoClientScopes() throws Exception {
+        OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
+        OAuth2AccessToken token = mock(OAuth2AccessToken.class);
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("noScopes");
+
+        when(client.getClientRegistration()).thenReturn(registration);
+        when(authorizedClientRepository.loadAuthorizedClient(eq("noScopes"), any(), any())).thenReturn(client);
+
+        when(client.getAccessToken()).thenReturn(token);
+
+        when(principalOAuth2AuthorizedClientRepository.renewAccessToken(eq("noScopes"), any(), any(),any())).thenReturn(client);
+
+        when(token.getScopes()).thenReturn(Set.of("test_scope_1"));
+
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
+                .jwt(builder -> builder
+                        .audience(Collections.singleton("3"))
+                        .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")
+                );
+
+        mvc.perform(get("/tokens/refresh").with(jwt))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testOAuthNoTokenScopes() throws Exception {
+        OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
+        OAuth2AccessToken token = mock(OAuth2AccessToken.class);
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("test");
+
+        when(client.getClientRegistration()).thenReturn(registration);
+        when(authorizedClientRepository.loadAuthorizedClient(eq("test"), any(), any())).thenReturn(client);
+
+        when(client.getAccessToken()).thenReturn(token);
+
+        when(principalOAuth2AuthorizedClientRepository.renewAccessToken(eq("test"), any(), any(),any())).thenReturn(client);
+
+        ReflectionTestUtils.setField(registration, "scopes", Set.of("test_scope_1"));
+
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
+                .jwt(builder -> builder
+                        .audience(Collections.singleton("1"))
+                        .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")
+                );
+
+        mvc.perform(get("/tokens/refresh").with(jwt))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testOAuthNoScopes() throws Exception {
+        OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
+        OAuth2AccessToken token = mock(OAuth2AccessToken.class);
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("noScopes");
+
+        when(client.getClientRegistration()).thenReturn(registration);
+        when(authorizedClientRepository.loadAuthorizedClient(eq("noScopes"), any(), any())).thenReturn(client);
+
+        when(client.getAccessToken()).thenReturn(token);
+
+        when(principalOAuth2AuthorizedClientRepository.renewAccessToken(eq("noScopes"), any(), any(),any())).thenReturn(client);
+
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
+                .jwt(builder -> builder
+                        .audience(Collections.singleton("3"))
+                        .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")
+                );
+
+        mvc.perform(get("/tokens/refresh").with(jwt))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testOAuthScopesMatchDifferentOrder() throws Exception {
+        OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
+        OAuth2AccessToken token = mock(OAuth2AccessToken.class);
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("twoScopes");
+
+        when(client.getClientRegistration()).thenReturn(registration);
+        when(authorizedClientRepository.loadAuthorizedClient(eq("twoScopes"), any(), any())).thenReturn(client);
+
+        when(client.getAccessToken()).thenReturn(token);
+
+        when(principalOAuth2AuthorizedClientRepository.renewAccessToken(eq("twoScopes"), any(), any(),any())).thenReturn(client);
+
+        when(token.getScopes()).thenReturn(Set.of("test_scope_2", "test_scope_1"));
+
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
+                .jwt(builder -> builder
+                        .audience(Collections.singleton("2"))
+                        .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")
+                );
+
+        mvc.perform(get("/tokens/refresh").with(jwt))
+                .andExpect(status().isOk());
     }
 
 }
