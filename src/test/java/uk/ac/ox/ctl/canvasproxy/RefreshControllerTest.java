@@ -16,7 +16,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 import uk.ac.ox.ctl.canvasproxy.jwt.JwtConfig;
@@ -158,7 +157,6 @@ class RefreshControllerTest {
 
         when(principalOAuth2AuthorizedClientRepository.renewAccessToken(eq("test"), any(), any(),any())).thenReturn(client);
 
-        ReflectionTestUtils.setField(registration, "scopes", Set.of("test_scope_1"));
         when(token.getScopes()).thenReturn(Set.of("test_scope_1", "test_scope_2"));
 
         PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
@@ -208,8 +206,6 @@ class RefreshControllerTest {
         when(client.getAccessToken()).thenReturn(token);
 
         when(principalOAuth2AuthorizedClientRepository.renewAccessToken(eq("test"), any(), any(),any())).thenReturn(client);
-
-        ReflectionTestUtils.setField(registration, "scopes", Set.of("test_scope_1"));
 
         PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder
