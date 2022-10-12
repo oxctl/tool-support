@@ -12,6 +12,7 @@ import uk.ac.ox.ctl.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/tokens")
@@ -24,6 +25,9 @@ public class RefreshController {
      * This allows a tool to check to see if there is a valid refresh token for the current user.
      * This accepts a "force" parameter which if true forced the access token to be refreshed even if it is not near its expiry,
      * otherwise it will just assume a valid token in the DB is good enough.
+     * If additional permissions are added to a token, for users who had already granted access
+     * the proxy will request access tokens that just include the smaller set of scopes instead of the new increased set.
+     * So there is an additional check to see whether the scopes are the same, and return unauthorized if not.
      * @return Unauthorized if there isn't and Ok if there is.
      */
     @GetMapping("/refresh")
@@ -33,6 +37,18 @@ public class RefreshController {
             // If we don't have a token or if it's no longer valid return unauthorized
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        Set<String> clientScopes = oAuth2AuthorizedClient.getClientRegistration().getScopes();
+        Set<String> tokenScopes = oAuth2AuthorizedClient.getAccessToken().getScopes();
+        if(!scopesMatch(clientScopes, tokenScopes)){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         return ResponseEntity.ok().build();
+    }
+
+    private boolean scopesMatch(Set<String> clientScopes, Set<String> tokenScopes){
+        if(clientScopes == null){
+            return tokenScopes == null || tokenScopes.size() == 0;
+        }
+        return clientScopes.equals(tokenScopes);
     }
 }
