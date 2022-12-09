@@ -9,7 +9,7 @@
     </parent>
     <groupId>uk.ac.ox.ctl</groupId>
     <artifactId>canvas-proxy</artifactId>
-    <version>0.4.2</version>
+    <version>0.4.3-SNAPSHOT</version>
     <name>Canvas Proxy</name>
     <description>OAuth2 proxy to Canvas</description>
 
@@ -23,7 +23,7 @@
         <connection>scm:git:ssh://git@github.com/oxctl/canvas-proxy</connection>
         <developerConnection>scm:git:ssh://git@github.com/oxctl/canvas-proxy</developerConnection>
         <url>https://github.com/oxctl/canvas-proxy</url>
-        <tag>0.4.2</tag>
+        <tag>0.2.0</tag>
     </scm>
 
     <dependencies>
