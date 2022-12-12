@@ -9,6 +9,15 @@
         if (window.opener) {
           window.opener.postMessage("token", '{{target}}');
         }
+        
+        function closer() {
+            // If the calling tool didn't tell the browser to allow the opener we might not be able to tell the tool
+            // if so we just ask the user to manually refresh the tool.
+            if (!window.opener) {
+                window.alert('Failed to automatically reload tool, please manually reload the tool after this window closes.');
+            }
+            window.close();
+        }
     </script>
 </head>
 <body class="full-width modal body--error-confirmation no-headers  primary-nav-transitions full-width lato-font-not-loaded-yet webkit chrome no-touch">
@@ -37,7 +46,7 @@
                                 <p>
                                     Close this window to continue.
                                 </p>
-                                <a class="Button Button--block" onclick="window.close()">Close</a>
+                                <a class="Button Button--block" onclick="closer()">Close</a>
                                 {{#reloginUrl}}
                                     <a class="Button Button--block" href="{{reloginUrl}}">Retry Authorization</a>
                                 {{/reloginUrl}}
