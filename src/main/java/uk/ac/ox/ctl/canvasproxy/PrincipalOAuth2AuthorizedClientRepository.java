@@ -1,13 +1,11 @@
 package uk.ac.ox.ctl.canvasproxy;
 
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.ox.ctl.canvasproxy.model.PrincipalTokens;
@@ -24,8 +22,6 @@ import java.util.List;
  * This persists the OAuth2 tokens in the DB, this means we don't have to get the user to
  * authenticate each time they use the tool.
  */
-@Service
-@Primary
 public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2AuthorizedClientRepository, RefreshOAuth2AuthorizedClient {
 
     private final PrincipalTokensRepository principalTokensRepository;
@@ -34,7 +30,8 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
 
     public PrincipalOAuth2AuthorizedClientRepository(
             PrincipalTokensRepository principalTokensRepository,
-            ClientRegistrationRepository clientRegistrationRepository, OAuth2AccessTokenRefresher auth2AccessTokenRefresher) {
+            ClientRegistrationRepository clientRegistrationRepository, 
+            OAuth2AccessTokenRefresher auth2AccessTokenRefresher) {
         this.principalTokensRepository = principalTokensRepository;
         this.clientRegistrationRepository = clientRegistrationRepository;
         this.auth2AccessTokenRefresher = auth2AccessTokenRefresher;

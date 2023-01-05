@@ -20,7 +20,7 @@ The endpoint (badly named) to renew a token for a user is `POST /tokens/check`, 
 sequenceDiagram
     
     Browser->>+Proxy: POST https://proxy/tokens/check
-    note right of Browser: This includes the JWT which is used to authenticate the request.
+    note right of Browser: This includes the JWT as a request parameter which is used to authenticate the request.
     Proxy-->>-Browser: 302 https://canvas/login/oauth2/auth....
     note over Browser,Proxy: Cookie based session established with Proxy
     rect rgb(240,240,240)

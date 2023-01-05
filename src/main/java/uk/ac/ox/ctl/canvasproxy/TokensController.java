@@ -21,9 +21,9 @@ import java.util.Map;
 
 @Controller()
 @RequestMapping("/tokens")
-public class TokenController {
+public class TokensController {
 
-    private Logger log = LoggerFactory.getLogger(TokenController.class);
+    private Logger log = LoggerFactory.getLogger(TokensController.class);
 
     @Autowired
     private OAuth2AuthorizedClientRepository clientRepository;

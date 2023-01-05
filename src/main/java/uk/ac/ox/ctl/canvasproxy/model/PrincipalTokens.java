@@ -30,7 +30,8 @@ import static org.springframework.security.oauth2.core.OAuth2AccessToken.TokenTy
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class PrincipalTokens {
 
   // The user to who the tokens belong

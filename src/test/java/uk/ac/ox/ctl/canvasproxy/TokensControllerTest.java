@@ -7,7 +7,9 @@ import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -15,8 +17,10 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepo
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
-import uk.ac.ox.ctl.canvasproxy.jwt.JwtConfig;
+import uk.ac.ox.ctl.WebSecurityConfiguration;
+import uk.ac.ox.ctl.canvasproxy.jwt.ProxyJwtConfig;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.RefreshOAuth2AuthorizedClient;
+import uk.ac.ox.ctl.repository.ToolRepository;
 
 import java.util.Collections;
 
@@ -28,10 +32,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // WebMvdTest doesn't pull the OAuth configuration in by default
-@WebMvcTest(controllers = TokenController.class, properties = "proxy.origins=https://localhost:3000")
-@ImportAutoConfiguration({OAuth2ClientAutoConfiguration.class, WebSecurity.class, JwtConfig.class})
+@WebMvcTest(controllers = TokensController.class, properties = "tool.origins=https://localhost:3000")
+@Import({TestClientRegistrationConfig.class, OAuth2Configuration.class, WebSecurity.class, ProxyJwtConfig.class, WebSecurityConfiguration.class})
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
-class TokenControllerTest {
+class TokensControllerTest {
 
     @Autowired
     private MockMvc mvc;
@@ -51,6 +55,9 @@ class TokenControllerTest {
         }
 
     }
+
+    @MockBean
+    private ToolRepository toolRepository;
 
     @Test
     public void testNoToken() throws Exception {

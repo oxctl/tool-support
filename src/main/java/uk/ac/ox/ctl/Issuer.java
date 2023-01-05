@@ -1,4 +1,4 @@
-package uk.ac.ox.ctl.canvasproxy.jwt;
+package uk.ac.ox.ctl;
 
 import org.springframework.boot.context.properties.ConstructorBinding;
 

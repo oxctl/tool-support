@@ -1,4 +1,4 @@
-package uk.ac.ox.ctl.canvasproxy;
+package uk.ac.ox.ctl.ltiauth;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,23 +15,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
-public class HomepageTest {
-
-    private LocalHostWebClient localHostWebClient;
-
-    @Autowired
-    private Environment environment;
-
-    @BeforeEach
-    public void setUp() {
-        localHostWebClient = new LocalHostWebClient(environment);
-    }
-
-    @Test
-    void frontPageWorks() throws IOException {
-        // Check that everything starts up and we respond to a request for the homepage (doesn't need authentication)
-        HtmlPage page = localHostWebClient.getPage("/");
-        assertEquals("Canvas Proxy", page.getTitleText());
-    }
+public class LtiLaunchTest {
+	
+	private LocalHostWebClient localHostWebClient;
+	
+	@Autowired
+	private Environment environment;
+	
+	@BeforeEach
+	public void setUp() {
+		localHostWebClient = new LocalHostWebClient(environment);
+	}
+	
+	@Test
+	void frontPageWorks() throws IOException {
+		// Check that everything starts up and we respond to a request for the homepage (doesn't need authentication)
+		HtmlPage page = localHostWebClient.getPage("/");
+		assertEquals("Canvas Tools", page.getTitleText());
+	}
 
 }

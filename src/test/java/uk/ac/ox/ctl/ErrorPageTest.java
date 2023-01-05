@@ -1,4 +1,4 @@
-package uk.ac.ox.ctl.canvasproxy;
+package uk.ac.ox.ctl;
 
 import com.gargoylesoftware.htmlunit.SilentCssErrorHandler;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
