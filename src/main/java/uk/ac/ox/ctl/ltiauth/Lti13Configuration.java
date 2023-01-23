@@ -66,6 +66,11 @@ public class Lti13Configuration {
     public TokenRetriever tokenRetriever(KeyPairService keyPairService) {
         return new TokenRetriever(keyPairService);
     }
+    
+    @Bean
+    public NRPSService nrpsService(TokenRetriever tokenRetriever) {
+        return new NRPSService(tokenRetriever);
+    }
 
     @Bean
     public KeyPairService keyPairService(KeyPair keyPair) {

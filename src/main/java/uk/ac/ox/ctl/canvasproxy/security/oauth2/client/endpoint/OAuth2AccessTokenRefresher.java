@@ -18,8 +18,6 @@ import java.util.Collections;
 /**
  * This class just handles the refreshing of a OAuth2AuthorizedClient.
  */
-@Service
-@Primary
 public class OAuth2AccessTokenRefresher {
 
     private final Logger log = LoggerFactory.getLogger(OAuth2AccessTokenRefresher.class);

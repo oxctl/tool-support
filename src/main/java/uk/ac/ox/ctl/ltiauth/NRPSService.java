@@ -31,7 +31,6 @@ import static uk.ac.ox.ctl.ltiauth.controller.LinksParser.Relation.NEXT;
 /**
  * A small service that caches OAuth2 tokens and then allows them to be used to retrieve a list of members.
  */
-@Service
 public class NRPSService {
 
     private final Logger log = LoggerFactory.getLogger(NRPSService.class);
