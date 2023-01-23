@@ -30,9 +30,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Autowired
     private PrincipalClientIdResolver principalClientIdResolver;
 
-    @Autowired
-    private ServerProperties serverProperties;
-
     @Override
     public void addArgumentResolvers(
             List<HandlerMethodArgumentResolver> argumentResolvers) {
