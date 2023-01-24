@@ -27,11 +27,10 @@ jobs:
       TAG: ${{ github.event.inputs.tag }}
     steps:
       - name: Start deployment
-        uses: bobheadxi/deployments@v0.4.3
+        uses: bobheadxi/deployments@v1.4.0
         id: deployment
         with:
           step: start
-          token: ${{ secrets.GITHUB_TOKEN }}
           env: prod
           desc: Production deploy of ${{ env.TAG }}
           ref: refs/tags/${{ env.TAG }}
@@ -46,10 +45,10 @@ jobs:
           version_label: github.${{ env.TAG }}
           region: ${{ env.AWS_REGION }}
       - name: Update deployment status
-        uses: bobheadxi/deployments@v0.4.3
+        uses: bobheadxi/deployments@v1.4.0
         if: always()
         with:
           step: finish
-          token: ${{ secrets.GITHUB_TOKEN }}
+          env: ${{ steps.deployment.outputs.env }}
           status: ${{ job.status }}
           deployment_id: ${{ steps.deployment.outputs.deployment_id }}
