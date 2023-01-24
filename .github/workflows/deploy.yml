@@ -35,7 +35,7 @@ jobs:
           desc: Production deploy of ${{ env.TAG }}
           ref: refs/tags/${{ env.TAG }}
       - name: Deploy to EB
-        uses: einaregilsson/beanstalk-deploy@v16
+        uses: einaregilsson/beanstalk-deploy@v21
         timeout-minutes: 15
         with:
           aws_access_key: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
