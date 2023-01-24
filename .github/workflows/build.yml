@@ -52,10 +52,10 @@ jobs:
         run: mvn -B -Dimage=${DOCKER_REPO} -Djib.tag=${DOCKER_TAG} -Dgit.commit.id=${GITHUB_SHA} jib:build
       - name: Set image tag output
         id: output-tag
-        run: echo "::set-output name=tag::${DOCKER_TAG}"
+        run: echo tag="${DOCKER_TAG}" >> $GITHUB_OUTPUT
       - name: Set message output
         id: output-message
-        run: echo "::set-output name=message::$(git log --format=%s -n 1 ${GITHUB_SHA})"
+        run: echo message="$(git log --format=%s -n 1 ${GITHUB_SHA})" >> $GITHUB_OUTPUT
       - name: Upload Elastic Beanstalk Artifact
         uses: actions/upload-artifact@v3
         with:
