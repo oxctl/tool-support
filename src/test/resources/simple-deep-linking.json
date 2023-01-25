@@ -1,0 +1,10 @@
+{
+  "https://purl.imsglobal.org/spec/lti-dl/claim/content_items": [
+    {
+      "type": "link",
+      "title": "My Home Page",
+      "url": "https://something.example.com/page.html"
+    }
+  ],
+  "https://purl.imsglobal.org/spec/lti-dl/claim/msg": "OK"
+}

@@ -1,4 +1,4 @@
-package uk.ac.ox.ctl.canvasproxy;
+package uk.ac.ox.ctl;
 
 import com.gargoylesoftware.htmlunit.SilentCssErrorHandler;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -40,7 +40,7 @@ public class ErrorPageTest {
         // Check that we generate a good 404 error page.
         HtmlPage page = localHostWebClient.getPage("/images/not-found.svg");
         assertEquals(404, page.getWebResponse().getStatusCode());
-        assertEquals("Canvas Proxy: Error", page.getTitleText());
+        assertEquals("Canvas Tools: Error", page.getTitleText());
         assertTrue(page.getBody().getTextContent().contains("No message available"));
     }
 

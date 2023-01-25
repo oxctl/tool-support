@@ -62,6 +62,10 @@ public class AudienceConfiguration implements PrincipalClientIdResolver {
         }
         return null;
     }
+    
+    public LtiAudience getLtiAudience(String audience) {
+        return mapping.get(audience);
+    }
 
     /**
      * This is the mapping of an LTI tool to a proxy configuration.

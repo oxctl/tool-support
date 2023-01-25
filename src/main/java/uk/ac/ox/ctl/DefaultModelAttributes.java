@@ -1,10 +1,12 @@
-package uk.ac.ox.ctl.canvasproxy;
+package uk.ac.ox.ctl;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.server.resource.authentication.AbstractOAuth2TokenAuthenticationToken;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationToken;
 
+import java.security.Principal;
 import java.util.Map;
 
 /**
@@ -24,10 +26,13 @@ public class DefaultModelAttributes {
   private String applicationName;
 
   @ModelAttribute("canvasCommonCss")
-  public String canvasCommonCss(PersistableJwtAuthenticationToken principal) {
+  public String canvasCommonCss(Principal principal) {
     String canvasCss = null;
-    if (principal != null && principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom") != null) {
-      canvasCss = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get("canvas_css_common");
+    if (principal instanceof AbstractOAuth2TokenAuthenticationToken) {
+      AbstractOAuth2TokenAuthenticationToken token = (AbstractOAuth2TokenAuthenticationToken) principal;
+      if(token.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom") != null) {
+        canvasCss = (String) ((Map) token.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get("canvas_css_common");
+      }
     }
     if (canvasCss == null) {
       canvasCss = defaultCommonCss;
@@ -36,10 +41,13 @@ public class DefaultModelAttributes {
   }
 
   @ModelAttribute("canvasBrandCss")
-  public String canvasBrandCss(PersistableJwtAuthenticationToken principal) {
+  public String canvasBrandCss(Principal principal) {
     String canvasJson = null;
-    if (principal != null && principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom") != null) {
-      canvasJson = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get("com_instructure_brand_config_json_url");
+    if (principal instanceof AbstractOAuth2TokenAuthenticationToken) {
+      AbstractOAuth2TokenAuthenticationToken token = (AbstractOAuth2TokenAuthenticationToken) principal;
+      if (token.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom") != null) {
+        canvasJson = (String) ((Map) token.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get("com_instructure_brand_config_json_url");
+      }
     }
     if (canvasJson == null) {
       canvasJson = defaultBrandJson;

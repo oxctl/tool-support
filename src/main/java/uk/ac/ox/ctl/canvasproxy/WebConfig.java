@@ -1,6 +1,7 @@
 package uk.ac.ox.ctl.canvasproxy;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,8 @@ import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.RefreshOAuth2Aut
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.web.method.annotation.OAuth2AccessTokenArgumentResolver;
 import uk.ac.ox.ctl.oauth2.client.web.method.annotation.OAuth2AuthorizedClientArgumentResolver;
 import uk.ac.ox.ctl.oauth2.client.web.method.annotation.PrincipalClientIdResolver;
+import uk.ac.ox.ctl.repository.ToolRepository;
+import uk.ac.ox.ctl.service.ToolProxyClientRegistrationRepository;
 
 import java.util.List;
 
@@ -21,13 +24,11 @@ public class WebConfig implements WebMvcConfigurer {
     private RefreshOAuth2AuthorizedClient oAuth2AuthorizedClientRepository;
 
     @Autowired
+    @Qualifier("proxy")
     private ClientRegistrationRepository clientRegistrationRepository;
 
     @Autowired
     private PrincipalClientIdResolver principalClientIdResolver;
-
-    @Autowired
-    private ServerProperties serverProperties;
 
     @Override
     public void addArgumentResolvers(
@@ -48,4 +49,6 @@ public class WebConfig implements WebMvcConfigurer {
     public CustomErrorAttributes errorAttributes() {
         return new CustomErrorAttributes();
     }
+
+
 }

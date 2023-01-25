@@ -16,9 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationToken;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.annotation.RegisteredOAuth2AccessToken;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -79,7 +76,7 @@ public class ProxyController {
 
                 // We don't want to pass through cookies from Canvas.
                 httpHeaders.remove("Set-Cookie");
-                return new ResponseEntity<>(toByteArray(response.getBody()), httpHeaders, response.getStatusCode());
+                return new ResponseEntity<>(response.getBody().readAllBytes(), httpHeaders, response.getStatusCode());
             });
         } catch (ResourceAccessException e) {
             // When we get a timeout we should translate it to the correct HTTP message.
@@ -93,14 +90,4 @@ public class ProxyController {
         }
     }
 
-    byte[] toByteArray(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        int nRead;
-        byte[] data = new byte[1024];
-        while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
-            buffer.write(data, 0, nRead);
-        }
-        buffer.flush();
-        return buffer.toByteArray();
-    }
 }
