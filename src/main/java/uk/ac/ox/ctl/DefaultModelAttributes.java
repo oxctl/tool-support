@@ -40,7 +40,6 @@ public class DefaultModelAttributes {
     return canvasCss;
   }
 
-  // TODO Not sure this will work...
   @ModelAttribute("canvasBrandCss")
   public String canvasBrandCss(Principal principal) {
     String canvasJson = null;
