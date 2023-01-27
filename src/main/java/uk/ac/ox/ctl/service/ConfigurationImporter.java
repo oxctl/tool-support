@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientPropertiesRegistrationAdapter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.stereotype.Service;
@@ -25,20 +26,31 @@ import java.util.Map;
  * needs to be wiped, but the configuration needs to be put back in.
  */
 @Service
-@EnableConfigurationProperties(OAuth2ClientProperties.class)
+@EnableConfigurationProperties({
+        ConfigurationImporter.LtiClientProperties.class,
+        ConfigurationImporter.ProxyClientProperties.class
+})
 public class ConfigurationImporter {
 
     private final Logger log = LoggerFactory.getLogger(ConfigurationImporter.class);
 
-    private final OAuth2ClientProperties properties;
+    private final LtiClientProperties ltiProperties;
+    private final ProxyClientProperties proxyProperties;
     private final ToolRepository toolRepository;
     private final AudienceConfiguration audienceConfiguration;
     private final LtiSettings ltiSettings;
     private final AllowedRoles allowedRoles;
 
 
-    public ConfigurationImporter(OAuth2ClientProperties properties, ToolRepository toolRepository, AudienceConfiguration audienceConfiguration, LtiSettings ltiSettings, AllowedRoles allowedRoles) {
-        this.properties = properties;
+    public ConfigurationImporter(
+            ConfigurationImporter.LtiClientProperties ltiProperties,
+            ConfigurationImporter.ProxyClientProperties proxyProperties,
+            ToolRepository toolRepository,
+            AudienceConfiguration audienceConfiguration,
+            LtiSettings ltiSettings,
+            AllowedRoles allowedRoles) {
+        this.ltiProperties = ltiProperties;
+        this.proxyProperties = proxyProperties;
         this.toolRepository = toolRepository;
         this.audienceConfiguration = audienceConfiguration;
         this.ltiSettings = ltiSettings;
@@ -47,31 +59,30 @@ public class ConfigurationImporter {
 
     @PostConstruct
     public void init() {
-        final Map<String, ClientRegistration> clientRegistrations = OAuth2ClientPropertiesRegistrationAdapter.getClientRegistrations(properties);
         int lti = 0;
         int proxy = 0;
-        for (Map.Entry<String, ClientRegistration> entry : clientRegistrations.entrySet()) {
+        for (Map.Entry<String, ClientRegistration> entry : OAuth2ClientPropertiesRegistrationAdapter.getClientRegistrations(ltiProperties).entrySet()) {
             String key = entry.getKey();
             ClientRegistration registration = entry.getValue();
-            if (registration.getClientSecret() == null || registration.getClientSecret().isEmpty()) {
-                // This is a LTI registration.
-                if (toolRepository.findToolByLtiRegistrationId(key).isEmpty()) {
-                    ToolRegistrationLti registrationLti = ToolRegistrationUtilities.toToolRegistrationLti(registration);
-                    Tool tool = new Tool();
-                    tool.setLti(registrationLti);
-                    registrationLti.setTool(tool);
-                    toolRepository.save(tool);
-                    lti++;
-                }
-            } else {
-                if (toolRepository.findToolByProxyRegistrationId(key).isEmpty()) {
-                    ToolRegistrationProxy registrationProxy = ToolRegistrationUtilities.toToolRegistrationProxy(registration);
-                    Tool tool = new Tool();
-                    tool.setProxy(registrationProxy);
-                    registrationProxy.setTool(tool);
-                    toolRepository.save(tool);
-                    proxy++;
-                }
+            if (toolRepository.findToolByLtiRegistrationId(key).isEmpty()) {
+                ToolRegistrationLti registrationLti = ToolRegistrationUtilities.toToolRegistrationLti(registration);
+                Tool tool = new Tool();
+                tool.setLti(registrationLti);
+                registrationLti.setTool(tool);
+                toolRepository.save(tool);
+                lti++;
+            }
+        }
+        for (Map.Entry<String, ClientRegistration> entry : OAuth2ClientPropertiesRegistrationAdapter.getClientRegistrations(proxyProperties).entrySet()) {
+            String key = entry.getKey();
+            ClientRegistration registration = entry.getValue();
+            if (toolRepository.findToolByProxyRegistrationId(key).isEmpty()) {
+                ToolRegistrationProxy registrationProxy = ToolRegistrationUtilities.toToolRegistrationProxy(registration);
+                Tool tool = new Tool();
+                tool.setProxy(registrationProxy);
+                registrationProxy.setTool(tool);
+                toolRepository.save(tool);
+                proxy++;
             }
         }
 
@@ -117,8 +128,26 @@ public class ConfigurationImporter {
                 ltiTool.setNrpsAllowedRoles(roles.getRoles());
             }
         }
-        log.info("Imported {} lti, {} proxy from {} configurations. Successfully linked {} proxy tools an LTI tool", lti, proxy, clientRegistrations.size(), linked);
+        log.info("Imported {}/{} lti configurations, {}/{} proxy configurations. Successfully linked {} proxy tools an LTI tool",
+                lti, ltiProperties.getRegistration().size(), proxy, proxyProperties.getRegistration().size(), linked);
 
 
     }
+
+    /**
+     * This allows us to have both LTI and Proxy configuration in the same file and loaded at the same time.
+     */
+    @ConfigurationProperties(prefix = "lti.client")
+    public static class LtiClientProperties extends OAuth2ClientProperties{
+        
+    }
+
+    /**
+     * This allows us to have both LTI and Proxy configuration in the same file and loaded at the same time.
+     */
+    @ConfigurationProperties(prefix = "proxy.client")
+    public static class ProxyClientProperties extends OAuth2ClientProperties{
+
+    }
+    
 }
