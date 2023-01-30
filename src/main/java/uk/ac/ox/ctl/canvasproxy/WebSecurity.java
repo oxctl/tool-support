@@ -11,7 +11,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
@@ -28,8 +27,6 @@ public class WebSecurity {
     @Autowired
     @Qualifier("proxy")
     private ClientRegistrationRepository clientRegistrationRepository;
-    @Autowired
-    private OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository;
     @Autowired
     private OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient;
     @Autowired
@@ -51,19 +48,15 @@ public class WebSecurity {
     public SecurityFilterChain apiHttpSecurity(HttpSecurity http) throws Exception {
         http.setSharedObject(ClientRegistrationRepository.class, clientRegistrationRepository);
         OAuth2ClientConfigurer<HttpSecurity> configurer = new OAuth2ClientConfigurer<>();
-        configurer.setBuilder(http);
-        configurer.authorizedClientRepository(oAuth2AuthorizedClientRepository)
-                .authorizationCodeGrant()
-                .accessTokenResponseClient(accessTokenResponseClient);
-        http.apply(configurer);
+        configurer.authorizationCodeGrant().accessTokenResponseClient(accessTokenResponseClient);
         http.antMatcher("/api/**")
+                .apply(configurer).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .cors().and()
                 .csrf().disable()
                 .oauth2ResourceServer()
                 .jwt()
                 .decoder(jwtDecoder)
-                .jwtAuthenticationConverter(new PersistableJwtAuthenticationConverter())
                 .and()
                 .bearerTokenResolver(tokenResolver).authenticationEntryPoint(authenticationEntryPoint())
                 .and().authorizeRequests().anyRequest().authenticated()
@@ -81,20 +74,13 @@ public class WebSecurity {
     @Order(12)
     public SecurityFilterChain refreshTokenHttpSecurity(HttpSecurity http) throws Exception {
         http.setSharedObject(ClientRegistrationRepository.class, clientRegistrationRepository);
-
-        OAuth2ClientConfigurer<HttpSecurity> configurer = new OAuth2ClientConfigurer<>();
-        configurer.setBuilder(http);
-        configurer.authorizedClientRepository(oAuth2AuthorizedClientRepository)
-                .authorizationCodeGrant()
-                .accessTokenResponseClient(accessTokenResponseClient);
         http.antMatcher("/tokens/refresh")
-                .apply(configurer).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).and()
                 .cors().and()
                 .csrf().disable()
+                .oauth2Client().and()
                 .oauth2ResourceServer().jwt()
-                .decoder(jwtDecoder)
-                .jwtAuthenticationConverter(new PersistableJwtAuthenticationConverter()).and()
+                .decoder(jwtDecoder).and()
                 .bearerTokenResolver(tokenResolver).and()
                 .authorizeRequests().anyRequest().authenticated()
         ;
@@ -105,15 +91,8 @@ public class WebSecurity {
     @Order(13)
     public SecurityFilterChain checkTokenHttpSecurity(HttpSecurity http) throws Exception {
         http.setSharedObject(ClientRegistrationRepository.class, clientRegistrationRepository);
-
-        OAuth2ClientConfigurer<HttpSecurity> configurer = new OAuth2ClientConfigurer<>();
-        configurer.setBuilder(http);
-        configurer.authorizedClientRepository(oAuth2AuthorizedClientRepository)
-                .authorizationCodeGrant()
-                .accessTokenResponseClient(accessTokenResponseClient);
         http.antMatcher("/tokens/check")
                 .oauth2Client()
-                .authorizedClientRepository(oAuth2AuthorizedClientRepository)
                 .authorizationCodeGrant()
                 .accessTokenResponseClient(accessTokenResponseClient)
                 .and().and()
@@ -122,6 +101,7 @@ public class WebSecurity {
                 .csrf().disable()
                 .oauth2ResourceServer().jwt()
                 .decoder(jwtDecoder)
+                // This is the only endpoint that should take the JWT out of the header and use it to start a session.
                 .jwtAuthenticationConverter(new PersistableJwtAuthenticationConverter()).and()
                 .bearerTokenResolver(tokenResolver).and()
                 .authorizeRequests().anyRequest().authenticated()
@@ -133,14 +113,8 @@ public class WebSecurity {
     @Order(14)
     public SecurityFilterChain loginHttpSecurity(HttpSecurity http) throws Exception {
         http.setSharedObject(ClientRegistrationRepository.class, clientRegistrationRepository);
-        OAuth2ClientConfigurer<HttpSecurity> configurer = new OAuth2ClientConfigurer<>();
-        configurer.setBuilder(http);
-        configurer.authorizedClientRepository(oAuth2AuthorizedClientRepository)
-                .authorizationCodeGrant()
-                .accessTokenResponseClient(accessTokenResponseClient);
         http.antMatcher("/login/**")
                 .oauth2Client()
-                .authorizedClientRepository(oAuth2AuthorizedClientRepository)
                 .authorizationCodeGrant()
                 .accessTokenResponseClient(accessTokenResponseClient)
                 .and().and()
@@ -148,8 +122,7 @@ public class WebSecurity {
                 .cors().and()
                 .csrf().disable()
                 .oauth2ResourceServer().jwt()
-                .decoder(jwtDecoder)
-                .jwtAuthenticationConverter(new PersistableJwtAuthenticationConverter()).and()
+                .decoder(jwtDecoder).and()
                 .bearerTokenResolver(tokenResolver).and()
                 .authorizeRequests().anyRequest().authenticated()
         ;

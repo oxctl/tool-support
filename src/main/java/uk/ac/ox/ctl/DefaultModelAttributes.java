@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.server.resource.authentication.AbstractOAuth2TokenAuthenticationToken;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationToken;
 
 import java.security.Principal;
 import java.util.Map;
