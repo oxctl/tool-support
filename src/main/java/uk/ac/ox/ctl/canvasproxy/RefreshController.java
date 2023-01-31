@@ -4,10 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.AbstractOAuth2TokenAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationToken;
 import uk.ac.ox.ctl.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,7 +32,7 @@ public class RefreshController {
      * @return Unauthorized if there isn't and Ok if there is.
      */
     @GetMapping("/refresh")
-    public ResponseEntity<Void> checkToken(PersistableJwtAuthenticationToken authenticationToken, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Void> checkToken(AbstractOAuth2TokenAuthenticationToken<Jwt> authenticationToken, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client, HttpServletRequest request, HttpServletResponse response) {
         final OAuth2AuthorizedClient oAuth2AuthorizedClient = principalOAuth2AuthorizedClientRepository.renewAccessToken(client.getClientRegistration().getRegistrationId(), authenticationToken, request, response);
         if (oAuth2AuthorizedClient == null) {
             // If we don't have a token or if it's no longer valid return unauthorized

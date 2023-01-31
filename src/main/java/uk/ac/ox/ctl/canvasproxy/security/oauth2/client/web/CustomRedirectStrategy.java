@@ -54,6 +54,6 @@ public class CustomRedirectStrategy implements RedirectStrategy {
 			logger.debug("Redirecting to '" + redirectUrl + "'");
 		}
 		response.addHeader("Location", redirectUrl);
-		response.sendError(HttpStatus.TEMPORARY_REDIRECT.value(), "No client found");
+		response.sendError(HttpStatus.FORBIDDEN.value(), "No client found");
 	}
 }

@@ -6,12 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.AbstractOAuth2TokenAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationToken;
 import uk.ac.ox.ctl.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +36,7 @@ public class TokensController {
      * This is the endpoint the user returns to once they have successfully granted their token
      */
     @GetMapping("/check")
-    public ModelAndView check(PersistableJwtAuthenticationToken authenticationToken, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client) {
+    public ModelAndView check(AbstractOAuth2TokenAuthenticationToken<Jwt> authenticationToken, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client) {
         Map<String, Object> model = new HashMap<>();
         model.put("applicationName", client.getClientRegistration().getClientName());
         model.put("target", authenticationToken.getToken().getClaim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri"));
@@ -51,7 +52,7 @@ public class TokensController {
      * @throws ClientAuthorizationRequiredException So that Spring starts the process of granting a token.
      */
     @PostMapping("/check")
-    public ModelAndView delete(PersistableJwtAuthenticationToken authenticationToken, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+    public ModelAndView delete(AbstractOAuth2TokenAuthenticationToken<Jwt> authenticationToken, @RegisteredOAuth2AuthorizedClient() OAuth2AuthorizedClient client, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         String clientRegistrationId = client.getClientRegistration().getClientId();
         // TODO We should maybe have an attribute on the annotation that forces the removal of the token and an exception.
         // That way we don't have the controller aware of the authentication to client ID mapping.

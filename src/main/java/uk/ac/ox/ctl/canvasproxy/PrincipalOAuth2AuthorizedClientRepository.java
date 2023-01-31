@@ -6,11 +6,12 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.AbstractOAuth2TokenAuthenticationToken;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.ox.ctl.canvasproxy.model.PrincipalTokens;
 import uk.ac.ox.ctl.canvasproxy.repository.PrincipalTokensRepository;
-import uk.ac.ox.ctl.canvasproxy.security.PersistableJwtAuthenticationToken;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.OAuth2AccessTokenRefresher;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.RefreshOAuth2AuthorizedClient;
 
@@ -129,8 +130,8 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
     }
 
     private String toPrincipal(Authentication authentication) {
-        if (authentication instanceof PersistableJwtAuthenticationToken) {
-            PersistableJwtAuthenticationToken persistableJwtAuthenticationToken = (PersistableJwtAuthenticationToken) authentication;
+        if (authentication instanceof AbstractOAuth2TokenAuthenticationToken) {
+            AbstractOAuth2TokenAuthenticationToken<Jwt> persistableJwtAuthenticationToken = (AbstractOAuth2TokenAuthenticationToken<Jwt>) authentication;
             List<String> aud = persistableJwtAuthenticationToken.getToken().getAudience();
             if (aud.isEmpty()) {
                 throw new IllegalStateException("JWT must have an audience set.");
