@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorH
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.CanvasAuthorizationCodeTokenResponseClient;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.OAuth2AccessTokenRefresher;
 import uk.ac.ox.ctl.oauth2.client.endpoint.CanvasOAuth2AuthorizationCodeGrantRequestEntityConverter;
 import uk.ac.ox.ctl.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
@@ -26,8 +27,8 @@ public class OAuth2Configuration {
 
     @Bean
     public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient() {
-        DefaultAuthorizationCodeTokenResponseClient client =
-                new DefaultAuthorizationCodeTokenResponseClient();
+        CanvasAuthorizationCodeTokenResponseClient client =
+                new CanvasAuthorizationCodeTokenResponseClient();
         client.setRequestEntityConverter(
                 new CanvasOAuth2AuthorizationCodeGrantRequestEntityConverter());
         RestTemplate restTemplate =

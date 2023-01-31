@@ -75,10 +75,10 @@ public class WebSecurity {
     public SecurityFilterChain refreshTokenHttpSecurity(HttpSecurity http) throws Exception {
         http.setSharedObject(ClientRegistrationRepository.class, clientRegistrationRepository);
         http.antMatcher("/tokens/refresh")
+                .oauth2Client().authorizationCodeGrant().accessTokenResponseClient(accessTokenResponseClient).and().and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).and()
                 .cors().and()
                 .csrf().disable()
-                .oauth2Client().and()
                 .oauth2ResourceServer().jwt()
                 .decoder(jwtDecoder).and()
                 .bearerTokenResolver(tokenResolver).and()
@@ -92,10 +92,7 @@ public class WebSecurity {
     public SecurityFilterChain checkTokenHttpSecurity(HttpSecurity http) throws Exception {
         http.setSharedObject(ClientRegistrationRepository.class, clientRegistrationRepository);
         http.antMatcher("/tokens/check")
-                .oauth2Client()
-                .authorizationCodeGrant()
-                .accessTokenResponseClient(accessTokenResponseClient)
-                .and().and()
+                .oauth2Client().authorizationCodeGrant().accessTokenResponseClient(accessTokenResponseClient).and().and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).and()
                 .cors().and()
                 .csrf().disable()
