@@ -54,7 +54,7 @@ import java.util.Arrays;
  * @see OAuth2AccessTokenResponse
  * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-6">Section 6 Refreshing an Access Token</a>
  */
-public final class DefaultRefreshTokenTokenResponseClient implements OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> {
+public final class CanvasRefreshTokenTokenResponseClient implements OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> {
 	private static final String INVALID_TOKEN_RESPONSE_ERROR_CODE = "invalid_token_response";
 
 	private Converter<OAuth2RefreshTokenGrantRequest, RequestEntity<?>> requestEntityConverter =
@@ -62,7 +62,7 @@ public final class DefaultRefreshTokenTokenResponseClient implements OAuth2Acces
 
 	private RestOperations restOperations;
 
-	public DefaultRefreshTokenTokenResponseClient() {
+	public CanvasRefreshTokenTokenResponseClient() {
 		RestTemplate restTemplate = new RestTemplate(Arrays.asList(
 		        // Switch to the canvas converter
 				new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()));

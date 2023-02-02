@@ -3,13 +3,11 @@ package uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2RefreshTokenGrantRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
-import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -27,7 +25,7 @@ public class OAuth2AccessTokenRefresher {
     @Value("${proxy.eager-token-renewal:PT5M}")
     private Duration eagerTokenRenewal;
 
-    private OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> accessTokenResponseClient = new DefaultRefreshTokenTokenResponseClient();
+    private OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> accessTokenResponseClient = new CanvasRefreshTokenTokenResponseClient();
 
     public void setEagerTokenRenewal(Duration eagerTokenRenewal) {
         this.eagerTokenRenewal = eagerTokenRenewal;

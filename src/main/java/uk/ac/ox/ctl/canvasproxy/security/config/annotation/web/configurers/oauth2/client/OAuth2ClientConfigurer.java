@@ -73,6 +73,11 @@ import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.web.OAuth2AuthorizationRe
  * <li>{@link ClientRegistrationRepository}</li>
  * <li>{@link OAuth2AuthorizedClientRepository}</li>
  * </ul>
+ * 
+ * <h2>Changes</h2>
+ * 
+ * This pulls in the custom Canvas client from getting an access token from a refresh token. This is needed as
+ * the default one doesn't use the scopes from the request if there are no scopes on the response.
  *
  * @author Joe Grandja
  * @since 5.1
