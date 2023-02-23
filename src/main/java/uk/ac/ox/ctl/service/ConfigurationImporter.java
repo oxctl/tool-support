@@ -127,6 +127,7 @@ public class ConfigurationImporter {
             if (roles != null) {
                 ltiTool.setNrpsAllowedRoles(roles.getRoles());
             }
+            toolRepository.save(ltiTool);
         }
         log.info("Imported {}/{} lti configurations, {}/{} proxy configurations. Successfully linked {} proxy tools an LTI tool",
                 lti, ltiProperties.getRegistration().size(), proxy, proxyProperties.getRegistration().size(), linked);
