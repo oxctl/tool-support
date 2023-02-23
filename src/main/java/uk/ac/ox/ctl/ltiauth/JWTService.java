@@ -32,9 +32,7 @@ public class JWTService {
      * @return true if we are.
      */
     public boolean isSigning(String clientRegistrationId) {
-        
-        return toolRepository.findToolByLtiRegistrationId(clientRegistrationId)
-                .map(Tool::isSign)
+        return toolRepository.isSigningEnabled(clientRegistrationId)
                 .orElse(ltiSettings.isSign());
     }
 
