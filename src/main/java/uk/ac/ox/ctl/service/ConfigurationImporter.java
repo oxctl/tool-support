@@ -94,28 +94,28 @@ public class ConfigurationImporter {
                 if (ltiAudience.getClientName() != null) {
                     if (ltiTool.getProxy() != null) {
                         log.warn("Proxy already set on {}, not merging.", ltiTool.getId());
-                        continue;
-                    }
-                    Tool proxyTool = toolRepository.findToolByProxyRegistrationId(ltiAudience.getClientName()).orElse(null);
-                    if (proxyTool != null) {
-                        if (ltiAudience.getSecret() != null) {
-                            String secret = Base64.getEncoder().encodeToString(ltiAudience.getSecret());
-                            ltiTool.setSecret(secret);
-                        }
-                        if (ltiAudience.getIssuer() != null) {
-                            String issuer = ltiAudience.getIssuer();
-                            ltiTool.setIssuer(issuer);
-                        }
-                        ToolRegistrationProxy registrationProxy = proxyTool.getProxy();
-                        toolRepository.delete(proxyTool);
-                        
-                        ltiTool.setProxy(registrationProxy);
-                        registrationProxy.setTool(ltiTool);
-                        registrationProxy.setId(ltiTool.getId());
-                        toolRepository.save(ltiTool);
-                        linked++;
                     } else {
-                        log.warn("Failed to find proxy tool with registration of {} for LTI tool {}", ltiAudience.getClientName(), ltiTool.getId());
+                        Tool proxyTool = toolRepository.findToolByProxyRegistrationId(ltiAudience.getClientName()).orElse(null);
+                        if (proxyTool != null) {
+                            if (ltiAudience.getSecret() != null) {
+                                String secret = Base64.getEncoder().encodeToString(ltiAudience.getSecret());
+                                ltiTool.setSecret(secret);
+                            }
+                            if (ltiAudience.getIssuer() != null) {
+                                String issuer = ltiAudience.getIssuer();
+                                ltiTool.setIssuer(issuer);
+                            }
+                            ToolRegistrationProxy registrationProxy = proxyTool.getProxy();
+                            toolRepository.delete(proxyTool);
+
+                            ltiTool.setProxy(registrationProxy);
+                            registrationProxy.setTool(ltiTool);
+                            registrationProxy.setId(ltiTool.getId());
+                            toolRepository.save(ltiTool);
+                            linked++;
+                        } else {
+                            log.warn("Failed to find proxy tool with registration of {} for LTI tool {}", ltiAudience.getClientName(), ltiTool.getId());
+                        }
                     }
                 }
             }
