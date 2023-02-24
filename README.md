@@ -1,30 +1,153 @@
-# Canvas Proxy
+# Canvas Tool Support
 
-This is a simple webapp that just takes a HTTP request and proxies it through to Canvas. This allows a frontend webapp to be able to make XHR requests to Canvas. It should support multiple developer keys so that it can support multiple applications using it. It requests tokens for users from Canvas and then stores them in a database so that the next time the user uses the tool they don't have to re-grant the tool access.
+[![Java CI with Maven](https://github.com/oxctl/canvas-proxy/actions/workflows/build.yml/badge.svg)](https://github.com/oxctl/canvas-proxy/actions/workflows/build.yml)
 
-The JWT (from the LTI launch) client ID is used to map to a developer API key to lookup tokens for the API requests to Canvas. This also maps to some configuration so we know the host to connect to (Canvas instance).
+## Overview
 
-We also support serverside services having a shared secret key to sign requests (with HMAC) and this allows the services to perform requests once the JWT from the LTI launch has expired.
+This is a webapp that supports LTI tools in Canvas. It handles the LTI 1.3 launch and allows tools to retrieve the JWT that is created through the LTI launch. It also allows the management of OAuth2 tokens for accessing Canvas and links them to a LTI tool. This allows a HTML/JS (React) page to get data about the LTI launch and then make `fetch()` requests to Canvas through this tool. This allows a completely static tool that still provides useful functionality. The webapp supports multiple LTI tool at the same time.
 
-## Status
+## History
 
-There is a small proxy controller that sends requests on the Canvas with a hard coded token. Headers get passed through and responses get passed back. At the moment there seems to be a bug with HTML responses.
+Originally this project was 2 projects, one handling the LTI launch, and one handling the OAuth2 proxying to Canvas. This made configuring a new setup more complex (2 services changed) and also made hosting more expensive. When we were looking at allowing configuration to be edited dynamically we decided that the best solution would be to merge the two projects into one and then the configuration can be edited in just one place.
 
-## Usage
+## Design
 
-## Renewing a token for a user
+### LTI Tool Launch
+
+This is when a user in a service like Canvas click on the link to launch an LTI tool (or it may be in an iframe so launched when the page loads). The launch is designed to pass across information about who the current user is and where in the LMS/VLE they are in a secure way so that the integrated functionality can present them with some functionality.
+
+The easiest way to understand what's happening is with a sequence diagram:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Browser
+    participant Tool Support
+    participant Canvas
+    participant LTI Tool
+    rect rgb(240,240,240)
+    Note over Tool Support: Start LTI 1.3 Standard
+    Browser->>Tool Support: LTI initiation request (POST /lti/login_initation/{registrationId})
+    Tool Support->>Browser: 302
+    Browser->>Canvas: Authorization Redirect (GET https://canvas.instructure.com/api/lti/authorize_redirect)
+    Canvas->>Browser: 302
+    Browser->>Canvas: Authorization (GET https://instance.instructure.com/api/lti/authorize)
+    Canvas->>Browser: 200 (HTML autosubmit)
+    Browser->>Tool Support: LTI Login (POST /lti/login)
+    Note over Tool Support: End LTI 1.3 Standard
+    end
+    Tool Support->>Browser: 302
+    Note over Browser: Redirect is used here<br>to keep the service<br>generic.
+    Browser->>LTI Tool: Show Tool (GET https://lti.example/?id=1234)
+    Note over LTI Tool: This can be served<br> from a static website
+    LTI Tool->>Browser: 200 (HTML for tool)
+    Browser-->>Tool Support: GET token (fetch POST /token id=1234)
+    Tool Support-->>Browser: 200 (JSON containing JWT)
+    alt
+    Tool Support-->>Browser: 404 (No token found for ID, eg already retrieved)
+    end
+    alt
+    Tool Support-->>Browser: 403 (When user is not allowed to use tool)
+    end
+```
+
+#### Audience Validation
+
+As there isn't a secret that is needed to configure the tool we must do audience validation so that only allowed services can perform a LTI launch. Generally the final endpoint that gets a JWT as authentication should be doing the audience validation, but it may be helpful to also allow it to be done at the point of the LTI launch.
+
+### LTI Names and Roles Provisioning Service
+
+This service supports clients using the JWT created as part of the LTI authentication flow to make Names and Roles Provisioning Service (NRPS) requests to `/nrps/` supplying the JWT as a Bearer in the Authorization header. If the tool has the NRPS service enable then a request will be made to the NRPS endpoint and then if there are any further pages of responses these will be retrieved as well and returned to client in a single response.
+
+The ability to use this endpoint is controlled by configuration which specifies which roles are allowed to use the NRPS. This is because typically you don't want student roles to be able to use this endpoint as it supplies details that may be hidden from them (eg email address). Multiple roles can be specified separated by commas.
+
+### LTI Deep Linking
+
+There is support in the LTI Server to sign deep linking responses before they get sent back to Canvas. This is so that static tools (without a server side component) can sign a JWT for the deep linking response. The specification for this is at: https://www.imsglobal.org/spec/lti-dl/v2p0
+
+The launch flow should be very similar to a normal LTI launch, however once the tool has enough information to send the data back to Canvas it can use the deep linking endpoint to get a signed JWT:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    Canvas->>Tool Support: LTI Launch (JWT)
+    Tool Support->>+Tool: Token ID
+    Tool->>+Tool Support: Token ID (POST /token)
+    Tool Support ->>-Tool: JWT
+    Note over Tool: User uses the tool.
+    Tool->>+Tool Support: Content Items (POST /deep-linking)
+    Tool Support->>-Tool:  Signed JWT
+    Tool->>Canvas: Signed JWT (to return URL from JWT)
+```
+
+The deep linking endpoint takes the JSON that would normally be included in the content items section of the JWT.
+
+### Example usage
+
+This is how it is implemented in calendar import:
+
+```js
+const url = this.props.ltiServer + '/deep-linking'
+
+const body = {
+  "https://purl.imsglobal.org/spec/lti-dl/claim/content_items": [{
+    "type": "ltiResourceLink",
+    "title": this.state.pageName,
+    "url": this.props.targetLinkUri,
+    "custom": {
+      "url": this.state.url
+    }
+  }]
+}
+
+fetch(
+  url,
+{
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: new Headers({
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + this.props.token
+    })
+  }
+).then((response) => {
+  if (!response.ok) {
+    throw Error("" + response.status);
+  }
+  return response.json()
+}).then((json) => {
+  this.setState({deepLinkingJwt: json['jwt']})
+  document.getElementById('deepLinkingForm').submit();
+})
+```
+
+A fetch POST is made to the deep-linking endpoint  e.g. 'https://lti.canvas.ox.ac.uk/deep-linking'. The body is a JSON object comprised of the content_items claim with a type of "ltiResourceLink". The url is the claim returned from target_link_uri, and any additional contents are in the custom parameter.
+This returns a jwt which is then auto-submitted to the url from https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings.deep_link_return_url in a form
+
+```js
+<form name="deepLinkingForm" id="deepLinkingForm" method="post" action={this.props.deepLinkReturnUrl}>
+  <input type="hidden" name="JWT" value={this.state.deepLinkingJwt} />
+</form>
+```
+
+
+### Proxy Use
+
+The proxy allows a tool to make requests to Canvas (eg please list all the courses the current user has) using the browser fetch API, if it doesn't have a token for the user then it returns an error and the tool at this point can prompt the user to start the OAuth2 flow to grant access. Requests to the proxy normally include the JWT from the LTI launch and this is used to work out which developer key should be used (each LTI can optionally have a API key linked to it).
+
+#### Renewing a token
 
 The endpoint (badly named) to renew a token for a user is `POST /tokens/check`, this attempts to remove the existing token for a user and then gets them to re-grant access to the application. The sequence is as follows:
 
 ```mermaid
 sequenceDiagram
-    
-    Browser->>+Proxy: POST https://proxy/tokens/check
+    autonumber
+    Browser->>+Tool Support: POST https://proxy/tokens/check
     note right of Browser: This includes the JWT as a request parameter which is used to authenticate the request.
-    Proxy-->>-Browser: 302 https://canvas/login/oauth2/auth....
-    note over Browser,Proxy: Cookie based session established with Proxy
+    Tool Support-->>-Browser: 302 https://canvas/login/oauth2/auth....
+    note over Browser,Tool Support: Cookie based session established with Proxy
     rect rgb(240,240,240)
-    note over Proxy: Standard OAuth2 Flow to Canvas
+    note over Tool Support: Standard OAuth2 Flow to Canvas
     Browser->>+Canvas: GET https://canvas/login/oauth2/auth....
     Canvas-->>-Browser: 302 https://canvas/login/oauth2/confirm
     Browser->>+Canvas: GET https://canvas/login/oauth2/confirm
@@ -34,92 +157,43 @@ sequenceDiagram
     Browser->>+Canvas: GET https://canvas/login/oauth2/code....
     Canvas-->>-Browser: 302 https://proxy/tokens/check
     end
-    Browser->>+Proxy: GET https://proxy/tokens/check
-    Proxy->>+Canvas: GET https://canvas/login/oauth2/token
-    Canvas-->>-Proxy: 200 Refresh token
-    Proxy->>-Browser: 200 HTML ... Access Granted
+    Browser->>+Tool Support: GET https://proxy/tokens/check
+    Tool Support->>+Canvas: GET https://canvas/login/oauth2/token
+    Canvas-->>-Tool Support: 200 Refresh token
+    Tool Support->>-Browser: 200 HTML ... Access Granted
 
 ```
+
+#### Server to Server
+
+We also support serverside services having a shared secret key to sign requests (with HMAC) and this allows the services to perform requests on behalf of a user once the JWT from the LTI launch has expired. As there is no user present for these requests if the token doesn't exist for the user there is no way to prompt them to grant access again.
 
 ## Deployment Configuration
 
 ### AWS Elastic Beanstalk
 
-This application needs a database to store the OAuth tokens it gets granted. Recovery for this database isn't critical at the moment as if wee lost it then everyone would need to confirm that they wanted to grant access to their account again. We have enabled swap on the instance so for test instances we can use low memory machines and still be able to deploy new version without running out of memory.
+This application needs a database to store the configuration and the OAuth tokens it gets granted. We have enabled swap on the instance so for test instances we can use low memory machines and still be able to deploy new version without running out of memory.
 
 #### Environmental Variables
 
 - HOSTNAME - The hostname that the server is running on, used to get TLS/config files.
+- LTI_ISSUER - The issuer of JWT tokens that we sign.
 - RDS_HOSTNAME - The MySQL hostname to connect to for the database.
 - RDS_PORT - The MySQL port to use in the connection to thee database.
 - RDS_DB_NAME - The name of the MySQL database to use.
 - RDS_USERNAME - The username to use to connect to the MySQL database.
 - RDS_PASSWORD - The password to use to connect to the MySQL database.
+- SENTRY_DSN - The secret for reporting errors and performance to https://sentry.io
+- SENTRY_ENVIRONMENT - The environment key that is sent to https://sentry.io
+- SPRING_PROFILES_ACTIVE - The profiles that are active, this is used to load configuration.
 
 #### Client Configuration
 
-For each client that can use the tool there needs to be an entry in the client configuration file. This file then needs to be updated to S3. To download the current clients:
+Client configuration is held in the DB and details of how to update this will be added shortly.
 
-    aws s3 cp s3://elasticbeanstalk-eu-west-1-211318693510/files/proxy.canvas.ox.ac.uk-client.properties .
+## Notes
 
-then you can edit the file and upload it to S3 again:
-
-    aws s3 cp proxy.canvas.ox.ac.uk-client.properties s3://elasticbeanstalk-eu-west-1-211318693510/files/
-
-The client will probably also want to have it's HTTPS endpoint added to the CORS configuration in the same file. To add a new client first you need to decide on the "Client Registration ID" which is a name used by the spring configuration. This will form part of all the properties. For each client you need a section in the configuration like:
-
-    # Replace [clientRegId] and [instance] with values for your tool
-    # This first section can be shared if there are multiple tools
-    spring.security.oauth2.client.provider.[instance].authorization-uri=https://[instance].instructure.com/login/oauth2/auth
-    spring.security.oauth2.client.provider.[instance].token-uri=https://[instance].instructure.com/login/oauth2/token
-    
-    # This is the details of the tool
-    # User friendly name of the registration.
-    spring.security.oauth2.client.registration.[clientRegId].client-name=
-    # The client ID from Canvas
-    spring.security.oauth2.client.registration.[clientRegId].client-id=
-    # The client secret from Canvas
-    spring.security.oauth2.client.registration.[clientRegId].client-secret=
-    spring.security.oauth2.client.registration.[clientRegId].redirect-uri={baseUrl}/login/oauth2/code/{registrationId}
-    spring.security.oauth2.client.registration.[clientRegId].authorization-grant-type=authorization_code
-    spring.security.oauth2.client.registration.[clientRegId].client-authentication-method=post
-    spring.security.oauth2.client.registration.[clientRegId].provider=[instance]
-    
-Then you will also need a mapping from the LTI Key to the Developer Key
-
-    # Set this equal to the client ID of the LTI tool.
-    proxy.mapping.[ltiClientId].clientName=[clientRegId]
-
-If you want to allow HMAC signed requests by a server also set:
-
-    # An optional shared secret for signing HMAC JWTs.
-    proxy.mapping.[ltiClientId].secret=[base64EncodedSecret]
-    # The issuer that the service will use to sign the JWTs.
-    proxy.mapping.[ltiClientId].issuer=[https://myservice.issuer]
-
-#### HTTPS
-
-A public private keypair needs to be generated for TLS. There are configurations for TLS in `proxy.canvas.ox.ac.uk.cfg` to create a new private key and CSR use:
-
-    openssl req -nodes -new -keyout proxy.canvas.ox.ac.uk-key.pem -out proxy.canvas.ox.ac.uk.csr -config proxy.canvas.ox.ac.uk.cfg -batch -verbose
-
-This CSR can then be used to request a certificate from the certificate service: https://wiki.it.ox.ac.uk/itss/CertificateService 
-Once a certificate is issued they should be uploaded to the S3 bucket:
-
-    aws s3 cp proxy.canvas.ox.ac.uk-chain.crt  s3://elasticbeanstalk-eu-west-1-211318693510/certificates/
-    aws s3 cp proxy.canvas.ox.ac.uk-key.pem s3://elasticbeanstalk-eu-west-1-211318693510/certificates/
-
-## TODO
-
-### Different JWT Validator
-
-live/beta/test have different JWTs, need different validators.
-
-### Refresh/Access tokens
-
-Handling refresh/access tokens and updating them in the DB, at the moment we have to re-ask every 1 hour.
-
-### Error Handling
+### Proxy Error Handling
 
 If the user removes their token then we get a 401 back from Canvas with a body of:
 {"errors":[{"message":"Invalid access token."}]}
@@ -127,7 +201,7 @@ We need to be careful with this as when our JWT is invalid we will also get 401,
 
     WWW-Authenticate: Bearer realm="canvas-lms"
 
-but when it's from an missing JWT it's:
+but when it's from a missing JWT it's:
 
      WWW-Authenticate: Bearer realm="proxy"
     
@@ -135,13 +209,21 @@ and if it's an invalid JWT it's something along the lines of:
 
     WWW-Authenticate: Bearer error="invalid_token", error_description="An error occurred while attempting to decode the Jwt: Signed JWT rejected: Another algorithm expected, or no matching key(s) found", error_uri="https://tools.ietf.org/html/rfc6750#section-3.1"
 
-### Request Body
+### Signing JWTs
 
-Need to test the handling of request bodies and if they get correctly mapped through the proxy to Canvas.
+For each LTI key you can select if the JWT that is handed to the tool is the original one signed by the VLE (Canvas) or if we should sign the JWT ourselves. One reason for signing ourselves is that we can then make the expiry on the JWT longer, but in the future it could also allow us to add extra data or to strip out some data.
 
-### Frontend from config
+The public key that the JWTs are signed using is available on `/.well-known/jwks.json`, so any service consuming these JWTs will need to verify them against that key.
 
-We need to pull the frontend application from configuration so that we can support multiple frontends.
+### LTI Custom Fields 
+
+We have special support for the following custom fields:
+
+- `allowed_roles` - When set on the LTI launch this should be a comma separated list of Canvas roles that are allowed to retrieve the token (effectively use the tool). For this to work the Canvas roles that the current user has must also be passed over in the field `canvas_membership_roles`. A user only has to have an overlapping value in these sets to be allowed access. Here's an example of the configuration needed to only allow a Teacher or Tutor  access to a tool:
+```
+    canvas_membership_roles=$Canvas.membership.roles
+    allowed_roles=Teacher,Tutor
+```
 
 ## Releasing
 
