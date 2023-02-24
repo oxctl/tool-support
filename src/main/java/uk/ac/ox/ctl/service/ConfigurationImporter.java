@@ -87,7 +87,7 @@ public class ConfigurationImporter {
         }
 
         int linked = 0;
-        // For all the LTI tools, check to see if there's a proxy tool we should link up.
+        // For all the LTI tools, lookup if any proxy tools should be linked and there's any additional configuration.
         for (Tool ltiTool : toolRepository.findToolByLtiIdNotNull()) {
             AudienceConfiguration.LtiAudience ltiAudience = audienceConfiguration.getLtiAudience(ltiTool.getLti().getClientId());
             if (ltiAudience != null) {
@@ -108,10 +108,10 @@ public class ConfigurationImporter {
                         }
                         ToolRegistrationProxy registrationProxy = proxyTool.getProxy();
                         toolRepository.delete(proxyTool);
-                        // Allow it to be re-linked.
-                        proxyTool.setId(null);
+                        
                         ltiTool.setProxy(registrationProxy);
                         registrationProxy.setTool(ltiTool);
+                        registrationProxy.setId(ltiTool.getId());
                         toolRepository.save(ltiTool);
                         linked++;
                     } else {
@@ -131,8 +131,6 @@ public class ConfigurationImporter {
         }
         log.info("Imported {}/{} lti configurations, {}/{} proxy configurations. Successfully linked {} proxy tools an LTI tool",
                 lti, ltiProperties.getRegistration().size(), proxy, proxyProperties.getRegistration().size(), linked);
-
-
     }
 
     /**
