@@ -16,12 +16,11 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
 import uk.ac.ox.ctl.lti13.Lti13Configurer;
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig {
+public class LtiWebSecurity {
 
     private final JWTService jwtService;
     
@@ -31,7 +30,7 @@ public class WebSecurityConfig {
     @Value("${lti.repo.state.limit.ip:false}")
     private boolean limitIp;
 
-    public WebSecurityConfig(JWTService jwtService) {
+    public LtiWebSecurity(JWTService jwtService) {
         this.jwtService = jwtService;
     }
 

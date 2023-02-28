@@ -15,9 +15,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ox.ctl.ltiauth.Lti13Configuration;
 import uk.ac.ox.ctl.ltiauth.TestClientRegistrationConfig;
-import uk.ac.ox.ctl.ltiauth.ToolClientRegistrationService;
-import uk.ac.ox.ctl.ltiauth.WebSecurityConfig;
-import uk.ac.ox.ctl.ltiauth.jwt.LtiJwtConfig;
+import uk.ac.ox.ctl.ltiauth.LtiWebSecurity;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -25,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = JWKSController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "uk\\.ac\\.ox\\.ctl\\.canvasproxy\\..*"))
 @ImportAutoConfiguration(exclude = OAuth2ClientAutoConfiguration.class)
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
-@Import({Lti13Configuration.class, TestClientRegistrationConfig.class, WebSecurityConfig.class})
+@Import({Lti13Configuration.class, TestClientRegistrationConfig.class, LtiWebSecurity.class})
 class JWKSControllerTest {
 
     @MockBean

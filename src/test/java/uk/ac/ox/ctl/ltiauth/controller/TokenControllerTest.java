@@ -16,8 +16,7 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ox.ctl.ltiauth.JWTService;
-import uk.ac.ox.ctl.ltiauth.WebSecurityConfig;
-import uk.ac.ox.ctl.ltiauth.controller.TokenController;
+import uk.ac.ox.ctl.ltiauth.LtiWebSecurity;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -34,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = TokenController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "uk\\.ac\\.ox\\.ctl\\.canvasproxy\\..*"))
-@Import(WebSecurityConfig.class)
+@Import(LtiWebSecurity.class)
 class TokenControllerTest {
 
     OidcIdToken idToken = new OidcIdToken("value", Instant.now(), Instant.now().plus(Duration.ofMinutes(10)), Collections.singletonMap("sub", "1234"));

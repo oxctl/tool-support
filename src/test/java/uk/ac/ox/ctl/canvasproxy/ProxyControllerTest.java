@@ -1,11 +1,8 @@
 package uk.ac.ox.ctl.canvasproxy;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -27,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // WebMvcTest doesn't pull the OAuth configuration in by default
 @WebMvcTest(controllers = ProxyController.class, properties = "tool.origins=https://config.test,https://localhost:3000")
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
-@Import({TestClientRegistrationConfig.class, OAuth2Configuration.class, WebSecurity.class, ProxyJwtConfig.class, WebSecurityConfiguration.class})
+@Import({TestClientRegistrationConfig.class, OAuth2Configuration.class, ProxyWebSecurity.class, ProxyJwtConfig.class, WebSecurityConfiguration.class})
 public class ProxyControllerTest {
 
     @Autowired

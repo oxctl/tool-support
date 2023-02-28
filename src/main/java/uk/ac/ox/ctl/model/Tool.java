@@ -17,6 +17,7 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -57,7 +58,7 @@ public class Tool {
     /**
      * The origins that we allow.
      */
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     // We want to allow fast lookups of origins but they shouldn't be unique because multiple tools can be running
     // on the same origin.
     @CollectionTable(indexes = {@Index(columnList = "origin")})

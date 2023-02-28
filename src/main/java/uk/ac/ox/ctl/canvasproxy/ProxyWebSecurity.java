@@ -22,7 +22,7 @@ import uk.ac.ox.ctl.oauth2.client.userinfo.CanvasUserService;
 
 @EnableWebSecurity
 @Configuration
-public class WebSecurity {
+public class ProxyWebSecurity {
 
     @Autowired
     @Qualifier("proxy")

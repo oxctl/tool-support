@@ -1,7 +1,7 @@
 package uk.ac.ox.ctl.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -20,8 +20,6 @@ import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.MapsId;
@@ -51,6 +49,7 @@ abstract public class ToolRegistration {
     @MapsId()
     @ToString.Exclude // Stop recursive toString()
     @JoinColumn(name = "id")
+    @JsonIgnore // stop loops
     private Tool tool;
     
     private String registrationId;
