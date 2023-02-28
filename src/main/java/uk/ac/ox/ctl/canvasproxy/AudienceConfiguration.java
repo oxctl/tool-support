@@ -22,10 +22,12 @@ import java.util.stream.Collectors;
 @Validated
 public class AudienceConfiguration implements PrincipalClientIdResolver {
 
-    private final Map<String, LtiAudience> mapping;
+    private final Map<String, LtiAudience> mapping = new HashMap<>();
 
     public AudienceConfiguration(Map<String, LtiAudience> mapping) {
-        this.mapping = mapping;
+        if (mapping != null) {
+            this.mapping.putAll(mapping);
+        }
     }
     
     public byte[] findHmacSecret(String audience) {
