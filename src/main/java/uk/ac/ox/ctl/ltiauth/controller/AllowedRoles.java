@@ -2,13 +2,14 @@ package uk.ac.ox.ctl.ltiauth.controller;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 @ConfigurationProperties("lti.nrps")
 public class AllowedRoles {
 
-    private Map<String, Roles> client;
+    private Map<String, Roles> client = new HashMap<>();
 
     public Map<String, Roles> getClient() {
         return client;
