@@ -7,7 +7,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.AbstractOAuth2TokenAuthenticationToken;
 import org.springframework.validation.annotation.Validated;
-import uk.ac.ox.ctl.oauth2.client.web.method.annotation.PrincipalClientIdResolver;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
 @ConstructorBinding
 @ConfigurationProperties("proxy")
 @Validated
-public class AudienceConfiguration implements PrincipalClientIdResolver {
+public class AudienceConfiguration implements AudienceConfigResolver{
 
     private final Map<String, LtiAudience> mapping = new HashMap<>();
 
@@ -29,17 +28,15 @@ public class AudienceConfiguration implements PrincipalClientIdResolver {
             this.mapping.putAll(mapping);
         }
     }
-    
+
     public byte[] findHmacSecret(String audience) {
         LtiAudience ltiAudience = mapping.get(audience);
-        if (ltiAudience != null) {
-            return ltiAudience.secret;
-        }
-        return null;
+        return (ltiAudience != null) ? ltiAudience.secret : null;
     }
 
     /**
-     * Find the issuer who should be 
+     * Find the issuer who should be
+     *
      * @param audience The audience to be looked up.
      * @return The issuer that should be signing the JWT.
      */
@@ -48,24 +45,12 @@ public class AudienceConfiguration implements PrincipalClientIdResolver {
         return ltiAudience != null ? ltiAudience.getIssuer() : null;
     }
 
-    @Override
-    public String findClientId(Authentication authentication) {
-        if (authentication instanceof AbstractOAuth2TokenAuthenticationToken) {
-            AbstractOAuth2TokenAuthenticationToken<Jwt> jwt = (AbstractOAuth2TokenAuthenticationToken<Jwt>) authentication;
-            List<String> audiences = jwt.getToken().getAudience();
-            Set<String> clientNames = audiences.stream().map(mapping::get).filter(Objects::nonNull).map(LtiAudience::getClientName).collect(Collectors.toSet());
-            Iterator<String> iterator = clientNames.iterator();
-            if (iterator.hasNext()) {
-                String clientName = iterator.next();
-                if (iterator.hasNext()) {
-                    throw new IllegalStateException("We found multiple possible client IDs for the audiences");
-                }
-                return clientName;
-            }
-        }
-        return null;
+    public String findProxyRegistration(String audience) {
+        LtiAudience ltiAudience = mapping.get(audience);
+        return ltiAudience != null ? ltiAudience.getClientName() : null;
     }
-    
+
+
     public LtiAudience getLtiAudience(String audience) {
         return mapping.get(audience);
     }
@@ -76,12 +61,12 @@ public class AudienceConfiguration implements PrincipalClientIdResolver {
      */
     @ConstructorBinding
     public static class LtiAudience {
-        
+
         @NotNull
         private final String clientName;
 
         private final String issuer;
-        @Size(min=20)
+        @Size(min = 20)
         private final byte[] secret;
 
         public LtiAudience(String clientName, String issuer, String secret) {
@@ -92,6 +77,7 @@ public class AudienceConfiguration implements PrincipalClientIdResolver {
 
         /**
          * The name of the OAuth2 client configuration this LTI audience should map to.
+         *
          * @return The name of a client configuration.
          */
         public String getClientName() {
@@ -100,6 +86,7 @@ public class AudienceConfiguration implements PrincipalClientIdResolver {
 
         /**
          * If we are accepting HMAC signed JWTs what should the issuer be?
+         *
          * @return The issuer to verify.
          */
         public String getIssuer() {
@@ -108,6 +95,7 @@ public class AudienceConfiguration implements PrincipalClientIdResolver {
 
         /**
          * The shared secret used to sign JWTs from the application (not through the LTI launch).
+         *
          * @return The HMAC secret.
          */
         public byte[] getSecret() {

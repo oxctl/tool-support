@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import uk.ac.ox.ctl.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
+import uk.ac.ox.ctl.oauth2.client.web.method.annotation.PrincipalClientIdResolver;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +31,7 @@ public class TokensController {
     private OAuth2AuthorizedClientRepository clientRepository;
 
     @Autowired
-    private AudienceConfiguration clientIdResolver;
+    private PrincipalClientIdResolver clientIdResolver;
 
     /**
      * This is the endpoint the user returns to once they have successfully granted their token
