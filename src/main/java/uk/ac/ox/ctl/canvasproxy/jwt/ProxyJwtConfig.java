@@ -24,11 +24,15 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import uk.ac.ox.ctl.Issuer;
 import uk.ac.ox.ctl.IssuerConfiguration;
-import uk.ac.ox.ctl.canvasproxy.AudienceConfiguration;
+import uk.ac.ox.ctl.canvasproxy.MultiAudienceConfigResolver;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static javax.xml.crypto.dsig.SignatureMethod.HMAC_SHA256;
@@ -45,7 +49,7 @@ public class ProxyJwtConfig {
     private IssuerConfiguration issuerConfiguration;
     
     @Autowired
-    private AudienceConfiguration audienceConfiguration; 
+    private MultiAudienceConfigResolver multiAudienceConfigResolver; 
 
     // This is useful if we aren't doing JWT -> client ID mapping, but in most instances probably can be null
     @Value("${jwt.audience:#{null}}")
@@ -65,7 +69,7 @@ public class ProxyJwtConfig {
             // Add the standard Canvas issuers
             List<String> issuers = new ArrayList<>(canvasIssuers);
             // Add the issuers for the hmac tokens.
-            jwt.getAudience().stream().map(audienceConfiguration::findIssuer).forEach(issuers::add);
+            jwt.getAudience().stream().map(multiAudienceConfigResolver::findIssuer).forEach(issuers::add);
             return issuers;
         }));
         return validators;
@@ -119,7 +123,7 @@ public class ProxyJwtConfig {
                 return Collections.emptyList();
             }
             return context.getAudience().stream()
-                    .map(audience -> audienceConfiguration.findHmacSecret(audience))
+                    .map(audience -> multiAudienceConfigResolver.findHmacSecret(audience))
                     .filter(Objects::nonNull)
                     .map(secret -> new SecretKeySpec(secret, HMAC_SHA256))
                     .collect(Collectors.toList());

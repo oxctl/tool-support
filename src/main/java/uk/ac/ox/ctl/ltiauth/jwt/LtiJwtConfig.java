@@ -60,6 +60,7 @@ public class LtiJwtConfig {
         ConfigurableJWTProcessor<IssuerSecurityContext> processor = new DefaultJWTProcessor<>();
         // We can't use the Spring retriever as it's package private
         DefaultResourceRetriever retriever = new DefaultResourceRetriever(2000, 10000, 128 * 1024);
+        // We ignore the map keys here as it's just the values we need.
         Map<String, JWKSource<SecurityContext>> jwksMap = issuerConfiguration.getIssuer().values().stream()
                 .collect(Collectors.toMap(Issuer::getIssuer, issuer -> new RemoteJWKSet<>(issuer.getJwksUrl(), retriever)));
         JWKSource<IssuerSecurityContext> jwkSource = new MultiJWKSource(jwksMap, jwkSet);
