@@ -1,6 +1,8 @@
 package uk.ac.ox.ctl.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,9 +11,12 @@ import org.hibernate.annotations.Type;
 import org.springframework.security.oauth2.core.AuthenticationMethod;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import uk.ac.ox.ctl.repository.AuthenticationMethodConverter;
-import uk.ac.ox.ctl.repository.AuthorizationGrantTypeConverter;
-import uk.ac.ox.ctl.repository.ClientAuthenticationMethodConverter;
+import uk.ac.ox.ctl.AuthenticationMethodJsonConverter;
+import uk.ac.ox.ctl.AuthorizationGrantTypeJsonConverter;
+import uk.ac.ox.ctl.ClientAuthenticationMethodJsonConverter;
+import uk.ac.ox.ctl.repository.AuthenticationMethodDBConverter;
+import uk.ac.ox.ctl.repository.AuthorizationGrantTypeDBConverter;
+import uk.ac.ox.ctl.repository.ClientAuthenticationMethodDBConverter;
 import uk.ac.ox.ctl.repository.StringSetConverter;
 
 import javax.persistence.Column;
@@ -56,9 +61,13 @@ abstract public class ToolRegistration {
     private String clientName;
     private String clientId;
     private String clientSecret;
-    @Convert(converter = ClientAuthenticationMethodConverter.class)
+    @Convert(converter = ClientAuthenticationMethodDBConverter.class)
+    @JsonDeserialize(converter = ClientAuthenticationMethodJsonConverter.Deserialize.class)
+    @JsonSerialize(converter = ClientAuthenticationMethodJsonConverter.Serialize.class)
     private ClientAuthenticationMethod clientAuthenticationMethod;
-    @Convert(converter = AuthorizationGrantTypeConverter.class)
+    @Convert(converter = AuthorizationGrantTypeDBConverter.class)
+    @JsonDeserialize(converter = AuthorizationGrantTypeJsonConverter.Deserialize.class)
+    @JsonSerialize(converter = AuthorizationGrantTypeJsonConverter.Serialize.class)
     private AuthorizationGrantType authorizationGrantType;
     
     private String redirectUri;
@@ -91,7 +100,9 @@ abstract public class ToolRegistration {
     @AllArgsConstructor
     public static class UserInfoEndpoint {
         private String uri;
-        @Convert(converter = AuthenticationMethodConverter.class)
+        @Convert(converter = AuthenticationMethodDBConverter.class)
+        @JsonDeserialize(converter = AuthenticationMethodJsonConverter.Deserialize.class)
+        @JsonSerialize(converter = AuthenticationMethodJsonConverter.Serialize.class)
         private AuthenticationMethod authenticationMethod;
         private String userNameAttributeName;
     }
