@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.regex.Pattern;
 
+// this was copied from Spring Boot because the autoconfiguration wasn't creating the beans because we have JWT based authentication enabled
 @Configuration
 @Slf4j
 public class AdminWebSecurity {

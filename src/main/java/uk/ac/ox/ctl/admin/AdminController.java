@@ -1,6 +1,8 @@
 package uk.ac.ox.ctl.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ox.ctl.model.Tool;
 import uk.ac.ox.ctl.repository.ToolRepository;
@@ -24,17 +26,17 @@ public class AdminController {
     }
 
     @GetMapping("/tools/{id}")
-    Tool getToolById(@PathVariable UUID id) throws Exception {
-        return repository.findById(id)
-            .orElseThrow(() -> new Exception("Tool with id ${id} not found."));
+    ResponseEntity<Tool> getToolById(@PathVariable UUID id) {
+        return repository.findById(id).map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @PutMapping("/tools/{id}")
-    Tool updateTool(@RequestBody Tool newTool, @PathVariable UUID id) throws Exception {
+    ResponseEntity<Tool> updateTool(@RequestBody Tool newTool, @PathVariable UUID id) {
         return repository.findById(id).map(tool -> {
             newTool.setId(id);
-            return repository.save(newTool);
-        }).orElseThrow(() -> new Exception("Tool with id ${id} not found."));
+            return ResponseEntity.ok(repository.save(newTool));
+        }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @DeleteMapping("/tools/{id}")
