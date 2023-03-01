@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import uk.ac.ox.ctl.canvasproxy.repository.PrincipalTokensRepository;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.OAuth2AccessTokenRefresher;
-import uk.ac.ox.ctl.oauth2.client.web.method.annotation.PrincipalClientIdResolver;
 import uk.ac.ox.ctl.repository.ToolRepository;
 import uk.ac.ox.ctl.service.ToolProxyClientRegistrationRepository;
 
@@ -22,15 +21,5 @@ public class ProxyConfiguration {
     @Bean
     PrincipalOAuth2AuthorizedClientRepository principalOAuth2AuthorizedClientRepository(PrincipalTokensRepository principalTokensRepository, @Qualifier("proxy") ClientRegistrationRepository clientRegistrationRepository, OAuth2AccessTokenRefresher auth2AccessTokenRefresher) {
         return new PrincipalOAuth2AuthorizedClientRepository(principalTokensRepository, clientRegistrationRepository, auth2AccessTokenRefresher);
-    }
-    
-    @Bean
-    PrincipalClientIdResolver principalClientIdResolver(MultiAudienceConfigResolver multiAudienceConfigResolver) {
-        return new ToolPrincipalClientIdResolver(multiAudienceConfigResolver);
-    }
-    
-    @Bean
-    MultiAudienceConfigResolver multiAudienceConfigResolver(ToolRepository toolRepository, AudienceConfiguration audienceConfiguration) {
-        return new MultiAudienceConfigResolver(toolRepository, audienceConfiguration);
     }
 }
