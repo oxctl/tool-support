@@ -6,8 +6,8 @@ env:
   AWS_REGION: "eu-west-1"
   # If AWS account/project changes this should too
   DOCKER_REPO: 211318693510.dkr.ecr.eu-west-1.amazonaws.com/ctl/canvas-proxy
-  EB_APPLICATION: canvas-oauth-proxy
-  EB_ENVIRONMENT: canvas-oauth-proxy-prod-env
+  EB_APPLICATION: tool-support
+  EB_ENVIRONMENT: tool-support-prod-env
 
 on:
   workflow_dispatch:
