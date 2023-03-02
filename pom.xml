@@ -20,9 +20,9 @@
     </properties>
 
     <scm>
-        <connection>scm:git:ssh://git@github.com/oxctl/canvas-proxy</connection>
-        <developerConnection>scm:git:ssh://git@github.com/oxctl/canvas-proxy</developerConnection>
-        <url>https://github.com/oxctl/canvas-proxy</url>
+        <connection>scm:git:ssh://git@github.com/oxctl/tool-support</connection>
+        <developerConnection>scm:git:ssh://git@github.com/oxctl/tool-support</developerConnection>
+        <url>https://github.com/oxctl/tool-support</url>
         <tag>0.2.0</tag>
     </scm>
 
