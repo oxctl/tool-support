@@ -9,7 +9,7 @@
     </parent>
     <groupId>uk.ac.ox.ctl</groupId>
     <artifactId>canvas-tools</artifactId>
-    <version>0.5.3-SNAPSHOT</version>
+    <version>0.5.4-SNAPSHOT</version>
     <name>Canvas Tools</name>
     <description>LTI 1.3 and OAuth2 proxy support for Canvas</description>
 
