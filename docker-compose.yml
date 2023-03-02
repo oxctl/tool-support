@@ -1,0 +1,15 @@
+version: '3'
+services:
+  db:
+    # need to support arm64 so need Oracle
+    image: mysql:8.0.28-oracle
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_USER: tools
+      MYSQL_PASSWORD: tools
+      MYSQL_DATABASE: tools
+    command:
+     - --character-set-server=utf8
