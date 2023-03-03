@@ -52,6 +52,7 @@ public class TokenController {
         }
         // When we sign our own token we just want to return the JWT.
         if (retrieve instanceof String) {
+            // TODO We should be validating the launch here (but aren't).
             return Map.of("jwt", retrieve);
         }
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Token could not be found");

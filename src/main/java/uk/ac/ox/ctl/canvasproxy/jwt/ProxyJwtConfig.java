@@ -12,7 +12,6 @@ import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -25,10 +24,18 @@ import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import uk.ac.ox.ctl.Issuer;
 import uk.ac.ox.ctl.IssuerConfiguration;
 import uk.ac.ox.ctl.canvasproxy.AudienceConfiguration;
+import uk.ac.ox.ctl.canvasproxy.MultiAudienceConfigResolver;
+import uk.ac.ox.ctl.canvasproxy.ToolPrincipalClientIdResolver;
+import uk.ac.ox.ctl.oauth2.client.web.method.annotation.PrincipalClientIdResolver;
+import uk.ac.ox.ctl.repository.ToolRepository;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static javax.xml.crypto.dsig.SignatureMethod.HMAC_SHA256;
@@ -41,18 +48,11 @@ public class ProxyJwtConfig {
 
     private final Logger log = LoggerFactory.getLogger(ProxyJwtConfig.class);
 
-    @Autowired
-    private IssuerConfiguration issuerConfiguration;
-    
-    @Autowired
-    private AudienceConfiguration audienceConfiguration; 
-
     // This is useful if we aren't doing JWT -> client ID mapping, but in most instances probably can be null
     @Value("${jwt.audience:#{null}}")
     private String audience;
 
-
-    private List<OAuth2TokenValidator<Jwt>> jwtValidators() {
+    private DelegatingOAuth2TokenValidator delegatingOAuth2TokenValidator(IssuerConfiguration issuerConfiguration, MultiAudienceConfigResolver multiAudienceConfigResolver) {
         List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
         validators.add(new JwtTimestampValidator());
         if (audience != null) {
@@ -65,15 +65,15 @@ public class ProxyJwtConfig {
             // Add the standard Canvas issuers
             List<String> issuers = new ArrayList<>(canvasIssuers);
             // Add the issuers for the hmac tokens.
-            jwt.getAudience().stream().map(audienceConfiguration::findIssuer).forEach(issuers::add);
+            jwt.getAudience().stream().map(multiAudienceConfigResolver::findIssuer).forEach(issuers::add);
             return issuers;
         }));
-        return validators;
+        return new DelegatingOAuth2TokenValidator<>(validators);
     }
 
     @Bean("proxyJwtDecoder")
     @Qualifier("proxy")
-    public JwtDecoder allDecoder() {
+    public JwtDecoder allDecoder(IssuerConfiguration issuerConfiguration, MultiAudienceConfigResolver multiAudienceConfigResolver) {
         // This originally came from: org.springframework.security.oauth2.jwt.NimbusJwtDecoder.JwkSetUriJwtDecoderBuilder.processor
         ConfigurableJWTProcessor<IssuerAndAudienceSecurityContext> processor = new DefaultJWTProcessor<>();
         // We can't use the Spring retriever as it's package private
@@ -81,8 +81,8 @@ public class ProxyJwtConfig {
         Map<String, JWKSource<SecurityContext>> jwksMap = issuerConfiguration.getIssuer().values().stream()
                 .collect(Collectors.toMap(Issuer::getIssuer, issuer -> new RemoteJWKSet<>(issuer.getJwksUrl(), retriever)));
         JWKSource<IssuerAndAudienceSecurityContext> jwkSource = new MultiJWKSource(jwksMap);
-        
-        JWSKeySelector<IssuerAndAudienceSecurityContext> key = new AudienceHmacJWSKeySelector();
+
+        JWSKeySelector<IssuerAndAudienceSecurityContext> key = new AudienceHmacJWSKeySelector(multiAudienceConfigResolver);
 
         // Must make sure we disable plain JWTs
         JWSVerificationKeySelector<IssuerAndAudienceSecurityContext> jwkKeySelector = new JWSVerificationKeySelector<>(JWSAlgorithm.RS256, jwkSource);
@@ -103,9 +103,19 @@ public class ProxyJwtConfig {
         });
 
         MultiJwtDecoder decoder = new MultiJwtDecoder(processor);
-        DelegatingOAuth2TokenValidator<Jwt> jwtValidators = new DelegatingOAuth2TokenValidator<>(jwtValidators());
+        DelegatingOAuth2TokenValidator<Jwt> jwtValidators = delegatingOAuth2TokenValidator(issuerConfiguration, multiAudienceConfigResolver);
         decoder.setJwtValidator(jwtValidators);
         return decoder;
+    }
+
+    @Bean
+    PrincipalClientIdResolver principalClientIdResolver(MultiAudienceConfigResolver multiAudienceConfigResolver) {
+        return new ToolPrincipalClientIdResolver(multiAudienceConfigResolver);
+    }
+
+    @Bean
+    MultiAudienceConfigResolver multiAudienceConfigResolver(ToolRepository toolRepository, AudienceConfiguration audienceConfiguration) {
+        return new MultiAudienceConfigResolver(toolRepository, audienceConfiguration);
     }
 
     /**
@@ -113,13 +123,20 @@ public class ProxyJwtConfig {
      * the signature.
      */
     private class AudienceHmacJWSKeySelector implements JWSKeySelector<IssuerAndAudienceSecurityContext> {
+
+        private final MultiAudienceConfigResolver multiAudienceConfigResolver;
+
+        public AudienceHmacJWSKeySelector(MultiAudienceConfigResolver multiAudienceConfigResolver) {
+            this.multiAudienceConfigResolver = multiAudienceConfigResolver;
+        }
+
         @Override
         public List<? extends Key> selectJWSKeys(JWSHeader header, IssuerAndAudienceSecurityContext context) {
             if (header.getAlgorithm() != JWSAlgorithm.HS256) {
                 return Collections.emptyList();
             }
             return context.getAudience().stream()
-                    .map(audience -> audienceConfiguration.findHmacSecret(audience))
+                    .map(audience -> multiAudienceConfigResolver.findHmacSecret(audience))
                     .filter(Objects::nonNull)
                     .map(secret -> new SecretKeySpec(secret, HMAC_SHA256))
                     .collect(Collectors.toList());

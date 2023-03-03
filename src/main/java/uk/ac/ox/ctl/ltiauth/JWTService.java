@@ -5,6 +5,8 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import uk.ac.ox.ctl.model.Tool;
+import uk.ac.ox.ctl.repository.ToolRepository;
 
 import java.time.Instant;
 import java.util.Date;
@@ -14,11 +16,13 @@ public class JWTService {
     private final JWTSigner signer;
     private final JWTStore store;
     private final LtiSettings ltiSettings;
+    private final ToolRepository toolRepository;
     
-    public JWTService(JWTSigner signer, JWTStore store, LtiSettings ltiSettings) {
+    public JWTService(JWTSigner signer, JWTStore store, LtiSettings ltiSettings, ToolRepository toolRepository) {
         this.signer = signer;
         this.store = store;
         this.ltiSettings = ltiSettings;
+        this.toolRepository = toolRepository;
     }
 
     /**
@@ -28,9 +32,8 @@ public class JWTService {
      * @return true if we are.
      */
     public boolean isSigning(String clientRegistrationId) {
-        LtiSettings.ClientSettings clientSettings = ltiSettings.getClientSettings(clientRegistrationId);
-        // By default we aren't signing the tokens.
-        return clientSettings != null && clientSettings.isSign();
+        return toolRepository.isSigningEnabled(clientRegistrationId)
+                .orElse(ltiSettings.isSign());
     }
 
     /**

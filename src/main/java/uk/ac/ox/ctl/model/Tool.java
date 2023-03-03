@@ -67,8 +67,9 @@ public class Tool {
     
     /**
      * Should we re-sign the JWT when performing an LTI launch?
+     * This is a boolean so if it's null then we can fallback to the global default.
      */
-    private boolean sign;
+    private Boolean sign;
 
     /**
      * The secret that is used to sign JWT HMAC tokens to allow serverside components to use tokens without

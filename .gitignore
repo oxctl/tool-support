@@ -34,16 +34,19 @@ build/
 .vscode/
 config/application.properties
 config/application-*.properties
+config/jwk.jks
 config/keystore.p12
 proxy.canvas.ox.ac.uk-key.pem
 proxy.canvas.ox.ac.uk.csr
 proxy.canvas.ox.ac.uk-chain.crt
 proxy.canvas.ox.ac.uk-client.properties
+tools.canvas.ox.ac.uk-client.properties
 proxy.mv.db
 proxy.trace.db
 proxy-dev.canvas.ox.ac.uk-key.pem
 proxy-dev.canvas.ox.ac.uk.csr
 proxy-dev.canvas.ox.ac.uk-client.properties
+tools-dev.canvas.ox.ac.uk-client.properties
 pom.xml.releaseBackup
 release.properties
 
