@@ -209,7 +209,7 @@
                         </pluginExtension>
                     </pluginExtensions>
                     <from>
-                        <image>eclipse-temurin:17.0.6_10-jre</image>
+                        <image>eclipse-temurin:17.0.6_10-jre-alpine</image>
                     </from>
                     <to>
                         <tags>
