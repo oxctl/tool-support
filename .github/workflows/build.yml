@@ -109,6 +109,7 @@ jobs:
           env: ${{ steps.deployment.outputs.env }}
           status: ${{ job.status }}
           deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+          auto_inactive: true
 
 
 
