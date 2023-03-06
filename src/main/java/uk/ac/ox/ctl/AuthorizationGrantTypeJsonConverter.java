@@ -2,9 +2,7 @@ package uk.ac.ox.ctl;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.stereotype.Component;
 
-@Component
 public class AuthorizationGrantTypeJsonConverter {
     public static class Deserialize extends StdConverter<String, AuthorizationGrantType> {
         @Override

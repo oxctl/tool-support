@@ -55,7 +55,7 @@ public class AdminWebSecurity {
     public SecurityFilterChain adminConfiguration(HttpSecurity http) throws Exception {
         http.antMatcher("/admin/**")
                 .csrf().disable()
-                .httpBasic().realmName("anyoldstring")
+                .httpBasic()
                 .and()
                 .authorizeRequests().anyRequest().hasRole("admin");
         return http.build();

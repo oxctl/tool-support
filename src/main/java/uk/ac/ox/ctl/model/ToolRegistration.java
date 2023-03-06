@@ -48,6 +48,7 @@ abstract public class ToolRegistration {
     
     @Id
     @Type(type = "uuid-char")
+    @JsonIgnore
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false )

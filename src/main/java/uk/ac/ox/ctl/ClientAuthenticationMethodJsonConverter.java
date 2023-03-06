@@ -2,9 +2,7 @@ package uk.ac.ox.ctl;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.stereotype.Component;
 
-@Component
 public class ClientAuthenticationMethodJsonConverter {
     public static class Deserialize extends StdConverter<String, ClientAuthenticationMethod> {
         @Override

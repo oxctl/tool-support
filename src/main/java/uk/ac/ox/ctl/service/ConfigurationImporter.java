@@ -68,7 +68,6 @@ public class ConfigurationImporter {
                 ToolRegistrationLti registrationLti = ToolRegistrationUtilities.toToolRegistrationLti(registration);
                 Tool tool = new Tool();
                 tool.setLti(registrationLti);
-                registrationLti.setTool(tool);
                 toolRepository.save(tool);
                 lti++;
             }
@@ -80,7 +79,6 @@ public class ConfigurationImporter {
                 ToolRegistrationProxy registrationProxy = ToolRegistrationUtilities.toToolRegistrationProxy(registration);
                 Tool tool = new Tool();
                 tool.setProxy(registrationProxy);
-                registrationProxy.setTool(tool);
                 toolRepository.save(tool);
                 proxy++;
             }

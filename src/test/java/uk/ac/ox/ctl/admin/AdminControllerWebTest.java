@@ -1,6 +1,6 @@
 package uk.ac.ox.ctl.admin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +24,7 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -62,10 +63,13 @@ public class AdminControllerWebTest {
             .andReturn().getResponse().getContentAsString();
 
         entityManager.flush();
+        entityManager.clear();
 
-        UUID id = new ObjectMapper().readValue(json, Tool.class).getId();
+        String id = JsonPath.read(json, "$.id");
+        assertNotNull(id);
+        UUID uuid = UUID.fromString(id);
 
-        assertThat(repository.findById(id)).isNotEmpty();
+        assertThat(repository.findById(uuid)).isNotEmpty();
     }
 
     @Test
@@ -106,8 +110,16 @@ public class AdminControllerWebTest {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        Iterable<Tool> tools = Arrays.asList(new ObjectMapper().readValue(json, Tool[].class));
-        assertThat(tools).contains(tool1, tool2);
+        String id1 = JsonPath.read(json, "$[0].id");
+        String id2 = JsonPath.read(json, "$[1].id");
+        assertNotNull(id1);
+        assertNotNull(id2);
+
+        UUID uuid1 = UUID.fromString(id1);
+        UUID uuid2 = UUID.fromString(id2);
+
+        assertThat(repository.findById(uuid1)).isNotEmpty();
+        assertThat(repository.findById(uuid2)).isNotEmpty();
     }
 
     @Test
@@ -124,8 +136,10 @@ public class AdminControllerWebTest {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        UUID id = new ObjectMapper().readValue(json, Tool.class).getId();
-        assertEquals(tool1.getId(), id);
+        String id = JsonPath.read(json, "$.id");
+        assertNotNull(id);
+        UUID uuid = UUID.fromString(id);
+        assertEquals(tool1.getId(), uuid);
     }
 
     @Test
@@ -151,9 +165,13 @@ public class AdminControllerWebTest {
             .andReturn().getResponse().getContentAsString();
 
         entityManager.flush();
+        entityManager.clear();
 
-        UUID id = new ObjectMapper().readValue(json, Tool.class).getId();
-        assertEquals(id, tool.getId());
+        String id = JsonPath.read(json, "$.id");
+        assertNotNull(id);
+        UUID uuid = UUID.fromString(id);
+
+        assertEquals(uuid, tool.getId());
     }
 
     @Test
@@ -180,6 +198,7 @@ public class AdminControllerWebTest {
             .andReturn().getResponse().getContentAsString();
 
         entityManager.flush();
+        entityManager.clear();
 
         assertThat(repository.findById(tool1.getId())).isEmpty();
         assertThat(repository.findById(tool2.getId())).isNotEmpty();
