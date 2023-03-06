@@ -57,7 +57,9 @@ public class AdminControllerWebTest {
         String json = mvc.perform(post("/admin/tools")
             .with(httpBasic("user", "pass1234"))
             .contentType(APPLICATION_JSON)
-            .content("{\"secret\" : \"secret\", \"issuer\" :  \"issuer\", \"origins\": [\"origin1\", \"origin2\"], \"nrpsAllowedRoles\": [\"role1\", \"role2\"]}"))
+            .content("""
+                {"secret" : "secret", "issuer" :  "issuer", "origins": ["origin1", "origin2"], "nrpsAllowedRoles": ["role1", "role2"]}
+             """))
             .andExpect(status().isOk())
             .andExpect(content().json("{secret: secret, issuer: issuer, origins: [origin1, origin2], nrpsAllowedRoles: [role1, role2]}"))
             .andReturn().getResponse().getContentAsString();
@@ -159,7 +161,9 @@ public class AdminControllerWebTest {
         String json = mvc.perform(put("/admin/tools/" + tool.getId())
             .with(httpBasic("user", "pass1234"))
             .contentType(APPLICATION_JSON)
-            .content("{\"secret\" : \"newSecret\", \"issuer\" :  \"newIssuer\", \"origins\": [\"origin3\", \"origin4\"], \"nrpsAllowedRoles\": [\"role3\", \"role4\"], \"sign\":  \"true\"}"))
+            .content("""
+                {"secret" : "newSecret", "issuer" :  "newIssuer", "origins": ["origin3", "origin4"], "nrpsAllowedRoles": ["role3", "role4"], "sign":  "true"}
+            """))
             .andExpect(status().isOk())
             .andExpect(content().json("{secret: newSecret, issuer: newIssuer, origins: [origin3, origin4], nrpsAllowedRoles: [role3, role4], sign: true}"))
             .andReturn().getResponse().getContentAsString();
