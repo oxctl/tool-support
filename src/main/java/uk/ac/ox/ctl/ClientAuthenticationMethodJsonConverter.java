@@ -25,7 +25,7 @@ public class ClientAuthenticationMethodJsonConverter {
     public static class Serialize extends StdConverter<ClientAuthenticationMethod, String>{
         @Override
         public String convert(ClientAuthenticationMethod clientAuthenticationMethod) {
-            return clientAuthenticationMethod != null ? clientAuthenticationMethod.toString() : null;
+            return clientAuthenticationMethod != null ? clientAuthenticationMethod.getValue() : null;
         }
     }
 }

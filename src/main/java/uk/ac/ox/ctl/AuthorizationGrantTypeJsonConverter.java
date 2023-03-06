@@ -27,7 +27,7 @@ public class AuthorizationGrantTypeJsonConverter {
 
         @Override
         public String convert(AuthorizationGrantType authorizationGrantType) {
-            return authorizationGrantType != null ? authorizationGrantType.toString() : null;
+            return authorizationGrantType != null ? authorizationGrantType.getValue() : null;
         }
     }
 }

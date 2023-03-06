@@ -23,7 +23,7 @@ public class AuthenticationMethodJsonConverter {
     public static class Serialize extends StdConverter<AuthenticationMethod, String>{
         @Override
         public String convert(AuthenticationMethod authenticationMethod) {
-            return authenticationMethod != null ? authenticationMethod.toString() : null;
+            return authenticationMethod != null ? authenticationMethod.getValue() : null;
         }
     }
 }
