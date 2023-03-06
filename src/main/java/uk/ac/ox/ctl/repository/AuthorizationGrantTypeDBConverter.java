@@ -7,7 +7,7 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
 @Converter
-public class AuthorizationGrantTypeConverter implements AttributeConverter<AuthorizationGrantType, String> {
+public class AuthorizationGrantTypeDBConverter implements AttributeConverter<AuthorizationGrantType, String> {
 
     @Override
     public String convertToDatabaseColumn(AuthorizationGrantType grantType) {

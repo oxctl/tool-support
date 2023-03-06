@@ -1,5 +1,6 @@
 package uk.ac.ox.ctl.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -41,7 +43,22 @@ public class Tool {
     @GeneratedValue
     @Type(type = "uuid-char")
     @Column(length = 36)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private UUID id;
+
+    public void setLti(ToolRegistrationLti lti) {
+        if(lti != null){
+            lti.setTool(this);
+        }
+        this.lti = lti;
+    }
+
+    public void setProxy(ToolRegistrationProxy proxy) {
+        if(proxy != null){
+            proxy.setTool(this);
+        }
+        this.proxy = proxy;
+    }
 
     // This side has to be the non owning side so that we can join when loading entities
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "tool")
@@ -57,7 +74,7 @@ public class Tool {
     /**
      * The origins that we allow.
      */
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER) // TODO: fix, see AB#66355
     // We want to allow fast lookups of origins but they shouldn't be unique because multiple tools can be running
     // on the same origin.
     @CollectionTable(indexes = {@Index(columnList = "origin")})
