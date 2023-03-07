@@ -243,6 +243,7 @@ There is now support for CRUD operations to edit tools from curl. Things to note
  * ids for Tool and ToolRegistration models will be ignored when passed as JSON
 
 **CREATE:**
+
 curl -u "user:pass1234" -d '{
   "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
   "lti": {
@@ -301,11 +302,13 @@ curl -u "user:pass1234" -d '{
 }' -H "Content-Type: application/json" -X POST http://localhost:8080/admin/tools/
 
 **READ:**
+
 curl -u "user:pass1234" http://localhost:8080/admin/tools/
 curl -u "user:pass1234" http://localhost:8080/admin/tools/04a0aa49-a74f-4dd1-96c5-895c8d68d776
 
 
 **UPDATE:**
+
 curl -u "user:pass1234" -d '{
   "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
   "lti": {
@@ -364,4 +367,5 @@ curl -u "user:pass1234" -d '{
 }' -H "Content-Type: application/json" -X PUT http://localhost:8080/admin/tools/04a0aa49-a74f-4dd1-96c5-895c8d68d776
 
 **DELETE:**
+
 curl -u "user:pass1234" -X DELETE http://localhost:8080/admin/tools/04a0aa49-a74f-4dd1-96c5-895c8d68d776
