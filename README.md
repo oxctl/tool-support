@@ -234,3 +234,134 @@ To make a new release of this create a new tag using the maven release plugin. N
 This will ask what then release version should be and then what the next development version should be. We try to follow semantic versioning for this. After the release plugin has finished it should push the changes to GitHub, then GitHub Actions will build the new tag a put a tagged image in the ECR repository. The release to production can then be made by running the production deploy GitHub Action and specifying the newly created tag. Afterwards all this can be cleaned up with:
 
     mvn release:clean
+    
+
+## API
+
+There is now support for CRUD operations to edit tools from curl. Things to note:
+ * updates aren't partial - you need to supply all data or it will overwrite and missing fields as null
+ * ids for Tool and ToolRegistration models will be ignored when passed as JSON
+
+**CREATE:**
+curl -u "user:pass1234" -d '{
+  "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
+  "lti": {
+    "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
+    "registrationId": "oxeval-cm2",
+    "clientName": "oxeval-cm2",
+    "clientId": "1153700000000000432",
+    "clientSecret": "not-used",
+    "clientAuthenticationMethod": "org.springframework.security.oauth2.core.ClientAuthenticationMethod@4fcef9d3",
+    "authorizationGrantType": "org.springframework.security.oauth2.core.AuthorizationGrantType@e6a48de5",
+    "redirectUri": "{baseUrl}/lti/login",
+    "scopes": [
+      "openid"
+    ],
+    "providerDetails": {
+      "authorizationUri": "https://canvas.instructure.com/api/lti/authorize_redirect",
+      "tokenUri": "https://canvas.instructure.com/login/oauth2/token",
+      "userInfoEndpoint": {
+        "uri": null,
+        "authenticationMethod": "org.springframework.security.oauth2.core.AuthenticationMethod@b734e28d",
+        "userNameAttributeName": "sub"
+      },
+      "jwkSetUri": "https://canvas.instructure.com/api/lti/security/jwks",
+      "issuerUri": null,
+      "configurationMetadata": {}
+    }
+  },
+  "proxy": {
+    "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
+    "registrationId": "oxeval-cm2",
+    "clientName": "Canvas (oxeval.instructure.com)2",
+    "clientId": "1153700000000000422",
+    "clientSecret": "onHcZBLYyKBAV5VYreDDpuNOW8xnzVVm69pWIToqW00xNkKxjZ3KiWl8aRAA9sVh",
+    "clientAuthenticationMethod": "org.springframework.security.oauth2.core.ClientAuthenticationMethod@3498a0",
+    "authorizationGrantType": "org.springframework.security.oauth2.core.AuthorizationGrantType@5da5e9f3",
+    "redirectUri": "{baseUrl}/login/oauth2/code/{registrationId}",
+    "scopes": [],
+    "providerDetails": {
+      "authorizationUri": "https://oxeval.instructure.com/login/oauth2/auth",
+      "tokenUri": "https://oxeval.instructure.com/login/oauth2/token",
+      "userInfoEndpoint": {
+        "uri": null,
+        "authenticationMethod": "org.springframework.security.oauth2.core.AuthenticationMethod@b734e28d",
+        "userNameAttributeName": null
+      },
+      "jwkSetUri": null,
+      "issuerUri": null,
+      "configurationMetadata": {}
+    }
+  },
+  "origins": [],
+  "sign": false,
+  "secret": null,
+  "issuer": null,
+  "nrpsAllowedRoles": []
+}' -H "Content-Type: application/json" -X POST http://localhost:8080/admin/tools/
+
+**READ:**
+curl -u "user:pass1234" http://localhost:8080/admin/tools/
+curl -u "user:pass1234" http://localhost:8080/admin/tools/04a0aa49-a74f-4dd1-96c5-895c8d68d776
+
+
+**UPDATE:**
+curl -u "user:pass1234" -d '{
+  "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
+  "lti": {
+    "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
+    "registrationId": "oxeval-cm27",
+    "clientName": "oxeval-cm27",
+    "clientId": "11537000000000004327",
+    "clientSecret": "not-used",
+    "clientAuthenticationMethod": "org.springframework.security.oauth2.core.ClientAuthenticationMethod@4fcef9d3",
+    "authorizationGrantType": "org.springframework.security.oauth2.core.AuthorizationGrantType@e6a48de5",
+    "redirectUri": "{baseUrl}/lti/login",
+    "scopes": [
+      "openid"
+    ],
+    "providerDetails": {
+      "authorizationUri": "https://canvas.instructure.com/api/lti/authorize_redirect",
+      "tokenUri": "https://canvas.instructure.com/login/oauth2/token",
+      "userInfoEndpoint": {
+        "uri": null,
+        "authenticationMethod": "org.springframework.security.oauth2.core.AuthenticationMethod@b734e28d",
+        "userNameAttributeName": "sub"
+      },
+      "jwkSetUri": "https://canvas.instructure.com/api/lti/security/jwks",
+      "issuerUri": null,
+      "configurationMetadata": {}
+    }
+  },
+  "proxy": {
+    "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
+    "registrationId": "oxeval-cm27",
+    "clientName": "Canvas (oxeval.instructure.com)27",
+    "clientId": "11537000000000004227",
+    "clientSecret": "onHcZBLYyKBAV5VYreDDpuNOW8xnzVVm69pWIToqW00xNkKxjZ3KiWl8aRAA9sVh",
+    "clientAuthenticationMethod": "org.springframework.security.oauth2.core.ClientAuthenticationMethod@3498a0",
+    "authorizationGrantType": "org.springframework.security.oauth2.core.AuthorizationGrantType@5da5e9f3",
+    "redirectUri": "{baseUrl}/login/oauth2/code/{registrationId}",
+    "scopes": ["scope27"],
+    "providerDetails": {
+      "authorizationUri": "https://oxeval.instructure.com/login/oauth2/auth",
+      "tokenUri": "https://oxeval.instructure.com/login/oauth2/token",
+      "userInfoEndpoint": {
+        "uri": null,
+        "authenticationMethod": "org.springframework.security.oauth2.core.AuthenticationMethod@b734e28d",
+        "userNameAttributeName": null
+      },
+      "jwkSetUri": null,
+      "issuerUri": null,
+      "configurationMetadata": {}
+    }
+  },
+  "origins": [],
+  "sign": false,
+  "secret": null,
+  "issuer": null,
+  "nrpsAllowedRoles": []
+}' -H "Content-Type: application/json" -X PUT http://localhost:8080/admin/tools/04a0aa49-a74f-4dd1-96c5-895c8d68d776
+
+**DELETE:**
+curl -u "user:pass1234" -X DELETE http://localhost:8080/admin/tools/04a0aa49-a74f-4dd1-96c5-895c8d68d776
