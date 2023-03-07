@@ -249,12 +249,12 @@ curl -u "user:pass1234" -d '{
   "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
   "lti": {
     "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
-    "registrationId": "oxeval-cm2",
+    "registrationId": "oxeval-cm5",
     "clientName": "oxeval-cm2",
     "clientId": "1153700000000000432",
-    "clientSecret": "not-used",
-    "clientAuthenticationMethod": "org.springframework.security.oauth2.core.ClientAuthenticationMethod@4fcef9d3",
-    "authorizationGrantType": "org.springframework.security.oauth2.core.AuthorizationGrantType@e6a48de5",
+    "clientSecret": "some_client_secret",
+    "clientAuthenticationMethod": "client_secret_basic",
+    "authorizationGrantType": "client_secret_basic",
     "redirectUri": "{baseUrl}/lti/login",
     "scopes": [
       "openid"
@@ -264,7 +264,7 @@ curl -u "user:pass1234" -d '{
       "tokenUri": "https://canvas.instructure.com/login/oauth2/token",
       "userInfoEndpoint": {
         "uri": null,
-        "authenticationMethod": "org.springframework.security.oauth2.core.AuthenticationMethod@b734e28d",
+        "authenticationMethod": "client_secret_basic",
         "userNameAttributeName": "sub"
       },
       "jwkSetUri": "https://canvas.instructure.com/api/lti/security/jwks",
@@ -274,12 +274,12 @@ curl -u "user:pass1234" -d '{
   },
   "proxy": {
     "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
-    "registrationId": "oxeval-cm2",
+    "registrationId": "oxeval-cm5",
     "clientName": "Canvas (oxeval.instructure.com)2",
     "clientId": "1153700000000000422",
-    "clientSecret": "onHcZBLYyKBAV5VYreDDpuNOW8xnzVVm69pWIToqW00xNkKxjZ3KiWl8aRAA9sVh",
-    "clientAuthenticationMethod": "org.springframework.security.oauth2.core.ClientAuthenticationMethod@3498a0",
-    "authorizationGrantType": "org.springframework.security.oauth2.core.AuthorizationGrantType@5da5e9f3",
+    "clientSecret": "some_client_secret",
+    "clientAuthenticationMethod": "client_secret_basic",
+    "authorizationGrantType": "client_secret_basic",
     "redirectUri": "{baseUrl}/login/oauth2/code/{registrationId}",
     "scopes": [],
     "providerDetails": {
@@ -287,7 +287,7 @@ curl -u "user:pass1234" -d '{
       "tokenUri": "https://oxeval.instructure.com/login/oauth2/token",
       "userInfoEndpoint": {
         "uri": null,
-        "authenticationMethod": "org.springframework.security.oauth2.core.AuthenticationMethod@b734e28d",
+        "authenticationMethod": "client_secret_basic",
         "userNameAttributeName": null
       },
       "jwkSetUri": null,
@@ -324,9 +324,9 @@ curl -u "user:pass1234" -d '{
     "registrationId": "oxeval-cm27",
     "clientName": "oxeval-cm27",
     "clientId": "11537000000000004327",
-    "clientSecret": "not-used",
-    "clientAuthenticationMethod": "org.springframework.security.oauth2.core.ClientAuthenticationMethod@4fcef9d3",
-    "authorizationGrantType": "org.springframework.security.oauth2.core.AuthorizationGrantType@e6a48de5",
+    "clientSecret": "client_secret",
+    "clientAuthenticationMethod": "client_secret",
+    "authorizationGrantType": "client_secret_basic",
     "redirectUri": "{baseUrl}/lti/login",
     "scopes": [
       "openid"
@@ -336,7 +336,7 @@ curl -u "user:pass1234" -d '{
       "tokenUri": "https://canvas.instructure.com/login/oauth2/token",
       "userInfoEndpoint": {
         "uri": null,
-        "authenticationMethod": "org.springframework.security.oauth2.core.AuthenticationMethod@b734e28d",
+        "authenticationMethod": "client_secret_basic",
         "userNameAttributeName": "sub"
       },
       "jwkSetUri": "https://canvas.instructure.com/api/lti/security/jwks",
@@ -349,9 +349,8 @@ curl -u "user:pass1234" -d '{
     "registrationId": "oxeval-cm27",
     "clientName": "Canvas (oxeval.instructure.com)27",
     "clientId": "11537000000000004227",
-    "clientSecret": "onHcZBLYyKBAV5VYreDDpuNOW8xnzVVm69pWIToqW00xNkKxjZ3KiWl8aRAA9sVh",
-    "clientAuthenticationMethod": "org.springframework.security.oauth2.core.ClientAuthenticationMethod@3498a0",
-    "authorizationGrantType": "org.springframework.security.oauth2.core.AuthorizationGrantType@5da5e9f3",
+    "clientSecret": "some_client_secret",
+    "authorizationGrantType": "client_secret_basic",
     "redirectUri": "{baseUrl}/login/oauth2/code/{registrationId}",
     "scopes": ["scope27"],
     "providerDetails": {
@@ -359,7 +358,7 @@ curl -u "user:pass1234" -d '{
       "tokenUri": "https://oxeval.instructure.com/login/oauth2/token",
       "userInfoEndpoint": {
         "uri": null,
-        "authenticationMethod": "org.springframework.security.oauth2.core.AuthenticationMethod@b734e28d",
+        "authenticationMethod": "client_secret_basic",
         "userNameAttributeName": null
       },
       "jwkSetUri": null,
