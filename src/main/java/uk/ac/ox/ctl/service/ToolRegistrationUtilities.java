@@ -11,7 +11,7 @@ import uk.ac.ox.ctl.model.ToolRegistrationProxy;
 public class ToolRegistrationUtilities {
 
     public static ClientRegistration toClientRegistration(ToolRegistration toolRegistration) {
-        return ClientRegistration.withRegistrationId(toolRegistration.getRegistrationId())
+        final ClientRegistration.Builder builder = ClientRegistration.withRegistrationId(toolRegistration.getRegistrationId())
                 .clientName(toolRegistration.getClientName())
                 .clientId(toolRegistration.getClientId())
                 .clientSecret(toolRegistration.getClientSecret())
@@ -21,13 +21,19 @@ public class ToolRegistrationUtilities {
                 .scope(toolRegistration.getScopes())
                 .issuerUri(toolRegistration.getProviderDetails().getIssuerUri())
                 .jwkSetUri(toolRegistration.getProviderDetails().getJwkSetUri())
-                .tokenUri(toolRegistration.getProviderDetails().getTokenUri())
+                .tokenUri(toolRegistration.getProviderDetails().getTokenUri());
+        // The user info endpoint might be null
+        if (toolRegistration.getProviderDetails().getUserInfoEndpoint() != null) {
+            builder
                 .userInfoAuthenticationMethod(toolRegistration.getProviderDetails().getUserInfoEndpoint().getAuthenticationMethod())
                 .userInfoUri(toolRegistration.getProviderDetails().getUserInfoEndpoint().getUri())
-                .userNameAttributeName(toolRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName())
+                .userNameAttributeName(toolRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName());
+        }
+        builder
                 .providerConfigurationMetadata(toolRegistration.getProviderDetails().getConfigurationMetadata())
                 .authorizationUri(toolRegistration.getProviderDetails().getAuthorizationUri())
                 .build();
+        return builder.build();
     }
 
     public static ToolRegistrationLti toToolRegistrationLti(ClientRegistration clientRegistration) {
