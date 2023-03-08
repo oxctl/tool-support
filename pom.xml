@@ -30,7 +30,7 @@
         <dependency>
             <groupId>uk.ac.ox.ctl</groupId>
             <artifactId>canvas-spring-oauth2</artifactId>
-            <version>0.3</version>
+            <version>0.4</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
