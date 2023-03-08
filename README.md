@@ -179,13 +179,14 @@ This application needs a database to store the configuration and the OAuth token
 - HOSTNAME - The hostname that the server is running on, used to get TLS/config files.
 - LTI_ISSUER - The issuer of JWT tokens that we sign.
 - RDS_HOSTNAME - The MySQL hostname to connect to for the database.
-- RDS_PORT - The MySQL port to use in the connection to thee database.
+- RDS_PORT - The MySQL port to use in the connection to the database.
 - RDS_DB_NAME - The name of the MySQL database to use.
 - RDS_USERNAME - The username to use to connect to the MySQL database.
 - RDS_PASSWORD - The password to use to connect to the MySQL database.
 - SENTRY_DSN - The secret for reporting errors and performance to https://sentry.io
 - SENTRY_ENVIRONMENT - The environment key that is sent to https://sentry.io
 - SPRING_PROFILES_ACTIVE - The profiles that are active, this is used to load configuration.
+- SPRING_SECURITY_USER_PASSWORD - The password used for basic authentication to the /admin API.
 
 #### Client Configuration
 
