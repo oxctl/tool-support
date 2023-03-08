@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.ox.ctl.model.Tool;
+import uk.ac.ox.ctl.model.ToolRegistrationProxy;
 import uk.ac.ox.ctl.repository.ToolRepository;
 
 import java.util.*;
@@ -28,8 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(properties = "spring.security.user.password=pass1234", controllers = AdminController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "uk\\.ac\\.ox\\.ctl\\.(canvasproxy|ltiauth)\\..*"))
 @Import({AdminWebSecurity.class})
@@ -61,7 +61,9 @@ public class AdminControllerWebTest {
                 {"secret" : "secret", "issuer" :  "issuer", "origins": ["origin1", "origin2"], "nrpsAllowedRoles": ["role1", "role2"]}
              """))
             .andExpect(status().isOk())
-            .andExpect(content().json("{secret: secret, issuer: issuer, origins: [origin1, origin2], nrpsAllowedRoles: [role1, role2]}"))
+            .andExpect(content().json("""
+                {"secret": "secret", "issuer": "issuer", "origins": ["origin1", "origin2"], "nrpsAllowedRoles": ["role1", "role2"]}
+            """))
             .andReturn().getResponse().getContentAsString();
 
         entityManager.flush();
@@ -72,6 +74,46 @@ public class AdminControllerWebTest {
         UUID uuid = UUID.fromString(id);
 
         assertThat(repository.findById(uuid)).isNotEmpty();
+    }
+
+    @Test
+    public void testCreateWithLti() throws Exception {
+        mvc.perform(post("/admin/tools")
+                        .with(httpBasic("user", "pass1234"))
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                {"secret" : "secret", "issuer" :  "issuer", "lti": { "registrationId":  "reg123", "clientAuthenticationMethod": "client_secret_basic" }}
+             """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lti").exists())
+                .andExpect(jsonPath("$.lti.clientAuthenticationMethod").value("client_secret_basic"))
+                ;
+
+        entityManager.flush();
+    }
+
+    @Test
+    public void testRemoveProxy() throws Exception {
+        String id;
+        {
+            Tool tool = new Tool();
+            tool.setSign(false);
+            ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+            proxy.setRegistrationId("reg123");
+            tool.setProxy(proxy);
+            id = repository.save(tool).getId().toString();
+        }
+        entityManager.flush();
+        entityManager.clear();
+        mvc.perform(put("/admin/tools/"+ id)
+                        .with(httpBasic("user", "pass1234"))
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                {"secret" : "secret", "issuer" :  "issuer"}
+             """))
+                .andExpect(status().isOk())
+        ;
+        entityManager.flush();
     }
 
     @Test
@@ -165,7 +207,9 @@ public class AdminControllerWebTest {
                 {"secret" : "newSecret", "issuer" :  "newIssuer", "origins": ["origin3", "origin4"], "nrpsAllowedRoles": ["role3", "role4"], "sign":  "true"}
             """))
             .andExpect(status().isOk())
-            .andExpect(content().json("{secret: newSecret, issuer: newIssuer, origins: [origin3, origin4], nrpsAllowedRoles: [role3, role4], sign: true}"))
+            .andExpect(content().json("""
+                {"secret": "newSecret", "issuer": "newIssuer", "origins": ["origin3", "origin4"], "nrpsAllowedRoles": ["role3", "role4"], "sign": true}
+            """))
             .andReturn().getResponse().getContentAsString();
 
         entityManager.flush();

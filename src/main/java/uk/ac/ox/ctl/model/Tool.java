@@ -74,7 +74,7 @@ public class Tool {
     /**
      * The origins that we allow.
      */
-    @ElementCollection(fetch = FetchType.EAGER) // TODO: fix, see AB#66355
+    @ElementCollection
     // We want to allow fast lookups of origins but they shouldn't be unique because multiple tools can be running
     // on the same origin.
     @CollectionTable(indexes = {@Index(columnList = "origin")})
