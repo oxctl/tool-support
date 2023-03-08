@@ -84,7 +84,8 @@ public class AdminController {
     }
 
     @DeleteMapping("/tools/{id}")
-    void deleteTool(@PathVariable UUID id) {
+    ResponseEntity<Void> deleteTool(@PathVariable UUID id) {
         repository.deleteById(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
