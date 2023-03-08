@@ -242,7 +242,7 @@ public class AdminControllerWebTest {
 
         mvc.perform(delete("/admin/tools/" + tool1.getId())
             .with(httpBasic("user", "pass1234")))
-            .andExpect(status().isOk())
+            .andExpect(status().isNoContent())
             .andReturn().getResponse().getContentAsString();
 
         entityManager.flush();
