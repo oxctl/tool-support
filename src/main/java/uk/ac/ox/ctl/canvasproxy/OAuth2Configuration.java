@@ -8,15 +8,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
-import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.CanvasAuthorizationCodeTokenResponseClient;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.OAuth2AccessTokenRefresher;
+import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.http.CanvasOAuth2ErrorResponseErrorHandler;
 import uk.ac.ox.ctl.oauth2.client.endpoint.CanvasOAuth2AuthorizationCodeGrantRequestEntityConverter;
 import uk.ac.ox.ctl.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
 
@@ -39,7 +38,7 @@ public class OAuth2Configuration {
         // Switch to Apache HTTP Components;
         HttpClient requestFactory = HttpClientBuilder.create().disableContentCompression().build();
         restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(requestFactory));
-        restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
+        restTemplate.setErrorHandler(new CanvasOAuth2ErrorResponseErrorHandler());
         client.setRestOperations(restTemplate);
         return client;
     }

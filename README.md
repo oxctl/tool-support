@@ -249,7 +249,6 @@ There is now support for CRUD operations to edit tools from curl. Things to note
 curl -u "user:pass1234" -d '{
   "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
   "lti": {
-    "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
     "registrationId": "oxeval-cm5",
     "clientName": "oxeval-cm2",
     "clientId": "1153700000000000432",
@@ -274,7 +273,6 @@ curl -u "user:pass1234" -d '{
     }
   },
   "proxy": {
-    "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
     "registrationId": "oxeval-cm5",
     "clientName": "Canvas (oxeval.instructure.com)2",
     "clientId": "1153700000000000422",
@@ -321,7 +319,6 @@ curl -u "user:pass1234" http://localhost:8080/admin/tools/04a0aa49-a74f-4dd1-96c
 curl -u "user:pass1234" -d '{
   "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
   "lti": {
-    "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
     "registrationId": "oxeval-cm27",
     "clientName": "oxeval-cm27",
     "clientId": "11537000000000004327",
@@ -346,7 +343,6 @@ curl -u "user:pass1234" -d '{
     }
   },
   "proxy": {
-    "id": "93f3fab4-0559-420b-b1d4-9d4a62a896ec",
     "registrationId": "oxeval-cm27",
     "clientName": "Canvas (oxeval.instructure.com)27",
     "clientId": "11537000000000004227",
@@ -380,3 +376,87 @@ curl -u "user:pass1234" -d '{
 ```
 curl -u "user:pass1234" -X DELETE http://localhost:8080/admin/tools/04a0aa49-a74f-4dd1-96c5-895c8d68d776
 ```
+
+### Example Sections
+
+When creating JSON configuration for a tool you probably just want to use some standard values for the providers. These can be repeated across lots of tools and will often be similar.
+
+#### LTI Registrations
+
+The minimum (and all you need) for an LTI registration is:
+
+```json
+{
+      "registrationId": "registration-id",
+      "clientName": "Client Name",
+      "clientId": "12345",
+      "authorizationGrantType": "implicit",
+      "redirectUri": "{baseUrl}/lti/login",
+      "scopes": [
+        "openid"
+      ],
+      "providerDetails": {
+        "authorizationUri": "https://canvas.instructure.com/api/lti/authorize_redirect",
+        "tokenUri": "https://canvas.instructure.com/login/oauth2/token",
+        "jwkSetUri": "https://canvas.instructure.com/api/lti/security/jwks"
+      }
+    }
+```
+
+#### LTI Providers
+
+These values came from https://canvas.instructure.com/doc/api/file.lti_dev_key_config.html and can be put into the `providerDetails` property of the `lti` key.
+
+##### canvas.instructure.com
+
+```json
+      {
+        "authorizationUri": "https://canvas.instructure.com/api/lti/authorize_redirect",
+        "tokenUri": "https://canvas.instructure.com/login/oauth2/token",
+        "jwkSetUri": "https://canvas.instructure.com/api/lti/security/jwks"
+      }
+```
+
+##### canvas.beta.instructure.com
+
+```json
+      {
+        "authorizationUri": "https://canvas.beta.instructure.com/api/lti/authorize_redirect",
+        "tokenUri": "https://canvas.beta.instructure.com/login/oauth2/token",
+        "jwkSetUri": "https://canvas.beta.instructure.com/api/lti/security/jwks"
+      }
+```
+
+##### canvas.test.instructure.com
+
+```json
+      {
+        "authorizationUri": "https://canvas.test.instructure.com/api/lti/authorize_redirect",
+        "tokenUri": "https://canvas.test.instructure.com/login/oauth2/token",
+        "jwkSetUri": "https://canvas.test.instructure.com/api/lti/security/jwks"
+      }
+```
+
+#### Proxy Registration (API)
+
+The minimum you need for a proxy registration is:
+
+```json
+{
+      "registrationId": "registration-id",
+      "clientName": "Client Name",
+      "clientId": "12345",
+      "clientSecret": "secret-password",
+      "clientAuthenticationMethod": "client_secret_post",
+      "authorizationGrantType": "authorization_code",
+      "redirectUri": "{baseUrl}/login/oauth2/code/{registrationId}",
+      "scopes": [],
+      "providerDetails": {
+        "authorizationUri": "https://instance.instructure.com/login/oauth2/auth",
+        "tokenUri": "https://instance.instructure.com/login/oauth2/token"
+      }
+    }
+```
+
+Unlike the LTI registration the provider details will need to be updated for each host as the endpoints are specific to the instance that is being integrated with.
+
