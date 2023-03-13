@@ -44,6 +44,8 @@ jobs:
           environment_name: ${{ env.EB_ENVIRONMENT }}
           version_label: github.${{ env.TAG }}
           region: ${{ env.AWS_REGION }}
+      - name: Save version in secrets manager
+        run: aws secretsmanager update-secret --secret-id ${{ vars.VERSION_SECRET }} --secret-string github.${{ env.TAG }}
       - name: Update deployment status
         uses: bobheadxi/deployments@v1.4.0
         if: always()
