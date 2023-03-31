@@ -51,8 +51,8 @@ public class OAuth2AccessTokenRefresher {
             return tokenResponse;
         } catch (OAuth2AuthorizationException e) {
             // This should fall through.
-            log.debug("Failed to refresh token for on {} for {}",
-                authorizedClient.getClientRegistration().getClientId(), authorizedClient.getPrincipalName());
+            log.debug("Failed to refresh token for on {} for {}, {}",
+                authorizedClient.getClientRegistration().getClientId(), authorizedClient.getPrincipalName(), e.getMessage());
         }
         return null;
     }

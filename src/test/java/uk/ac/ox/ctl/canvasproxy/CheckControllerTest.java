@@ -27,13 +27,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // WebMvdTest doesn't pull the OAuth configuration in by default
-@WebMvcTest(controllers = TokensController.class, properties = "tool.origins=https://localhost:3000")
+@WebMvcTest(controllers = CheckController.class, properties = "tool.origins=https://localhost:3000")
 @Import({TestClientRegistrationConfig.class, OAuth2Configuration.class, ProxyWebSecurity.class, ProxyJwtConfig.class, WebSecurityConfiguration.class})
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
-class TokensControllerTest {
+class CheckControllerTest {
 
     @Autowired
     private MockMvc mvc;
@@ -51,7 +52,6 @@ class TokensControllerTest {
             // Mockbean annotation doesn't prevent autoconfiguration from creating a bean as well.
             return Mockito.mock(RefreshOAuth2AuthorizedClient.class);
         }
-
     }
 
     @MockBean
@@ -104,5 +104,33 @@ class TokensControllerTest {
         verify(authorizedClientRepository).removeAuthorizedClient(eq("1"), any(), any(), any());
     }
 
+    @Test
+    public void testOAuthReturnNoToken() throws Exception {
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
+                .jwt(builder -> builder
+                        .audience(Collections.singleton("1"))
+                        .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")
+                );
+        // The JWT would normally be stored in the session between the first request and this one.
+        // We get redirected here to the authorization URL because we don't have an authorized client
+        mvc.perform(get("/tokens/check").with(jwt))
+                .andExpect(status().is3xxRedirection());
+    }
+    
+    @Test
+    public void testOAuthReturn() throws Exception {
+        OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("test");
 
+        when(client.getClientRegistration()).thenReturn(registration);
+        when(authorizedClientRepository.loadAuthorizedClient(eq("test"), any(), any())).thenReturn(client);
+        PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
+                .jwt(builder -> builder
+                        .audience(Collections.singleton("1"))
+                        .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")
+                ); 
+        // The JWT would normally be stored in the session between the first request and this one.
+        mvc.perform(get("/tokens/check").with(jwt))
+                .andExpect(status().isOk());
+    }
 }
