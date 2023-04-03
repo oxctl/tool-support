@@ -1,5 +1,6 @@
 package uk.ac.ox.ctl.canvasproxy;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -126,7 +127,12 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
             Authentication authentication,
             HttpServletRequest request,
             HttpServletResponse response) {
-        principalTokensRepository.deleteById(toPrincipal(authentication));
+        try {
+            principalTokensRepository.deleteById(toPrincipal(authentication));
+        } catch (EmptyResultDataAccessException e) {
+            // Once we have upgrades to a release that includes this we can drop the catch block (3.1.x, maybe 3.0.x)
+            // https://github.com/spring-projects/spring-data-jpa/issues/2719
+        }
     }
 
     private String toPrincipal(Authentication authentication) {
