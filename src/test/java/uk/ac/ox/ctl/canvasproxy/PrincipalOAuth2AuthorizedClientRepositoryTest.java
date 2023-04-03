@@ -15,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -27,6 +28,7 @@ import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.test.context.TestPropertySource;
+import uk.ac.ox.ctl.canvasproxy.model.PrincipalTokens;
 import uk.ac.ox.ctl.canvasproxy.repository.PrincipalTokensRepository;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.OAuth2AccessTokenRefresher;
 
@@ -163,6 +165,40 @@ class PrincipalOAuth2AuthorizedClientRepositoryTest {
         // We aren't returning a response so it should be null.
         OAuth2AuthorizedClient refreshed = clientRepository.renewAccessToken("test", auth, request, response);
         assertNotNull(refreshed);
+    }
+
+    @Test
+    public void testRemoveNotExist() {
+        Authentication auth = new TestingAuthenticationToken("principal", "credentials");
+        // Just check we don't throw an exception here.
+        clientRepository.removeAuthorizedClient("1234", auth, request, response);
+    }
+    
+    @Test
+    public void testRemoveExists() {
+        {
+            PrincipalTokens token = new PrincipalTokens();
+            token.setPrincipal("principal");
+            entityManager.persistAndFlush(token);
+            assertNotNull(entityManager.find(PrincipalTokens.class, "principal"));
+            Authentication auth = new TestingAuthenticationToken("principal", "credentials");
+            // Just check we don't throw an exception here.
+            clientRepository.removeAuthorizedClient("1234", auth, request, response);
+            entityManager.flush();
+            entityManager.clear();
+        }
+        {
+            assertNull(entityManager.find(PrincipalTokens.class, "principal"));
+        }
+    }
+    
+    @Test
+    public void testDeleteThrowsException() {
+        // If this test starts failing on a Spring Boot upgrade then we can remove the catch block in
+        // uk.ac.ox.ctl.canvasproxy.PrincipalOAuth2AuthorizedClientRepository.removeAuthorizedClient
+        assertThrows(EmptyResultDataAccessException.class, () -> {
+            principalTokensRepository.deleteById("not-found");
+        });
     }
 
 }
