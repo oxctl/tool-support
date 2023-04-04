@@ -74,18 +74,20 @@ public class CanvasOAuth2ErrorResponseErrorHandler implements ResponseErrorHandl
 		if (HttpStatus.FOUND.value() == response.getRawStatusCode()) {
 			handleErrorCanvas(response);
 		}
-		if (HttpStatus.BAD_REQUEST.value() != response.getRawStatusCode()) {
+		if (HttpStatus.BAD_REQUEST.value() != response.getRawStatusCode() &&
+				HttpStatus.UNAUTHORIZED.value() != response.getRawStatusCode()) {
 			this.defaultErrorHandler.handleError(response);
 		}
-		// A Bearer Token Error may be in the WWW-Authenticate response header
 		// See https://tools.ietf.org/html/rfc6750#section-3
-		OAuth2Error oauth2Error = this.readErrorFromWwwAuthenticate(response.getHeaders());
+		// The body generally seems to have a better error.
+		OAuth2Error oauth2Error = this.oauth2ErrorConverter.read(OAuth2Error.class, response);
 		if (oauth2Error == null) {
-			oauth2Error = this.oauth2ErrorConverter.read(OAuth2Error.class, response);
+			// A Bearer Token Error may be in the WWW-Authenticate response header
+			oauth2Error = this.readErrorFromWwwAuthenticate(response.getHeaders());
 		}
 		throw new OAuth2AuthorizationException(oauth2Error);
 	}
-	
+
 	private void handleErrorCanvas(ClientHttpResponse response) {
 		URI location = response.getHeaders().getLocation();
 		OAuth2Error oAuth2Error = new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST, null, null);
@@ -118,13 +120,11 @@ public class CanvasOAuth2ErrorResponseErrorHandler implements ResponseErrorHandl
 	private BearerTokenError getBearerToken(String wwwAuthenticateHeader) {
 		try {
 			return BearerTokenError.parse(wwwAuthenticateHeader);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			return null;
 		}
 	}
-	
-	
+
 
 	/**
 	 * Sets the {@link HttpMessageConverter} for an OAuth 2.0 Error.
