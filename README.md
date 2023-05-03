@@ -388,7 +388,7 @@ When creating JSON configuration for a tool you probably just want to use some s
 The minimum (and all you need) for an LTI registration is:
 
 ```json
-{
+    {
       "registrationId": "registration-id",
       "clientName": "Client Name",
       "clientId": "12345",
@@ -444,7 +444,7 @@ These values came from https://canvas.instructure.com/doc/api/file.lti_dev_key_c
 The minimum you need for a proxy registration is:
 
 ```json
-{
+    {
       "registrationId": "registration-id",
       "clientName": "Client Name",
       "clientId": "12345",
