@@ -22,14 +22,14 @@ public class ToolCorsConfigurationSource implements CorsConfigurationSource {
             config.addAllowedOrigin(origin);
             addAllowed(config);
         }
+        config.addExposedHeader("Link");
+        config.addExposedHeader("WWW-Authenticate");
         this.config = config;
     }
 
     private void addAllowed(CorsConfiguration config) {
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
-        config.addExposedHeader("Link");
-        config.addExposedHeader("WWW-Authenticate");
     }
 
     @Override
