@@ -20,8 +20,8 @@ public class ToolCorsConfigurationSource implements CorsConfigurationSource {
         CorsConfiguration config = new CorsConfiguration();
         for (String origin : origins) {
             config.addAllowedOrigin(origin);
-            addAllowed(config);
         }
+        addAllowed(config);
         this.config = config;
     }
 
