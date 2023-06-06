@@ -256,7 +256,7 @@ curl -u "user:pass1234" -d '{
     "clientId": "1153700000000000432",
     "clientSecret": "some_client_secret",
     "clientAuthenticationMethod": "client_secret_basic",
-    "authorizationGrantType": "client_secret_basic",
+    "authorizationGrantType": "implicit",
     "redirectUri": "{baseUrl}/lti/login",
     "scopes": [
       "openid"
@@ -279,8 +279,8 @@ curl -u "user:pass1234" -d '{
     "clientName": "Canvas (oxeval.instructure.com)2",
     "clientId": "1153700000000000422",
     "clientSecret": "some_client_secret",
-    "clientAuthenticationMethod": "client_secret_basic",
-    "authorizationGrantType": "client_secret_basic",
+    "clientAuthenticationMethod": "client_secret_post",
+    "authorizationGrantType": "authorization_code",
     "redirectUri": "{baseUrl}/login/oauth2/code/{registrationId}",
     "scopes": [],
     "providerDetails": {
@@ -326,7 +326,7 @@ curl -u "user:pass1234" -d '{
     "clientId": "11537000000000004327",
     "clientSecret": "client_secret",
     "clientAuthenticationMethod": "client_secret",
-    "authorizationGrantType": "client_secret_basic",
+    "authorizationGrantType": "implicit",
     "redirectUri": "{baseUrl}/lti/login",
     "scopes": [
       "openid"
@@ -349,7 +349,7 @@ curl -u "user:pass1234" -d '{
     "clientName": "Canvas (oxeval.instructure.com)27",
     "clientId": "11537000000000004227",
     "clientSecret": "some_client_secret",
-    "authorizationGrantType": "client_secret_basic",
+    "authorizationGrantType": "authorization_code",
     "redirectUri": "{baseUrl}/login/oauth2/code/{registrationId}",
     "scopes": ["scope27"],
     "providerDetails": {
