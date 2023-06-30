@@ -1,6 +1,8 @@
 package uk.ac.ox.ctl.ltiauth;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OptimisticAuthorizationRequestRepository;
@@ -8,12 +10,18 @@ import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.StateCheckingAuthentica
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 /**
  * This handler takes the URL and adds a token onto it. This is so that a static HTML frontend can use the token
  * to retrieve the full JWT.
  */
 public class TokenPassingUriAuthenticationSuccessHandler extends StateCheckingAuthenticationSuccessHandler {
+    
+    private final Logger log = LoggerFactory.getLogger(TokenPassingUriAuthenticationSuccessHandler.class);
 
     private final JWTService jwtService;
 
@@ -23,8 +31,7 @@ public class TokenPassingUriAuthenticationSuccessHandler extends StateCheckingAu
     }
 
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        if (authentication instanceof OAuth2AuthenticationToken) {
-            OAuth2AuthenticationToken token = (OAuth2AuthenticationToken)authentication;
+        if (authentication instanceof OAuth2AuthenticationToken token) {
             // Because we are just giving the token out to this URL we need to trust that this URL can't be messed with.
             String targetLink = token.getPrincipal().getAttribute("https://purl.imsglobal.org/spec/lti/claim/target_link_uri");
             if (targetLink != null && !targetLink.isEmpty()) {
@@ -34,8 +41,23 @@ public class TokenPassingUriAuthenticationSuccessHandler extends StateCheckingAu
                     obj = jwtService.createJWT(token);
                 }
                 String key = jwtService.store(obj);
-                // TODO We should parse the link and add the additional parameter correctly so we can pass parameters
-                return targetLink + "?token="+ key;
+                
+                String tokenParam = "token="+key;
+                try {
+                    URI uri = URI.create(targetLink);
+                    String query = uri.getQuery();
+                    if (query != null) {
+                        query += "&"+tokenParam;
+                    } else {
+                        query = tokenParam;
+                    }
+                    uri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), query, uri.getFragment());
+                    return uri.toString();
+                } catch (URISyntaxException | IllegalArgumentException e) {
+                    log.warn("Unable to parse {}", targetLink);
+                } 
+                // Fallback to assuming we can just append the token as a string
+                return targetLink + "?"+tokenParam;
             }
         }
 
