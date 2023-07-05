@@ -40,7 +40,7 @@ class JWKSControllerTest {
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.keys").isArray())
                 .andExpect(jsonPath("$.keys").isNotEmpty())
-                .andExpect(header().string("cache-control", "max-age=86400"));
+                .andExpect(header().string("cache-control", "max-age=86400, public"));
     }
 
 }
