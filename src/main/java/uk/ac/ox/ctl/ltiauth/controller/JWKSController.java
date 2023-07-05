@@ -26,7 +26,7 @@ public class JWKSController {
         return
             ResponseEntity.ok()
                     // This is needed so that consumers cache it for a reasonable amount of time.
-                    .cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS))
+                    .cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS).cachePublic())
                     .body(this.jwkSet.toJSONObject());
     }
 
