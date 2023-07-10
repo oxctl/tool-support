@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Set;
 
@@ -98,7 +99,7 @@ class TokenPassingUriAuthenticationSuccessHandlerTest {
 
     @NotNull
     private OidcAuthenticationToken tokenOf(String url) {
-        OidcIdToken token = new OidcIdToken("value", Instant.now(), Instant.now(), Map.of(
+        OidcIdToken token = new OidcIdToken("value", Instant.now(), Instant.now().plus(1, ChronoUnit.HOURS), Map.of(
                 "sub", "1234",
                 "https://purl.imsglobal.org/spec/lti/claim/target_link_uri", url
         ));
