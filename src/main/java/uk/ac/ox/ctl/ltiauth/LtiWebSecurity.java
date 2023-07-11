@@ -27,6 +27,10 @@ public class LtiWebSecurity {
     @Autowired
     @Qualifier("lti")
     private ClientRegistrationRepository clientRegistrationRepository;
+
+    @Autowired
+    private ClientRegistrationService clientRegistrationService;
+    
     @Value("${lti.repo.state.limit.ip:false}")
     private boolean limitIp;
 
@@ -76,7 +80,7 @@ public class LtiWebSecurity {
     public SecurityFilterChain ltiConfiguration(HttpSecurity http) throws Exception {
         HttpSecurity lti = http.antMatcher("/lti/**");
         lti.setSharedObject(ClientRegistrationRepository.class, clientRegistrationRepository);
-        Lti13Configurer lti13Configurer = new CustomLti13Configurer(jwtService);
+        Lti13Configurer lti13Configurer = new CustomLti13Configurer(jwtService, clientRegistrationService);
         lti13Configurer.limitIpAddresses(limitIp);
         lti.apply(lti13Configurer);
         // We need to allow the LTI launch to happen from anywhere.

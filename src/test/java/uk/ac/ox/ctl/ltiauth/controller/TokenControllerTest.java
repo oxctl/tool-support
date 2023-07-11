@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.ac.ox.ctl.ltiauth.ClientRegistrationService;
 import uk.ac.ox.ctl.ltiauth.JWTService;
 import uk.ac.ox.ctl.ltiauth.LtiWebSecurity;
 
@@ -41,6 +42,8 @@ class TokenControllerTest {
     @MockBean
     @Qualifier("lti")
     private ClientRegistrationRepository clientRegistrationRepository;
+    @MockBean
+    private ClientRegistrationService clientRegistrationService;
     @MockBean
     private JWTService jwtService;
     @MockBean
