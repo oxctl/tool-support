@@ -64,18 +64,17 @@ jobs:
       #  run: echo "TAG_REF=refs/tags/${{ env.NEW_RELEASE_NUMBER }}" >> "$GITHUB_OUTPUT"
 
 # We must call frontend-dev because builds and pushes the artifacts.
-#  call-frontend-dev:
+#  call-build:
 #    needs: perform-release
-#    uses: ./.github/workflows/frontend_dev.yml
+#    uses: ./.github/workflows/build.yml
 #    with:
-#      tag: ${{needs.perform-release.outputs.NEW_RELEASE_NUMBER}}
 #      sha: ${{needs.perform-release.outputs.TAG_COMMIT_SHA}}
 #      ref: ${{needs.perform-release.outputs.TAG_REF}}
 #    secrets: inherit
 
-#  call-frontend-pro:
-#    needs: [perform-release, call-frontend-dev]
-#    uses: ./.github/workflows/frontend_pro.yml
+#  call-deploy:
+#    needs: [perform-release, build]
+#    uses: ./.github/workflows/deploy.yml
 #    with:
 #      tag: ${{needs.perform-release.outputs.NEW_RELEASE_NUMBER}}
 #    secrets: inherit
