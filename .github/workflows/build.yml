@@ -14,6 +14,14 @@ on:
   push:
     branches: [ master ]
     tags: [ '*' ]
+  workflow_call:
+    inputs:
+      sha:
+        description: 'SHA of the TAG commit'
+        type: string
+      ref:
+        description: 'The TAG ref'
+        type: string
 
 jobs:
   build:
@@ -22,8 +30,14 @@ jobs:
     outputs:
       tag: ${{ steps.output-tag.outputs.tag }}
       message: ${{ steps.output-message.outputs.message }}
+    env:
+      # If the SHA and the REF come from inputs, then use them. Otherwise stick with the environment GitHub variables.
+      COMMIT_SHA: ${{ inputs.sha != '' && inputs.sha || github.sha }}
+      TAG_REF: ${{ inputs.ref != '' && inputs.ref || github.ref }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ env.COMMIT_SHA }}
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -37,9 +51,9 @@ jobs:
         # This only works on branches.
         run: echo "DOCKER_TAG=github.${GITHUB_REF##*/}.${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
       - name: Set docker tag for git tag
-        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        if: ${{ startsWith(env.TAG_REF, 'refs/tags/') }}
         # We don't want the run number in the tag.
-        run: echo "DOCKER_TAG=github.${GITHUB_REF##*/}" >> $GITHUB_ENV
+        run: echo "DOCKER_TAG=github.${TAG_REF##*/}" >> $GITHUB_ENV
       - name: Login to Amazon ECR
         id: login-ecr
         env:
@@ -49,13 +63,13 @@ jobs:
       - name: Push to docker repository (ECR)
         id: push
         # We set the commit ID on the command line rather than using the plugin.
-        run: mvn -B -Dimage=${DOCKER_REPO} -Djib.tag=${DOCKER_TAG} -Dgit.commit.id=${GITHUB_SHA} jib:build
+        run: mvn -B -Dimage=${DOCKER_REPO} -Djib.tag=${DOCKER_TAG} -Dgit.commit.id=${{ env.COMMIT_SHA }} jib:build
       - name: Set image tag output
         id: output-tag
         run: echo tag="${DOCKER_TAG}" >> $GITHUB_OUTPUT
       - name: Set message output
         id: output-message
-        run: echo message="$(git log --format=%s -n 1 ${GITHUB_SHA})" >> $GITHUB_OUTPUT
+        run: echo message="$(git log --format=%s -n 1 ${{ env.COMMIT_SHA }})" >> $GITHUB_OUTPUT
       - name: Upload Elastic Beanstalk Artifact
         uses: actions/upload-artifact@v3
         with:

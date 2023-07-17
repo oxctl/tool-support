@@ -237,7 +237,10 @@ To make a new release of this create a new tag using the maven release plugin. N
 This will ask what then release version should be and then what the next development version should be. We try to follow semantic versioning for this. After the release plugin has finished it should push the changes to GitHub, then GitHub Actions will build the new tag a put a tagged image in the ECR repository. The release to production can then be made by running the production deploy GitHub Action and specifying the newly created tag. Afterwards all this can be cleaned up with:
 
     mvn release:clean
-    
+
+## Releasing using GitHub actions
+
+There is a GitHub action to [perform releases](https://github.com/oxctl/tool-support/actions/workflows/release.yml), you can create a Major, Minor or a Patch release, then it gets pushed to production automatically.
 
 ## API
 

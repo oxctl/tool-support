@@ -1,0 +1,80 @@
+# This workflow makes a new GIT tag known as release and then triggers the release actions.
+
+name: Release
+
+env:
+  JAVA_VERSION: 17
+
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        type: choice
+        description: "Release Type"
+        required: true
+        default: 'patch'
+        options:
+        - Major
+        - Minor
+        - Patch
+
+jobs:
+  perform-release:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    concurrency: release
+    outputs:
+      NEW_RELEASE_NUMBER: ${{ steps.set-release-number.outputs.NEW_RELEASE_NUMBER }}
+      NEXT_RELEASE_NUMBER: ${{ steps.set-next-release-number.outputs.NEXT_RELEASE_NUMBER }}
+      TAG_COMMIT_SHA: ${{ steps.set-commit-sha.outputs.TAG_COMMIT_SHA }}
+      TAG_REF: ${{ steps.set-tags-ref.outputs.TAG_REF }}
+    steps:
+      # This makes a checkout of the source code
+      - uses: actions/checkout@v3
+      # This setups the GIT to make pushes
+      - name: Sets the author of the release
+        run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      # Gets the latest tag and increments the release number# Gets the latest tag and increments the release number
+      - name: Get the new release number
+        run: echo "NEW_RELEASE_NUMBER=`${GITHUB_WORKSPACE}/increment_release.sh ${{ inputs.release-type }}`" >> $GITHUB_ENV
+      - id: set-release-number
+        run: echo "NEW_RELEASE_NUMBER=${{ env.NEW_RELEASE_NUMBER }}" >> "$GITHUB_OUTPUT"
+      - name: Get the next release number
+        run: echo "NEXT_RELEASE_NUMBER=`${GITHUB_WORKSPACE}/next_release.sh ${{ inputs.release-type }}`" >> $GITHUB_ENV
+      - id: set-next-release-number
+        run: echo "NEXT_RELEASE_NUMBER=${{ env.NEXT_RELEASE_NUMBER }}" >> "$GITHUB_OUTPUT"
+      - name: Prints the versions.
+        run: echo "${{ env.NEW_RELEASE_NUMBER }} -> ${{ env.NEXT_RELEASE_NUMBER }}"
+      # Setups Java to build the backend.
+      #- name: Set up JDK 17
+      #  uses: actions/setup-java@v3
+      #  with:
+      #    java-version: ${{ env.JAVA_VERSION }}
+      #    distribution: temurin
+      #    cache: maven
+      #- name: Build release in non interactive mode
+      #  run: mvn clean install release:clean release:prepare release:perform -DreleaseVersion=${{ env.NEW_RELEASE_NUMBER }} -DdevelopmentVersion=${{ env.NEXT_RELEASE_NUMBER }} -Dtag=${{ env.NEW_RELEASE_NUMBER }}
+      #- name: Push the tags to the repository
+      #  run: git push && git push --tags && git checkout ${{ env.NEW_RELEASE_NUMBER }}
+      #- id: set-commit-sha
+      #  run: echo "TAG_COMMIT_SHA=`git rev-parse HEAD`" >> "$GITHUB_OUTPUT"
+      #- id: set-tags-ref
+      #  run: echo "TAG_REF=refs/tags/${{ env.NEW_RELEASE_NUMBER }}" >> "$GITHUB_OUTPUT"
+
+# We must call frontend-dev because builds and pushes the artifacts.
+#  call-build:
+#    needs: perform-release
+#    uses: ./.github/workflows/build.yml
+#    with:
+#      sha: ${{needs.perform-release.outputs.TAG_COMMIT_SHA}}
+#      ref: ${{needs.perform-release.outputs.TAG_REF}}
+#    secrets: inherit
+
+#  call-deploy:
+#    needs: [perform-release, build]
+#    uses: ./.github/workflows/deploy.yml
+#    with:
+#      tag: ${{needs.perform-release.outputs.NEW_RELEASE_NUMBER}}
+#    secrets: inherit
