@@ -306,14 +306,26 @@ curl -u "user:pass1234" -d '{
 
 **READ:**
 
+To list all the tools:
 ```
 curl -u "user:pass1234" http://localhost:8080/admin/tools/
 ```
 
+To get a specific tool by ID:
 ```
 curl -u "user:pass1234" http://localhost:8080/admin/tools/04a0aa49-a74f-4dd1-96c5-895c8d68d776
 ```
 
+The API also supports looks by lti/proxy client ID and registration ID, the supported ID prefixes are:
+ - `ltiClientId:`
+ - `ltiRegistrationId:`
+ - `proxyClientId:`
+ - `proxyRegistrationId:`
+
+For example to lookup by a client ID of `123450000000000678`:
+```
+curl -u "user:pass1234" http://localhost:8080/admin/tools/ltiClientId:123450000000000678
+```
 
 **UPDATE:**
 
