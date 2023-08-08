@@ -15,9 +15,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.ox.ctl.model.Tool;
+import uk.ac.ox.ctl.model.ToolRegistrationLti;
 import uk.ac.ox.ctl.model.ToolRegistrationProxy;
 import uk.ac.ox.ctl.repository.ToolRepository;
 
@@ -74,6 +77,50 @@ public class AdminControllerWebTest {
         UUID uuid = UUID.fromString(id);
 
         assertThat(repository.findById(uuid)).isNotEmpty();
+    }
+    
+    @Test
+    public void testFinding() throws Exception {
+        {
+            Tool tool = new Tool();
+            ToolRegistrationLti lti = new ToolRegistrationLti();
+            lti.setClientId("ltiClientId");
+            lti.setRegistrationId("ltiRegistrationId");
+            lti.setRedirectUri("http://server.test");
+            lti.setClientAuthenticationMethod(ClientAuthenticationMethod.NONE);
+            lti.setAuthorizationGrantType(AuthorizationGrantType.IMPLICIT);
+            tool.setLti(lti);
+            ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+            proxy.setClientId("proxyClientId");
+            proxy.setRegistrationId("proxyRegistrationId");
+            proxy.setRedirectUri("http://server.test");
+            proxy.setClientAuthenticationMethod(ClientAuthenticationMethod.NONE);
+            proxy.setAuthorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE);
+            tool.setProxy(proxy);
+            entityManager.persist(tool);
+            entityManager.flush();
+        }
+
+        mvc.perform(get("/admin/tools/ltiClientId:ltiClientId")
+                        .with(httpBasic("user", "pass1234"))
+                        .contentType(APPLICATION_JSON)
+                ).andExpect(status().isOk());
+
+        mvc.perform(get("/admin/tools/ltiRegistrationId:ltiRegistrationId")
+                .with(httpBasic("user", "pass1234"))
+                .contentType(APPLICATION_JSON)
+        ).andExpect(status().isOk());
+
+        mvc.perform(get("/admin/tools/proxyClientId:proxyClientId")
+                .with(httpBasic("user", "pass1234"))
+                .contentType(APPLICATION_JSON)
+        ).andExpect(status().isOk());
+
+        mvc.perform(get("/admin/tools/proxyRegistrationId:proxyRegistrationId")
+                .with(httpBasic("user", "pass1234"))
+                .contentType(APPLICATION_JSON)
+        ).andExpect(status().isOk());
+        
     }
 
     @Test

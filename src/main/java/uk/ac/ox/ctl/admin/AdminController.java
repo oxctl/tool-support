@@ -1,9 +1,15 @@
 package uk.ac.ox.ctl.admin;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ox.ctl.model.Tool;
 import uk.ac.ox.ctl.model.ToolRegistration;
 import uk.ac.ox.ctl.model.ToolRegistrationLti;
@@ -15,12 +21,10 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
-    @Autowired
-    private ToolRepository repository;
+    private final ToolRepository repository;
 
-    @PostMapping("/tools")
-    Tool createTool(@RequestBody Tool newTool) {
-        return repository.save(newTool);
+    public AdminController(ToolRepository repository) {
+        this.repository = repository;
     }
 
     @GetMapping(value = "/tools")
@@ -33,6 +37,36 @@ public class AdminController {
         return repository.findById(id).map(ResponseEntity::ok)
             .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
+    @GetMapping("/tools/ltiClientId:{id}")
+    ResponseEntity<Tool> getToolByLtiClientId(@PathVariable String id) {
+        return repository.findToolByLtiClientId(id).map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("/tools/proxyClientId:{id}")
+    ResponseEntity<Tool> getToolByProxyClientId(@PathVariable String id) {
+        return repository.findToolByProxyClientId(id).map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("/tools/ltiRegistrationId:{id}")
+    ResponseEntity<Tool> getToolByLtiRegistrationId(@PathVariable String id) {
+        return repository.findToolByLtiRegistrationId(id).map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("/tools/proxyRegistrationId:{id}")
+    ResponseEntity<Tool> getToolByProxyRegistrationId(@PathVariable String id) {
+        return repository.findToolByProxyRegistrationId(id).map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @PostMapping("/tools")
+    Tool createTool(@RequestBody Tool newTool) {
+        return repository.save(newTool);
+    }
+
 
     @PutMapping("/tools/{id}")
     ResponseEntity<Tool> updateTool(@RequestBody Tool newTool, @PathVariable UUID id) {
