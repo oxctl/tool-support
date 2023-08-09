@@ -9,7 +9,7 @@
     </parent>
     <groupId>uk.ac.ox.ctl</groupId>
     <artifactId>canvas-tools</artifactId>
-    <version>0.6.0</version>
+    <version>0.6.1-SNAPSHOT</version>
     <name>Canvas Tools</name>
     <description>LTI 1.3 and OAuth2 proxy support for Canvas</description>
     <licenses>
@@ -31,7 +31,7 @@
         <connection>scm:git:ssh://git@github.com/oxctl/tool-support</connection>
         <developerConnection>scm:git:ssh://git@github.com/oxctl/tool-support</developerConnection>
         <url>https://github.com/oxctl/tool-support</url>
-        <tag>0.6.0</tag>
+        <tag>0.2.0</tag>
     </scm>
 
     <dependencies>
