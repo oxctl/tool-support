@@ -46,6 +46,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
       - name: Push to docker repository (ECR)
         id: push
         # We set the commit ID on the command line rather than using the plugin.
