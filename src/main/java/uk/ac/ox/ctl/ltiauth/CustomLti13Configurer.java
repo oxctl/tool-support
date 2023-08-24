@@ -1,24 +1,28 @@
 package uk.ac.ox.ctl.ltiauth;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import uk.ac.ox.ctl.lti13.Lti13Configurer;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcLaunchFlowAuthenticationProvider;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OAuth2AuthorizationRequestRedirectFilter;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OAuth2LoginAuthenticationFilter;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OIDCInitiatingLoginRequestResolver;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OptimisticAuthorizationRequestRepository;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.PathOIDCInitiationRegistrationResolver;
 
 /**
- * This overrides the standard configurer to add our token passing redirecter.
+ * This overrides the standard configurer to add our token passing redirect along with allowing client
+ * registration lookups by client ID instead of requiring a custom path (although that's still supported).
  */
 public class CustomLti13Configurer extends Lti13Configurer {
     
-    private final Logger log = LoggerFactory.getLogger(CustomLti13Configurer.class);
-
     private final JWTService jwtService;
+    private final ClientRegistrationService clientRegistrationService;
 
-    public CustomLti13Configurer(JWTService jwtService) {
+    public CustomLti13Configurer(JWTService jwtService, ClientRegistrationService clientRegistrationService) {
+        // An alternative is to look these up at configuration time, but that is slightly more messy and less
+        // discoverable about what's happening
         this.jwtService = jwtService;
+        this.clientRegistrationService = clientRegistrationService;
     }
 
     @Override
@@ -27,4 +31,14 @@ public class CustomLti13Configurer extends Lti13Configurer {
         loginFilter.setAuthenticationSuccessHandler(new TokenPassingUriAuthenticationSuccessHandler(authorizationRequestRepository, jwtService));
         return loginFilter;
     }
+
+    @Override
+    protected OAuth2AuthorizationRequestRedirectFilter configureInitiationFilter(ClientRegistrationRepository clientRegistrationRepository, OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
+        PathOIDCInitiationRegistrationResolver pathResolver = new PathOIDCInitiationRegistrationResolver(this.ltiPath + this.loginInitiationPath);
+        OIDCInitiatingLoginRequestResolver resolver = new OIDCInitiatingLoginRequestResolver(clientRegistrationRepository, new ClientIdOIDCInitiationRegistrationResolver(clientRegistrationService, pathResolver));
+        OAuth2AuthorizationRequestRedirectFilter filter = new OAuth2AuthorizationRequestRedirectFilter(resolver);
+        filter.setAuthorizationRequestRepository(authorizationRequestRepository);
+        return filter;
+    }
+
 }
