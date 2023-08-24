@@ -29,7 +29,7 @@ sequenceDiagram
     Note over Tool Support: Start LTI 1.3 Standard
     Browser->>Tool Support: LTI initiation request (POST /lti/login_initation/{registrationId})
     Tool Support->>Browser: 302
-    Browser->>Canvas: Authorization Redirect (GET https://canvas.instructure.com/api/lti/authorize_redirect)
+    Browser->>Canvas: Authorization Redirect (GET https://sso.canvaslms.com/api/lti/authorize_redirect)
     Canvas->>Browser: 302
     Browser->>Canvas: Authorization (GET https://instance.instructure.com/api/lti/authorize)
     Canvas->>Browser: 200 (HTML autosubmit)
@@ -265,14 +265,14 @@ curl -u "user:pass1234" -d '{
       "openid"
     ],
     "providerDetails": {
-      "authorizationUri": "https://canvas.instructure.com/api/lti/authorize_redirect",
-      "tokenUri": "https://canvas.instructure.com/login/oauth2/token",
+      "authorizationUri": "https://sso.canvaslms.com/api/lti/authorize_redirect",
+      "tokenUri": "https://sso.canvaslms.com/login/oauth2/token",
       "userInfoEndpoint": {
         "uri": null,
         "authenticationMethod": "client_secret_basic",
         "userNameAttributeName": "sub"
       },
-      "jwkSetUri": "https://canvas.instructure.com/api/lti/security/jwks",
+      "jwkSetUri": "https://sso.canvaslms.com/api/lti/security/jwks",
       "issuerUri": null,
       "configurationMetadata": {}
     }
@@ -347,14 +347,14 @@ curl -u "user:pass1234" -d '{
       "openid"
     ],
     "providerDetails": {
-      "authorizationUri": "https://canvas.instructure.com/api/lti/authorize_redirect",
-      "tokenUri": "https://canvas.instructure.com/login/oauth2/token",
+      "authorizationUri": "https://sso.canvaslms.com/api/lti/authorize_redirect",
+      "tokenUri": "https://sso.canvaslms.com/login/oauth2/token",
       "userInfoEndpoint": {
         "uri": null,
         "authenticationMethod": "client_secret_basic",
         "userNameAttributeName": "sub"
       },
-      "jwkSetUri": "https://canvas.instructure.com/api/lti/security/jwks",
+      "jwkSetUri": "https://sso.canvaslms.com/api/lti/security/jwks",
       "issuerUri": null,
       "configurationMetadata": {}
     }
@@ -413,9 +413,9 @@ The minimum (and all you need) for an LTI registration is:
         "openid"
       ],
       "providerDetails": {
-        "authorizationUri": "https://canvas.instructure.com/api/lti/authorize_redirect",
-        "tokenUri": "https://canvas.instructure.com/login/oauth2/token",
-        "jwkSetUri": "https://canvas.instructure.com/api/lti/security/jwks"
+        "authorizationUri": "https://sso.canvaslms.com/api/lti/authorize_redirect",
+        "tokenUri": "https://sso.canvaslms.com/login/oauth2/token",
+        "jwkSetUri": "https://sso.canvaslms.com/api/lti/security/jwks"
       }
     }
 ```
@@ -424,33 +424,33 @@ The minimum (and all you need) for an LTI registration is:
 
 These values came from https://canvas.instructure.com/doc/api/file.lti_dev_key_config.html and can be put into the `providerDetails` property of the `lti` key.
 
-##### canvas.instructure.com
+##### sso.canvaslms.com
 
 ```json
       {
-        "authorizationUri": "https://canvas.instructure.com/api/lti/authorize_redirect",
-        "tokenUri": "https://canvas.instructure.com/login/oauth2/token",
-        "jwkSetUri": "https://canvas.instructure.com/api/lti/security/jwks"
+        "authorizationUri": "https://sso.canvaslms.com/api/lti/authorize_redirect",
+        "tokenUri": "https://sso.canvaslms.com/login/oauth2/token",
+        "jwkSetUri": "https://sso.canvaslms.com/api/lti/security/jwks"
       }
 ```
 
-##### canvas.beta.instructure.com
+##### sso.beta.canvaslms.com
 
 ```json
       {
-        "authorizationUri": "https://canvas.beta.instructure.com/api/lti/authorize_redirect",
-        "tokenUri": "https://canvas.beta.instructure.com/login/oauth2/token",
-        "jwkSetUri": "https://canvas.beta.instructure.com/api/lti/security/jwks"
+        "authorizationUri": "https://sso.beta.canvaslms.com/api/lti/authorize_redirect",
+        "tokenUri": "https://sso.beta.canvaslms.com/login/oauth2/token",
+        "jwkSetUri": "https://sso.beta.canvaslms.com/api/lti/security/jwks"
       }
 ```
 
-##### canvas.test.instructure.com
+##### sso.test.canvaslms.com
 
 ```json
       {
-        "authorizationUri": "https://canvas.test.instructure.com/api/lti/authorize_redirect",
-        "tokenUri": "https://canvas.test.instructure.com/login/oauth2/token",
-        "jwkSetUri": "https://canvas.test.instructure.com/api/lti/security/jwks"
+        "authorizationUri": "https://sso.test.canvaslms.com/api/lti/authorize_redirect",
+        "tokenUri": "https://sso.test.canvaslms.com/login/oauth2/token",
+        "jwkSetUri": "https://sso.test.canvaslms.com/api/lti/security/jwks"
       }
 ```
 
