@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -14,13 +15,12 @@ import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OptimisticAuthorization
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -41,37 +41,39 @@ class TokenPassingUriAuthenticationSuccessHandlerTest {
         when(jwtService.store(any())).thenReturn("value");
     }
 
+
     @Test
     public void good() {
-        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletRequest request = mockHttpServletRequest();
         HttpServletResponse response = mock(HttpServletResponse.class);
         OidcAuthenticationToken authentication = tokenOf("http://server.test");
 
-        assertEquals("http://server.test?token=value", handler.determineTargetUrl(request, response, authentication));
+        assertEquals("http://server.test?token=value&server=http%253A%252F%252Flti.server.test", handler.determineTargetUrl(request, response, authentication));
     }
+
 
     @Test
     public void withPort() {
-        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletRequest request = mockHttpServletRequest();
         HttpServletResponse response = mock(HttpServletResponse.class);
         OidcAuthenticationToken authentication = tokenOf("http://server.test:3000/");
 
-        assertEquals("http://server.test:3000/?token=value", handler.determineTargetUrl(request, response, authentication));
+        assertEquals("http://server.test:3000/?token=value&server=http%253A%252F%252Flti.server.test", handler.determineTargetUrl(request, response, authentication));
     }
 
     @Test
     public void existingParameters() {
-        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletRequest request = mockHttpServletRequest();
         HttpServletResponse response = mock(HttpServletResponse.class);
         OidcAuthenticationToken authentication = tokenOf("http://server.test/file.html?param=true");
 
-        assertEquals("http://server.test/file.html?param=true&token=value", handler.determineTargetUrl(request, response, authentication));
+        assertEquals("http://server.test/file.html?param=true&token=value&server=http%253A%252F%252Flti.server.test", handler.determineTargetUrl(request, response, authentication));
     }
 
 
     @Test
     public void notUrl() {
-        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletRequest request = mockHttpServletRequest();
         HttpServletResponse response = mock(HttpServletResponse.class);
         OidcAuthenticationToken authentication = tokenOf("Not a URL");
 
@@ -80,20 +82,31 @@ class TokenPassingUriAuthenticationSuccessHandlerTest {
 
     @Test
     public void relative() {
-        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletRequest request = mockHttpServletRequest();
         HttpServletResponse response = mock(HttpServletResponse.class);
         OidcAuthenticationToken authentication = tokenOf("/path");
 
-        assertEquals("/path?token=value", handler.determineTargetUrl(request, response, authentication));
+        assertEquals("/path?token=value&server=http%253A%252F%252Flti.server.test", handler.determineTargetUrl(request, response, authentication));
     }
 
     @Test
     public void withPath() {
-        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletRequest request = mockHttpServletRequest();
         HttpServletResponse response = mock(HttpServletResponse.class);
         OidcAuthenticationToken authentication = tokenOf("http://server.test/path");
 
-        assertEquals("http://server.test/path?token=value", handler.determineTargetUrl(request, response, authentication));
+        assertEquals("http://server.test/path?token=value&server=http%253A%252F%252Flti.server.test", handler.determineTargetUrl(request, response, authentication));
+    }
+
+    @Test
+    public void withPortOnRequest() {
+        MockHttpServletRequest request = mockHttpServletRequest();
+        // Check that we include port when it's non-standard.
+        request.setServerPort(8080);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        OidcAuthenticationToken authentication = tokenOf("http://server.test/path");
+
+        assertEquals("http://server.test/path?token=value&server=http%253A%252F%252Flti.server.test%253A8080", handler.determineTargetUrl(request, response, authentication));
     }
 
 
@@ -107,5 +120,13 @@ class TokenPassingUriAuthenticationSuccessHandlerTest {
         OidcAuthenticationToken authentication = new OidcAuthenticationToken(user, Set.of(), "reg-id", "state");
         return authentication;
     }
+
+    private MockHttpServletRequest mockHttpServletRequest() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setServerName("lti.server.test");
+        request.setServerPort(443);
+        request.setServletPath("/login/lti");
+        return request;
+    } 
 
 }

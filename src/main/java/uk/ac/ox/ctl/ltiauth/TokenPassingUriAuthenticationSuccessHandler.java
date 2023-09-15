@@ -10,10 +10,10 @@ import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.StateCheckingAuthentica
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This handler takes the URL and adds a token onto it. This is so that a static HTML frontend can use the token
@@ -41,8 +41,13 @@ public class TokenPassingUriAuthenticationSuccessHandler extends StateCheckingAu
                     obj = jwtService.createJWT(token);
                 }
                 String key = jwtService.store(obj);
+                String origin = getUrl(request);
                 
                 String tokenParam = "token="+key;
+                // We include the server in the parameters so that the client can use this
+                // to request the token, this means the client doesn't have to know the Tool Support server used
+                // at build time.
+                String serverParam = "server="+ URLEncoder.encode(origin, StandardCharsets.UTF_8);
                 try {
                     URI uri = URI.create(targetLink);
                     String query = uri.getQuery();
@@ -51,6 +56,7 @@ public class TokenPassingUriAuthenticationSuccessHandler extends StateCheckingAu
                     } else {
                         query = tokenParam;
                     }
+                    query += "&"+serverParam;
                     uri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), query, uri.getFragment());
                     return uri.toString();
                 } catch (URISyntaxException | IllegalArgumentException e) {
@@ -62,6 +68,28 @@ public class TokenPassingUriAuthenticationSuccessHandler extends StateCheckingAu
         }
 
         return super.determineTargetUrl(request, response, authentication);
+    }
+
+    /**
+     * Gets the URL origin from the request.
+     * @param request The request
+     * @return The URL without anything after the port.
+     */
+    public String getUrl(HttpServletRequest request) {
+
+        String scheme = request.getScheme();             // http / https
+        String serverName = request.getServerName();     // hostname.com
+        int serverPort = request.getServerPort();        // 80
+
+        // Reconstruct original requesting URL
+        StringBuilder url = new StringBuilder();
+        url.append(scheme).append("://");
+        url.append(serverName);
+
+        if (serverPort != 80 && serverPort != 443) {
+            url.append(":").append(serverPort);
+        }
+        return url.toString();
     }
 }
 
