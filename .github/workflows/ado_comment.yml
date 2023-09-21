@@ -1,0 +1,26 @@
+name: Post a comment to the Azure DevOps item after merging a PR
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+    - master
+    - main
+
+jobs:
+  post-comment:
+    # Only runs when the PR has been merged into main or master.
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post comment to the ADO work item
+        id: post-ado-comment
+        uses: oxctl/post-ado-comment-action@v1
+        with:
+          ado-organization: 'oxforduniversity'
+          ado-project: 'Canvas'
+          ado-username: ${{ secrets.ADO_USERNAME }}
+          ado-personal-token: ${{ secrets.ADO_PERSONAL_TOKEN }}
+      - name: Get the API response output
+        run: echo "${{ steps.post-ado-comment.outputs.api-response }}"
