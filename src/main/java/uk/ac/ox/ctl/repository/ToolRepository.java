@@ -34,7 +34,15 @@ public interface ToolRepository extends CrudRepository<Tool, UUID> {
     @EntityGraph(attributePaths = {"lti", "proxy"})
     @QueryHints({ @QueryHint(name = "org.hibernate.cacheable", value = "true") })
     Optional<Tool> findToolByProxyRegistrationId(String id);
-    
+
+    @EntityGraph(attributePaths = {"lti", "proxy"})
+    @QueryHints({ @QueryHint(name = "org.hibernate.cacheable", value = "true") })
+    Optional<Tool> findToolByLtiClientIdOrProxyClientIdOrLtiRegistrationIdOrProxyRegistrationId(String ltiClientId, String proxyClientId, String ltiRegistrationId, String proxyRegistrationId);
+
+    default Optional<Tool> findByClientOrRegistrationIds(String ltiClientId, String proxyClientId, String ltiRegistrationId, String proxyRegistrationId) {
+        return findToolByLtiClientIdOrProxyClientIdOrLtiRegistrationIdOrProxyRegistrationId(ltiClientId, proxyClientId, ltiRegistrationId, proxyRegistrationId);
+    }
+
     Iterable<Tool> findToolByLtiIdNotNull();
 
     /**

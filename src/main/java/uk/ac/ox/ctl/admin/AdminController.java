@@ -63,8 +63,19 @@ public class AdminController {
     }
 
     @PostMapping("/tools")
-    Tool createTool(@RequestBody Tool newTool) {
-        return repository.save(newTool);
+    ResponseEntity<Tool> createTool(@RequestBody Tool newTool) {
+
+        String ltiRegistrationId = newTool.getLti() != null ? newTool.getLti().getRegistrationId() : null;
+        String ltiClientId = newTool.getLti() != null ? newTool.getLti().getClientId() : null;
+        String proxyRegistrationId = newTool.getProxy() != null ? newTool.getProxy().getRegistrationId() : null;
+        String proxyClientId = newTool.getProxy() != null ? newTool.getProxy().getClientId() : null;
+
+        // The registrationId and the clientId must be unique, return an error code if any of them are in use.
+        if (repository.findByClientOrRegistrationIds(ltiClientId, proxyClientId, ltiRegistrationId, proxyRegistrationId).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
+        return ResponseEntity.ok(repository.save(newTool));
     }
 
 
