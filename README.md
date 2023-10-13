@@ -185,9 +185,6 @@ This application needs a database to store the configuration and the OAuth token
 - SENTRY_DSN - The secret for reporting errors and performance to https://sentry.io
 - SENTRY_ENVIRONMENT - The environment key that is sent to https://sentry.io
 - SPRING_PROFILES_ACTIVE=client,aws - The profiles that are active, this is used to load configuration.
-- SENTRY_DSN - The secret for reporting errors and performance to https://sentry.io
-- SENTRY_ENVIRONMENT - The environment key that is sent to https://sentry.io
-- SPRING_PROFILES_ACTIVE - The profiles that are active, this is used to load configuration.
 - SPRING_SECURITY_USER_PASSWORD - The password used for basic authentication to the /admin API.
 
 #### Client Configuration
