@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.7.9</version>
-        <relativePath /> <!-- lookup parent from repository -->
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>uk.ac.ox.ctl</groupId>
     <artifactId>canvas-tools</artifactId>
@@ -23,7 +24,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <jib.tag>unknown</jib.tag>
+        <jib.tag>latest</jib.tag>
         <git.commit.id>unknown</git.commit.id>
     </properties>
 
@@ -228,11 +229,23 @@
                 <configuration>
                     <pluginExtensions>
                         <pluginExtension>
-                            <implementation>com.google.cloud.tools.jib.maven.extension.springboot.JibSpringBootExtension</implementation>
+                            <implementation>
+                                com.google.cloud.tools.jib.maven.extension.springboot.JibSpringBootExtension
+                            </implementation>
                         </pluginExtension>
                     </pluginExtensions>
                     <from>
                         <image>eclipse-temurin:17.0.6_10-jre-alpine</image>
+                        <platforms>
+                            <platform>
+                                <architecture>arm64</architecture>
+                                <os>linux</os>
+                            </platform>
+                            <platform>
+                                <architecture>amd64</architecture>
+                                <os>linux</os>
+                            </platform>
+                        </platforms>
                     </from>
                     <to>
                         <tags>
@@ -244,6 +257,11 @@
                     <container>
                         <!-- As we're in docker we really don't want to be running as root -->
                         <user>nobody:nobody</user>
+                        <labels>
+                            <!-- This is so that published packaged are linked to this repository -->
+                            <org.opencontainers.image.source>https://github.com/oxctl/tool-support
+                            </org.opencontainers.image.source>
+                        </labels>
                     </container>
                 </configuration>
             </plugin>
@@ -257,7 +275,8 @@
                     <!-- This is to prevent GitHub Actions from building the next development version. If we don't do
                          this then 3 builds will be started when releasing and we can only have one queued deployment
                          so the last one to get to deployment gets cancelled. -->
-                    <scmDevelopmentCommitComment>@{prefix} prepare for next development iteration [skip ci]</scmDevelopmentCommitComment>
+                    <scmDevelopmentCommitComment>@{prefix} prepare for next development iteration [skip ci]
+                    </scmDevelopmentCommitComment>
                 </configuration>
             </plugin>
         </plugins>
