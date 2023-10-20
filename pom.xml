@@ -235,8 +235,9 @@
                         </pluginExtension>
                     </pluginExtensions>
                     <from>
-                        <image>eclipse-temurin:17.0.6_10-jre-alpine</image>
-                        <platforms>
+						<!-- The alpine images are small but don't support arm64 so use ubuntu instead -->
+						<image>eclipse-temurin:17.0.8.1_1-jre-jammy</image>
+						<platforms>
                             <platform>
                                 <architecture>arm64</architecture>
                                 <os>linux</os>
