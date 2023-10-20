@@ -78,6 +78,10 @@ jobs:
           name: elasticbeanstalk
           path: elasticbeanstalk
           retention-days: 1
+      - name: Authenticate to GitHub Packages (containers)
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+      - name: Push to GitHub Packages
+        run:  mvn -B -Djib.tag=${DOCKER_TAG} -Dgit.commit.id=${{ env.COMMIT_SHA }} -Dimage=ghcr.io/oxctl/tool-support jib:build
 
   deploy-dev:
     timeout-minutes: 10

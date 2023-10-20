@@ -6,6 +6,10 @@
 
 This is a webapp that supports LTI tools in Canvas. It handles the LTI 1.3 launch and allows tools to retrieve the JWT that is created through the LTI launch. It also allows the management of OAuth2 tokens for accessing Canvas and links them to a LTI tool. This allows a HTML/JS (React) page to get data about the LTI launch and then make `fetch()` requests to Canvas through this tool. This allows a completely static tool that still provides useful functionality. The webapp supports multiple LTI tool at the same time.
 
+## Getting Going
+
+If you just want to run the application and don't need to develop it then you can use the docker setup as outlined in [docs/deploy.md](docs/deploy.md).
+
 ## History
 
 Originally this project was 2 projects, one handling the LTI launch, and one handling the OAuth2 proxying to Canvas. This made configuring a new setup more complex (2 services changed) and also made hosting more expensive. When we were looking at allowing configuration to be edited dynamically we decided that the best solution would be to merge the two projects into one and then the configuration can be edited in just one place.
