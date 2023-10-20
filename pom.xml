@@ -259,7 +259,8 @@
                         <user>nobody:nobody</user>
                         <labels>
                             <!-- This is so that published packaged are linked to this repository -->
-                            <org.opencontainers.image.source>https://github.com/oxctl/tool-support
+                            <org.opencontainers.image.source>
+                                 https://github.com/oxctl/tool-support
                             </org.opencontainers.image.source>
                         </labels>
                     </container>
