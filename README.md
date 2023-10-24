@@ -10,6 +10,25 @@ This is a webapp that supports LTI tools in Canvas. It handles the LTI 1.3 launc
 
 If you just want to run the application and don't need to develop it then you can use the docker setup as outlined in [docs/deploy.md](docs/deploy.md).
 
+## Generating a key 
+
+When the service starts up if there isn't a keypair available for signing it generates one. This keypair isn't persisted, so it will be re-generated the next time the service starts. If you are using NRPS or Deep Linking then Canvas will use the keypair for verifying messages. The log message when a keypair is generated is:
+```
+uk.ac.ox.ctl.ltiauth.Lti13Configuration  : Generated a keypair, this shouldn't be used in production.
+```
+
+To generate a static keypair you can use the `keytool` command:
+a
+```bash
+keytool \
+  -genkeypair \
+  -alias jwt \
+  -keyalg RSA \
+  -keystore config/jwk.jks \
+  -storepass store-pass \
+  -dname CN=development
+```
+
 ## History
 
 Originally this project was 2 projects, one handling the LTI launch, and one handling the OAuth2 proxying to Canvas. This made configuring a new setup more complex (2 services changed) and also made hosting more expensive. When we were looking at allowing configuration to be edited dynamically we decided that the best solution would be to merge the two projects into one and then the configuration can be edited in just one place.
