@@ -107,12 +107,12 @@
         <dependency>
             <groupId>io.sentry</groupId>
             <artifactId>sentry-spring-boot-starter</artifactId>
-            <version>6.15.0</version>
+            <version>6.32.0</version>
         </dependency>
         <dependency>
             <groupId>io.sentry</groupId>
             <artifactId>sentry-logback</artifactId>
-            <version>6.15.0</version>
+            <version>6.32.0</version>
         </dependency>
         <!-- For persisting maps to JSON -->
         <dependency>
