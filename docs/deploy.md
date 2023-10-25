@@ -10,7 +10,7 @@ you to run it without having to build it.
 To do this you need to have these tools installed:
 
 - docker - https://docker.com `docker-compose` is the key part.
-- mkcert - https://github.com/FiloSottile/mkcert
+- mkcert - https://github.com/FiloSottile/mkcert to generate self signed certificates.
 
 ### Setup
 
