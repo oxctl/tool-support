@@ -44,7 +44,7 @@ This will use a prebuild docker image for the application server that is pulled 
 
 ### Configure Tools
 
-Not you can configure a tool through the API. There is support for automatically configuring tools with https://github.com/oxctl/lti-auto-configuration
+Now you can configure a tool through the API. There is support for automatically configuring tools with https://github.com/oxctl/lti-auto-configuration
 
 There's the [Example LTI 1.3 Tool](https://github.com/oxctl/lti-13-example) which can be used to test that you have the service running correctly.
 
