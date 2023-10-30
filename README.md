@@ -158,6 +158,15 @@ This returns a jwt which is then auto-submitted to the url from https://purl.ims
 
 The proxy allows a tool to make requests to Canvas (eg please list all the courses the current user has) using the browser fetch API, if it doesn't have a token for the user then it returns an error and the tool at this point can prompt the user to start the OAuth2 flow to grant access. Requests to the proxy normally include the JWT from the LTI launch and this is used to work out which developer key should be used (each LTI can optionally have a API key linked to it).
 
+```mermaid
+sequenceDiagram
+    Browser->>+Tool Support:  GET /api/v1/users/self<br>(JWT from LTI launch)
+    Note over Tool Support: Lookup user token for Canvas
+    Tool Support->>+Canvas: GET /api/v1/users/self<br>(Token loaded from DB)
+    Canvas-->>-Tool Support: user JSON
+    Tool Support-->>-Browser: user JSON
+```
+
 #### Renewing a token
 
 The endpoint (badly named) to renew a token for a user is `POST /tokens/check`, this attempts to remove the existing token for a user and then gets them to re-grant access to the application. The sequence is as follows:
