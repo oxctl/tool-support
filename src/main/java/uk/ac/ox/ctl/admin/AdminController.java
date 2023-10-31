@@ -1,8 +1,10 @@
 package uk.ac.ox.ctl.admin;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -64,17 +66,6 @@ public class AdminController {
 
     @PostMapping("/tools")
     ResponseEntity<Tool> createTool(@RequestBody Tool newTool) {
-
-        String ltiRegistrationId = newTool.getLti() != null ? newTool.getLti().getRegistrationId() : null;
-        String ltiClientId = newTool.getLti() != null ? newTool.getLti().getClientId() : null;
-        String proxyRegistrationId = newTool.getProxy() != null ? newTool.getProxy().getRegistrationId() : null;
-        String proxyClientId = newTool.getProxy() != null ? newTool.getProxy().getClientId() : null;
-
-        // The registrationId and the clientId must be unique, return an error code if any of them are in use.
-        if (repository.findByClientOrRegistrationIds(ltiClientId, proxyClientId, ltiRegistrationId, proxyRegistrationId).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
-
         return ResponseEntity.ok(repository.save(newTool));
     }
 
@@ -132,5 +123,14 @@ public class AdminController {
     ResponseEntity<Void> deleteTool(@PathVariable UUID id) {
         repository.deleteById(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<String> handleNoSuchElementFoundException(
+            DataIntegrityViolationException exception
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(exception.getMessage());
     }
 }
