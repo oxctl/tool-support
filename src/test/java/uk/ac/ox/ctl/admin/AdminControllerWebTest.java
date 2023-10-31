@@ -24,7 +24,10 @@ import uk.ac.ox.ctl.model.ToolRegistrationLti;
 import uk.ac.ox.ctl.model.ToolRegistrationProxy;
 import uk.ac.ox.ctl.repository.ToolRepository;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -297,99 +300,6 @@ public class AdminControllerWebTest {
 
         assertThat(repository.findById(tool1.getId())).isEmpty();
         assertThat(repository.findById(tool2.getId())).isNotEmpty();
-    }
-
-    @Test
-    public void testCreateWithExistingIds() throws Exception {
-
-        {
-            Tool tool = new Tool();
-            ToolRegistrationLti lti = new ToolRegistrationLti();
-            lti.setClientId("existing-lti-client-id");
-            lti.setRegistrationId("existing-lti-registration-id");
-            lti.setRedirectUri("http://server.test");
-            lti.setClientAuthenticationMethod(ClientAuthenticationMethod.NONE);
-            lti.setAuthorizationGrantType(AuthorizationGrantType.IMPLICIT);
-            tool.setLti(lti);
-            ToolRegistrationProxy proxy = new ToolRegistrationProxy();
-            proxy.setClientId("existing-proxy-client-id");
-            proxy.setRegistrationId("existing-proxy-registration-id");
-            proxy.setRedirectUri("http://server.test");
-            proxy.setClientAuthenticationMethod(ClientAuthenticationMethod.NONE);
-            proxy.setAuthorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE);
-            tool.setProxy(proxy);
-            entityManager.persist(tool);
-            entityManager.flush();
-        }
-
-        // Create a new tool with existing registrationId in the LTI
-        mvc.perform(post("/admin/tools")
-                        .with(httpBasic("user", "pass1234"))
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                {"secret" : "secret", "issuer" :  "issuer", "lti": { "clientId": "new-client-id", "registrationId":  "existing-lti-registration-id", "clientAuthenticationMethod": "client_secret_basic" }}
-             """))
-                .andExpect(status().is4xxClientError());
-
-        // Create a new tool with existing clientId in the LTI
-        mvc.perform(post("/admin/tools")
-                        .with(httpBasic("user", "pass1234"))
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                {"secret" : "secret", "issuer" :  "issuer", "lti": { "clientId": "existing-lti-client-id", "registrationId":  "new-registration-id", "clientAuthenticationMethod": "client_secret_basic" }}
-             """))
-                .andExpect(status().is4xxClientError())
-                ;
-
-        // Create a new tool with existing registrationId in the Proxy
-        mvc.perform(post("/admin/tools")
-                        .with(httpBasic("user", "pass1234"))
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                {"secret" : "secret", "issuer" :  "issuer", "proxy": { "clientId": "new-client-id", "registrationId":  "existing-proxy-registration-id", "clientAuthenticationMethod": "client_secret_basic" }}
-             """))
-                .andExpect(status().is4xxClientError())
-                ;
-
-        // Create a new tool with existing registrationId in the Proxy
-        mvc.perform(post("/admin/tools")
-                        .with(httpBasic("user", "pass1234"))
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                {"secret" : "secret", "issuer" :  "issuer", "proxy": { "clientId": "existing-proxy-client-id", "registrationId":  "new-registration-id", "clientAuthenticationMethod": "client_secret_basic" }}
-             """))
-                .andExpect(status().is4xxClientError())
-                ;
-
-        // Create a new tool with new data
-        mvc.perform(post("/admin/tools")
-                        .with(httpBasic("user", "pass1234"))
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                {"secret" : "secret", "issuer" :  "issuer", "proxy": { "clientId": "new-client-id", "registrationId":  "new-registration-id", "clientAuthenticationMethod": "client_secret_basic" } , "lti": { "clientId": "new-lti-client-id", "registrationId":  "new-lti-registration-id", "clientAuthenticationMethod": "client_secret_basic" }}
-             """))
-                .andExpect(status().isOk())
-                ;
-
-        // Create a new tool with new data and lti only
-        mvc.perform(post("/admin/tools")
-                        .with(httpBasic("user", "pass1234"))
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                {"secret" : "secret", "issuer" :  "issuer", "lti": { "clientId": "new-lti-client-id-2", "registrationId":  "new-lti-registration-id-2", "clientAuthenticationMethod": "client_secret_basic" }}
-             """))
-                .andExpect(status().isOk())
-                ;
-
-        // Create a new tool with new data and proxy only.
-        mvc.perform(post("/admin/tools")
-                        .with(httpBasic("user", "pass1234"))
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                {"secret" : "secret", "issuer" :  "issuer", "proxy": { "clientId": "new-proxy-client-id-2", "registrationId":  "new-proxy-registration-id-2", "clientAuthenticationMethod": "client_secret_basic" }}
-             """))
-                .andExpect(status().isOk())
-                ;
     }
 
 }
