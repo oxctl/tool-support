@@ -8,9 +8,9 @@
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>uk.ac.ox.ctl</groupId>
-    <artifactId>canvas-tools</artifactId>
+    <artifactId>tool-support</artifactId>
     <version>0.8.1-SNAPSHOT</version>
-    <name>Canvas Tools</name>
+    <name>Tool Support</name>
     <description>LTI 1.3 and OAuth2 proxy support for Canvas</description>
     <licenses>
         <license>

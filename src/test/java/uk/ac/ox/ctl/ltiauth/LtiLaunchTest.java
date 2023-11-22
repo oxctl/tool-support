@@ -31,7 +31,7 @@ public class LtiLaunchTest {
 	void frontPageWorks() throws IOException {
 		// Check that everything starts up and we respond to a request for the homepage (doesn't need authentication)
 		HtmlPage page = localHostWebClient.getPage("/");
-		assertEquals("Canvas Tools", page.getTitleText());
+		assertEquals("Tool Support", page.getTitleText());
 	}
 
 }
