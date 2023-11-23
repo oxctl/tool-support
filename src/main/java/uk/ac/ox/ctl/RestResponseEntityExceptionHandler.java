@@ -11,7 +11,7 @@ import uk.ac.ox.ctl.canvasproxy.ProxyConfigException;
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = { ProxyConfigException.class })
-    public ResponseEntity<String> handleException(ProxyConfigException ex) {
+    public ResponseEntity<String> handleProxyException(ProxyConfigException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 

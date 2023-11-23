@@ -43,7 +43,7 @@ public class ToolPrincipalClientIdResolverTest {
     @Test
     public void testNoConfig() {
         ToolPrincipalClientIdResolver resolver = createResolver(emptyMap());
-        assertNull(resolver.findClientId(createToken("audience")));
+        assertThrows(ProxyConfigException.class, () -> resolver.findClientId(createToken("audience")));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class ToolPrincipalClientIdResolverTest {
                 singletonMap("audience", new AudienceConfiguration.LtiAudience("clientRegId", null, null))
         );
         assertEquals("clientRegId", resolver.findClientId(createToken("audience")));
-        assertNull(resolver.findClientId(createToken("notFound")));
+        assertThrows(ProxyConfigException.class, () -> resolver.findClientId(createToken("notFound")));
     }
 
     @Test
@@ -61,7 +61,7 @@ public class ToolPrincipalClientIdResolverTest {
                 singletonMap("audience", new AudienceConfiguration.LtiAudience("clientRegId", null, null))
         );
         assertEquals("clientRegId", resolver.findClientId(createToken("other1", "other2", "audience")));
-        assertNull(resolver.findClientId(createToken("other3", "other4")));
+        assertThrows(ProxyConfigException.class, () -> resolver.findClientId(createToken("other3", "other4")));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class ToolPrincipalClientIdResolverTest {
                 "audience1", new AudienceConfiguration.LtiAudience("clientRegId1", null, null),
                 "audience2", new AudienceConfiguration.LtiAudience("clientRegId2", null, null)
         ));
-        assertThrows(IllegalStateException.class, () -> resolver.findClientId(createToken("audience1", "audience2")));
+        assertThrows(ProxyConfigException.class, () -> resolver.findClientId(createToken("audience1", "audience2")));
     }
 
     @Test
@@ -116,7 +116,7 @@ public class ToolPrincipalClientIdResolverTest {
         Tool tool = new Tool();
         when(toolRepository.findToolByLtiClientId("audience1")).thenReturn(Optional.of(tool));
         // When there's no proxy registration on the LTI we should just return null.
-        assertNull(resolver.findClientId(createToken("audience1")));
+        assertThrows(ProxyConfigException.class, () -> resolver.findClientId(createToken("audience1")));
     }
 
 
