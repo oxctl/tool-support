@@ -14,7 +14,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.util.NestedServletException;
 import uk.ac.ox.ctl.WebSecurityConfiguration;
 import uk.ac.ox.ctl.canvasproxy.jwt.ProxyJwtConfig;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.RefreshOAuth2AuthorizedClient;
@@ -22,7 +21,6 @@ import uk.ac.ox.ctl.repository.ToolRepository;
 
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -71,11 +69,11 @@ class CheckControllerTest {
     }
 
     @Test
-    public void testOAuthUnknown() {
+    public void testOAuthUnknown() throws Exception {
         PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder.audience(Collections.singleton("unknown")));
-        // We should actually have a custom exception here and a better error message to the user.
-        assertThrows(NestedServletException.class, () -> mvc.perform(post("/tokens/check").with(jwt)));
+        mvc.perform(post("/tokens/check").with(jwt))
+                .andExpect(status().is4xxClientError());
     }
 
     @Test

@@ -32,7 +32,6 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -109,17 +108,9 @@ public final class OAuth2AccessTokenArgumentResolver implements HandlerMethodArg
             MethodParameter parameter,
             @Nullable ModelAndViewContainer mavContainer,
             NativeWebRequest webRequest,
-            @Nullable WebDataBinderFactory binderFactory)
-            throws Exception {
+            @Nullable WebDataBinderFactory binderFactory) {
 
-        String clientRegistrationId = this.resolveClientRegistrationId(parameter);
-        if (StringUtils.isEmpty(clientRegistrationId)) {
-            throw new IllegalArgumentException(
-                    "Unable to resolve the Client Registration Identifier. "
-                            + "It must be provided via @RegisteredOAuth2AuthorizedClient(\"client1\") or "
-                            + "@RegisteredOAuth2AuthorizedClient(registrationId = \"client1\").");
-        }
-
+        String clientRegistrationId = this.resolveClientRegistrationId();
         Authentication principal = SecurityContextHolder.getContext().getAuthentication();
         HttpServletRequest servletRequest = webRequest.getNativeRequest(HttpServletRequest.class);
         HttpServletResponse servletResponse = webRequest.getNativeRequest(HttpServletResponse.class);
@@ -163,23 +154,9 @@ public final class OAuth2AccessTokenArgumentResolver implements HandlerMethodArg
         return authorizedClient;
     }
 
-    private String resolveClientRegistrationId(MethodParameter parameter) {
-        RegisteredOAuth2AccessToken authorizedClientAnnotation =
-                AnnotatedElementUtils.findMergedAnnotation(
-                        parameter.getParameter(), RegisteredOAuth2AccessToken.class);
-
+    private String resolveClientRegistrationId() {
         Authentication principal = SecurityContextHolder.getContext().getAuthentication();
-
-        String clientRegistrationId = null;
-        if (!StringUtils.isEmpty(authorizedClientAnnotation.registrationId())) {
-            clientRegistrationId = authorizedClientAnnotation.registrationId();
-        } else if (!StringUtils.isEmpty(authorizedClientAnnotation.value())) {
-            clientRegistrationId = authorizedClientAnnotation.value();
-        } else if (principal != null && principalClientIdResolver != null) {
-            clientRegistrationId = principalClientIdResolver.findClientId(principal);
-        }
-
-        return clientRegistrationId;
+        return principalClientIdResolver.findClientId(principal);
     }
 
     private OAuth2AuthorizedClient authorizeClientCredentialsClient(

@@ -17,7 +17,6 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepo
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.util.NestedServletException;
 import uk.ac.ox.ctl.WebSecurityConfiguration;
 import uk.ac.ox.ctl.canvasproxy.jwt.ProxyJwtConfig;
 import uk.ac.ox.ctl.repository.ToolRepository;
@@ -85,11 +84,11 @@ class RefreshControllerTest {
     }
 
     @Test
-    public void testOAuthUnknown() {
+    public void testOAuthUnknown() throws Exception {
         PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder.audience(Collections.singleton("unknown")));
-        // We should actually have a custom exception here and a better error message to the user.
-        assertThrows(NestedServletException.class, () -> mvc.perform(get("/tokens/refresh").with(jwt)));
+        mvc.perform(get("/tokens/refresh").with(jwt))
+                .andExpect(status().is4xxClientError());
     }
 
     @Test

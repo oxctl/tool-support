@@ -32,13 +32,17 @@ public class ToolPrincipalClientIdResolver implements PrincipalClientIdResolver 
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
             Iterator<String> iterator = clientNames.iterator();
+            String clientName = null;
             if (iterator.hasNext()) {
-                String clientName = iterator.next();
+                clientName = iterator.next();
                 if (iterator.hasNext()) {
-                    throw new IllegalStateException("We found multiple possible client IDs for the audiences");
+                    throw new ProxyConfigException("We found multiple possible client IDs for the audiences");
                 }
-                return clientName;
             }
+            if (clientName == null) {
+                throw new ProxyConfigException("Could not find configuration for audiences: " + audiences);
+            }
+            return clientName;
         }
         return null;
     }
