@@ -98,7 +98,6 @@ public class AdminController {
             }
 
             tool.setOrigins(newTool.getOrigins());
-            tool.setSign(newTool.getSign());
             tool.setSecret(newTool.getSecret());
             tool.setIssuer(newTool.getIssuer());
             tool.setNrpsAllowedRoles(newTool.getNrpsAllowedRoles());

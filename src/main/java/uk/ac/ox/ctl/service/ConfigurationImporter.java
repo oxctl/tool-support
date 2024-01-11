@@ -118,9 +118,6 @@ public class ConfigurationImporter {
                 }
             }
             LtiSettings.ClientSettings clientSettings = ltiSettings.getClientSettings(ltiTool.getLti().getRegistrationId());
-            if (clientSettings != null) {
-                ltiTool.setSign(clientSettings.isSign());
-            }
             AllowedRoles.Roles roles = allowedRoles.getClient().get(ltiTool.getLti().getClientId());
             if (roles != null) {
                 ltiTool.setNrpsAllowedRoles(roles.getRoles());

@@ -18,7 +18,6 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -80,12 +79,6 @@ public class Tool {
     @CollectionTable(indexes = {@Index(columnList = "origin")})
     @Column(name="origin")
     private Collection<String> origins;
-    
-    /**
-     * Should we re-sign the JWT when performing an LTI launch?
-     * This is a boolean so if it's null then we can fallback to the global default.
-     */
-    private Boolean sign;
 
     /**
      * The secret that is used to sign JWT HMAC tokens to allow serverside components to use tokens without

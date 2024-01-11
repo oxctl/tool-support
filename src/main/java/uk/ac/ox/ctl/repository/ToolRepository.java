@@ -45,13 +45,4 @@ public interface ToolRepository extends CrudRepository<Tool, UUID> {
 
     Iterable<Tool> findToolByLtiIdNotNull();
 
-    /**
-     * Does this LTI tool have signing enabled.
-     * @param clientRegistrationId The LTI client registration ID.
-     * @return An optional if we have a setting for the signing setting.
-     */
-    default Optional<Boolean> isSigningEnabled(String clientRegistrationId) {
-        return findToolByLtiRegistrationId(clientRegistrationId).map(Tool::getSign);
-    }
-    
 }
