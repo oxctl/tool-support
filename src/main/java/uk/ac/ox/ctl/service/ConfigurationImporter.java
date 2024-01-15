@@ -9,7 +9,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.stereotype.Service;
 import uk.ac.ox.ctl.canvasproxy.AudienceConfiguration;
-import uk.ac.ox.ctl.ltiauth.LtiSettings;
 import uk.ac.ox.ctl.ltiauth.controller.AllowedRoles;
 import uk.ac.ox.ctl.model.Tool;
 import uk.ac.ox.ctl.model.ToolRegistrationLti;
@@ -38,7 +37,6 @@ public class ConfigurationImporter {
     private final ProxyClientProperties proxyProperties;
     private final ToolRepository toolRepository;
     private final AudienceConfiguration audienceConfiguration;
-    private final LtiSettings ltiSettings;
     private final AllowedRoles allowedRoles;
 
 
@@ -47,13 +45,11 @@ public class ConfigurationImporter {
             ConfigurationImporter.ProxyClientProperties proxyProperties,
             ToolRepository toolRepository,
             AudienceConfiguration audienceConfiguration,
-            LtiSettings ltiSettings,
             AllowedRoles allowedRoles) {
         this.ltiProperties = ltiProperties;
         this.proxyProperties = proxyProperties;
         this.toolRepository = toolRepository;
         this.audienceConfiguration = audienceConfiguration;
-        this.ltiSettings = ltiSettings;
         this.allowedRoles = allowedRoles;
     }
 
@@ -116,10 +112,6 @@ public class ConfigurationImporter {
                         }
                     }
                 }
-            }
-            LtiSettings.ClientSettings clientSettings = ltiSettings.getClientSettings(ltiTool.getLti().getRegistrationId());
-            if (clientSettings != null) {
-                ltiTool.setSign(clientSettings.isSign());
             }
             AllowedRoles.Roles roles = allowedRoles.getClient().get(ltiTool.getLti().getClientId());
             if (roles != null) {

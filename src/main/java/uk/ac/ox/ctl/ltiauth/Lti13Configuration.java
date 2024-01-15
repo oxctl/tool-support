@@ -18,7 +18,6 @@ import uk.ac.ox.ctl.lti13.SingleKeyPairService;
 import uk.ac.ox.ctl.lti13.TokenRetriever;
 import uk.ac.ox.ctl.lti13.nrps.NamesRoleService;
 import uk.ac.ox.ctl.lti13.utils.KeyStoreKeyFactory;
-import uk.ac.ox.ctl.repository.ToolRepository;
 
 import java.net.MalformedURLException;
 import java.security.KeyPair;
@@ -77,8 +76,8 @@ public class Lti13Configuration {
     }
 
     @Bean
-    public JWTService jwtService(JWTSigner signer, JWTStore store, LtiSettings ltiSettings, ToolRepository toolRepository) {
-        return new JWTService(signer, store, ltiSettings, toolRepository);
+    public JWTService jwtService(JWTSigner signer, JWTStore store, LtiSettings ltiSettings) {
+        return new JWTService(signer, store, ltiSettings);
     }
 
     @Bean

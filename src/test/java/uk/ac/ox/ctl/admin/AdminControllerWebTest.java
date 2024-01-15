@@ -147,7 +147,6 @@ public class AdminControllerWebTest {
         String id;
         {
             Tool tool = new Tool();
-            tool.setSign(false);
             ToolRegistrationProxy proxy = new ToolRegistrationProxy();
             proxy.setRegistrationId("reg123");
             tool.setProxy(proxy);
@@ -241,7 +240,6 @@ public class AdminControllerWebTest {
         Tool tool = new Tool();
 
         tool.setOrigins(List.of("origin1", "origin2"));
-        tool.setSign(false);
         tool.setSecret("secret");
         tool.setIssuer("issuer");
         tool.setNrpsAllowedRoles(Set.of("role1", "role2"));
@@ -254,11 +252,11 @@ public class AdminControllerWebTest {
             .with(httpBasic("user", "pass1234"))
             .contentType(APPLICATION_JSON)
             .content("""
-                {"secret" : "newSecret", "issuer" :  "newIssuer", "origins": ["origin3", "origin4"], "nrpsAllowedRoles": ["role3", "role4"], "sign":  "true"}
+                {"secret" : "newSecret", "issuer" :  "newIssuer", "origins": ["origin3", "origin4"], "nrpsAllowedRoles": ["role3", "role4"]}
             """))
             .andExpect(status().isOk())
             .andExpect(content().json("""
-                {"secret": "newSecret", "issuer": "newIssuer", "origins": ["origin3", "origin4"], "nrpsAllowedRoles": ["role3", "role4"], "sign": true}
+                {"secret": "newSecret", "issuer": "newIssuer", "origins": ["origin3", "origin4"], "nrpsAllowedRoles": ["role3", "role4"]}
             """))
             .andReturn().getResponse().getContentAsString();
 
