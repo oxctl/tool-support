@@ -84,7 +84,7 @@ This service supports clients using the JWT created as part of the LTI authentic
 
 The ability to use this endpoint is controlled by configuration which specifies which roles are allowed to use the NRPS. This is because typically you don't want student roles to be able to use this endpoint as it supplies details that may be hidden from them (eg email address). Multiple roles can be specified separated by commas.
 
-The service allows applications to self-sign certificates making requests to the nrps endpoint. The token for the request must be signed with an HMAC secret which matches that in `uk.ac.ox.ctl.model.Tool.secret`, and must have the same issuer as `uk.ac.ox.ctl.model.Tool.issuer`.
+The service allows applications to self-sign JWTs making requests to the nrps endpoint. The token for the request must be signed with an HMAC secret which matches that in `uk.ac.ox.ctl.model.Tool.secret`, and must have the same issuer as `uk.ac.ox.ctl.model.Tool.issuer`.
 
 ### LTI Deep Linking
 

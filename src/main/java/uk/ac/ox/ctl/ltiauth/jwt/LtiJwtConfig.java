@@ -11,11 +11,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
@@ -25,7 +21,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import uk.ac.ox.ctl.Issuer;
 import uk.ac.ox.ctl.IssuerConfiguration;
-import uk.ac.ox.ctl.ltiauth.LtiSettings;
 import uk.ac.ox.ctl.ltiauth.MultiAudienceConfigResolver;
 import uk.ac.ox.ctl.repository.ToolRepository;
 
@@ -38,18 +33,6 @@ import static javax.xml.crypto.dsig.SignatureMethod.HMAC_SHA256;
 
 @Configuration
 public class LtiJwtConfig {
-
-    private final Logger log = LoggerFactory.getLogger(LtiJwtConfig.class);
-
-    @Autowired
-    private LtiSettings ltiSettings;
-
-    @Autowired
-    private JWKSet jwkSet;
-
-    // This is useful if we aren't doing JWT -> client ID mapping, but in most instances probably can be null
-    @Value("${jwt.audience:#{null}}")
-    private String audience;
 
     @Bean("ltiJwtDecoder")
     @Qualifier("lti")
@@ -96,11 +79,7 @@ public class LtiJwtConfig {
     private DelegatingOAuth2TokenValidator delegatingOAuth2TokenValidator(IssuerConfiguration issuerConfiguration, MultiAudienceConfigResolver ltiMultiAudienceConfigResolver) {
         List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
         validators.add(new JwtTimestampValidator());
-        if (audience != null) {
-            validators.add(new JwtAudienceValidator(audience));
-        } else {
-            log.info("No audience configured, accepting all JWTs");
-        }
+
         List<String> staticIssuers = issuerConfiguration.getIssuer().values().stream().map(Issuer::getIssuer).toList();
         validators.add(new MultiJwtIssuerValidator(jwt -> {
             // Add the standard static issuers
