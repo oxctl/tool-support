@@ -23,6 +23,9 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimNames;
 import org.springframework.util.Assert;
 
+import java.util.List;
+import java.util.function.Function;
+
 /**
  * Validates the "iss" claim in a {@link Jwt}, that is matches one of the configured values
  *
@@ -35,17 +38,15 @@ public final class MultiJwtIssuerValidator implements OAuth2TokenValidator<Jwt> 
 					"This iss claim is not equal to the configured issuer",
 					"https://tools.ietf.org/html/rfc6750#section-3.1");
 
-	private final String[] issuers;
+	private final Function<Jwt, List<String>> lookupIssuers;
 
 	/**
-	 * Constructs a {@link MultiJwtIssuerValidator} using the provided parameters
+	 * Constructs a {@link uk.ac.ox.ctl.canvasproxy.jwt.MultiJwtIssuerValidator} using the provided parameters
 	 *
-	 * @param issuers - The issuer that each {@link Jwt} should have.
+	 * @param lookupIssuers A function to lookup the valid issuers to use for a JWT.
 	 */
-	public MultiJwtIssuerValidator(String... issuers) {
-		Assert.notNull(issuers, "issuers cannot be null");
-		Assert.notEmpty(issuers, "issuers cannot be empty");
-		this.issuers = issuers;
+	public MultiJwtIssuerValidator(Function<Jwt, List<String>> lookupIssuers) {
+		this.lookupIssuers = lookupIssuers;
 	}
 
 	/**
@@ -56,7 +57,7 @@ public final class MultiJwtIssuerValidator implements OAuth2TokenValidator<Jwt> 
 		Assert.notNull(token, "token cannot be null");
 
 		String tokenIssuer = token.getClaimAsString(JwtClaimNames.ISS);
-		for (String issuer: issuers) {
+		for (String issuer: lookupIssuers.apply(token)) {
 			if (issuer.equals(tokenIssuer)) {
 				return OAuth2TokenValidatorResult.success();
 			}

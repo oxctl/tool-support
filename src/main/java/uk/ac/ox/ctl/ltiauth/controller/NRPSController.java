@@ -40,6 +40,7 @@ public class NRPSController {
     }
 
     // If we can control the response when there isn't a token for the current user we may want to make the token required.
+    // the one bit of data we can trust when using server-signed tokens is the audience
     @GetMapping("/nrps/**")
     public Map<String, Object> proxy(JwtAuthenticationToken token) {
         Object principal = token.getPrincipal();
@@ -72,12 +73,16 @@ public class NRPSController {
 
                     // This validates that the user should be allowed to use the tool
                     Object roleClaim = jwt.getClaims().get(Claims.ROLES);
-                    if (roleClaim instanceof List) {
-                        if (!allowedRolesService.isNRPSAllowed(clientRegistration.getClientId(), (List<String>) roleClaim)) {
-                            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to use this tool.");
+
+                    // if subject and audience are the same it is self-signed so don't look at roles
+                    if (!jwt.getAudience().contains(jwt.getSubject())) {
+                        if (roleClaim instanceof List) {
+                            if (!allowedRolesService.isNRPSAllowed(clientRegistration.getClientId(), (List<String>) roleClaim)) {
+                                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to use this tool.");
+                            }
+                        } else {
+                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No roles in JWT");
                         }
-                    } else {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No roles in JWT");
                     }
 
                     // The retrieval is cached.

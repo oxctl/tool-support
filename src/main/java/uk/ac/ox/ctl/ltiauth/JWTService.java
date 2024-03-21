@@ -14,7 +14,7 @@ public class JWTService {
     private final JWTSigner signer;
     private final JWTStore store;
     private final LtiSettings ltiSettings;
-    
+
     public JWTService(JWTSigner signer, JWTStore store, LtiSettings ltiSettings) {
         this.signer = signer;
         this.store = store;
@@ -26,7 +26,7 @@ public class JWTService {
      * @param token The original token to base the clamis on.
      * @return A serialised JWT we've signed.
      */
-    public String createJWT(OAuth2AuthenticationToken token) {
+    public String createJWT(OAuth2AuthenticationToken token, String toolSupportUrl) {
         JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder();
         token.getPrincipal().getAttributes().forEach(builder::claim);
         builder
@@ -34,7 +34,8 @@ public class JWTService {
                 .claim("iss-orig", token.getPrincipal().getAttributes().get("iss"))
                 .issuer(ltiSettings.getIssuer())
                 .issueTime(Date.from(Instant.now()))
-                .expirationTime(Date.from(Instant.now().plus(ltiSettings.getExpiration())));
+                .expirationTime(Date.from(Instant.now().plus(ltiSettings.getExpiration())))
+                .claim("tool_support_endpoint", toolSupportUrl);
         try {
             final SignedJWT jwt = signer.signJWT(token.getAuthorizedClientRegistrationId(), builder.build());
             return jwt.serialize();
@@ -50,5 +51,4 @@ public class JWTService {
     public Object retrieve(String key) {
         return store.retrieve(key);
     }
-
 }

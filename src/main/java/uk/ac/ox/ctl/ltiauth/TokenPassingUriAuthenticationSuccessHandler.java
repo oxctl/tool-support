@@ -35,7 +35,7 @@ public class TokenPassingUriAuthenticationSuccessHandler extends StateCheckingAu
             // Because we are just giving the token out to this URL we need to trust that this URL can't be messed with.
             String targetLink = token.getPrincipal().getAttribute("https://purl.imsglobal.org/spec/lti/claim/target_link_uri");
             if (targetLink != null && !targetLink.isEmpty()) {
-                Object obj = jwtService.createJWT(token);
+                Object obj = jwtService.createJWT(token, getUrl(request));
                 String key = jwtService.store(obj);
                 String origin = getUrl(request);
                 

@@ -21,6 +21,7 @@ import org.springframework.util.Assert;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,7 +31,7 @@ public final class MultiJwtDecoder implements JwtDecoder {
     private static final String DECODING_ERROR_MESSAGE_TEMPLATE =
             "An error occurred while attempting to decode the Jwt: %s";
 
-    private final JWTProcessor<IssuerSecurityContext> jwtProcessor;
+    private final JWTProcessor<IssuerAndAudienceSecurityContext> jwtProcessor;
 
     private Converter<Map<String, Object>, Map<String, Object>> claimSetConverter =
             MappedJwtClaimSetConverter.withDefaults(Collections.emptyMap());
@@ -41,7 +42,7 @@ public final class MultiJwtDecoder implements JwtDecoder {
      *
      * @param jwtProcessor - the {@link JWTProcessor} to use
      */
-    public MultiJwtDecoder(JWTProcessor<IssuerSecurityContext> jwtProcessor) {
+    public MultiJwtDecoder(JWTProcessor<IssuerAndAudienceSecurityContext> jwtProcessor) {
         Assert.notNull(jwtProcessor, "jwtProcessor cannot be null");
         this.jwtProcessor = jwtProcessor;
     }
@@ -102,7 +103,9 @@ public final class MultiJwtDecoder implements JwtDecoder {
             if (issuer == null) {
                 throw new JwtException("JWT must have an issuer to be processed.");
             }
-            JWTClaimsSet jwtClaimsSet = this.jwtProcessor.process(parsedJwt, new IssuerSecurityContext(issuer));
+
+            List<String> aud = parsedJwt.getJWTClaimsSet().getAudience();
+            JWTClaimsSet jwtClaimsSet = this.jwtProcessor.process(parsedJwt, new IssuerAndAudienceSecurityContext(issuer, aud));
 
             Map<String, Object> headers = new LinkedHashMap<>(parsedJwt.getHeader().toJSONObject());
             Map<String, Object> claims = this.claimSetConverter.convert(jwtClaimsSet.getClaims());
