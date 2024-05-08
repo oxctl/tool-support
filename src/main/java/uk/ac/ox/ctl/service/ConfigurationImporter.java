@@ -8,7 +8,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.stereotype.Service;
-import uk.ac.ox.ctl.canvasproxy.AudienceConfiguration;
 import uk.ac.ox.ctl.ltiauth.controller.AllowedRoles;
 import uk.ac.ox.ctl.model.Tool;
 import uk.ac.ox.ctl.model.ToolRegistrationLti;
@@ -16,7 +15,6 @@ import uk.ac.ox.ctl.model.ToolRegistrationProxy;
 import uk.ac.ox.ctl.repository.ToolRepository;
 
 import javax.annotation.PostConstruct;
-import java.util.Base64;
 import java.util.Map;
 
 /**
@@ -36,7 +34,6 @@ public class ConfigurationImporter {
     private final LtiClientProperties ltiProperties;
     private final ProxyClientProperties proxyProperties;
     private final ToolRepository toolRepository;
-    private final AudienceConfiguration audienceConfiguration;
     private final AllowedRoles allowedRoles;
 
 
@@ -44,12 +41,10 @@ public class ConfigurationImporter {
             ConfigurationImporter.LtiClientProperties ltiProperties,
             ConfigurationImporter.ProxyClientProperties proxyProperties,
             ToolRepository toolRepository,
-            AudienceConfiguration audienceConfiguration,
             AllowedRoles allowedRoles) {
         this.ltiProperties = ltiProperties;
         this.proxyProperties = proxyProperties;
         this.toolRepository = toolRepository;
-        this.audienceConfiguration = audienceConfiguration;
         this.allowedRoles = allowedRoles;
     }
 
@@ -80,47 +75,8 @@ public class ConfigurationImporter {
             }
         }
 
-        int linked = 0;
-        // For all the LTI tools, lookup if any proxy tools should be linked and there's any additional configuration.
-        for (Tool ltiTool : toolRepository.findToolByLtiIdNotNull()) {
-            AudienceConfiguration.LtiAudience ltiAudience = audienceConfiguration.getLtiAudience(ltiTool.getLti().getClientId());
-            if (ltiAudience != null) {
-                if (ltiAudience.getClientName() != null) {
-                    if (ltiTool.getProxy() != null) {
-                        log.warn("Proxy already set on {}, not merging.", ltiTool.getId());
-                    } else {
-                        Tool proxyTool = toolRepository.findToolByProxyRegistrationId(ltiAudience.getClientName()).orElse(null);
-                        if (proxyTool != null) {
-                            if (ltiAudience.getSecret() != null) {
-                                String secret = Base64.getEncoder().encodeToString(ltiAudience.getSecret());
-                                ltiTool.setSecret(secret);
-                            }
-                            if (ltiAudience.getIssuer() != null) {
-                                String issuer = ltiAudience.getIssuer();
-                                ltiTool.setIssuer(issuer);
-                            }
-                            ToolRegistrationProxy registrationProxy = proxyTool.getProxy();
-                            toolRepository.delete(proxyTool);
-
-                            ltiTool.setProxy(registrationProxy);
-                            registrationProxy.setTool(ltiTool);
-                            registrationProxy.setId(ltiTool.getId());
-                            toolRepository.save(ltiTool);
-                            linked++;
-                        } else {
-                            log.warn("Failed to find proxy tool with registration of {} for LTI tool {}", ltiAudience.getClientName(), ltiTool.getId());
-                        }
-                    }
-                }
-            }
-            AllowedRoles.Roles roles = allowedRoles.getClient().get(ltiTool.getLti().getClientId());
-            if (roles != null) {
-                ltiTool.setNrpsAllowedRoles(roles.getRoles());
-            }
-            toolRepository.save(ltiTool);
-        }
-        log.info("Imported {}/{} lti configurations, {}/{} proxy configurations. Successfully linked {} proxy tools an LTI tool",
-                lti, ltiProperties.getRegistration().size(), proxy, proxyProperties.getRegistration().size(), linked);
+        log.info("Imported {}/{} lti configurations, {}/{} proxy configurations.",
+                lti, ltiProperties.getRegistration().size(), proxy, proxyProperties.getRegistration().size());
     }
 
     /**

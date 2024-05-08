@@ -19,15 +19,17 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ox.ctl.WebSecurityConfiguration;
 import uk.ac.ox.ctl.canvasproxy.jwt.ProxyJwtConfig;
+import uk.ac.ox.ctl.model.Tool;
+import uk.ac.ox.ctl.model.ToolRegistrationProxy;
 import uk.ac.ox.ctl.repository.ToolRepository;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -93,8 +95,13 @@ class RefreshControllerTest {
 
     @Test
     public void testOAuthNoToken() throws Exception {
+        Tool tool = new Tool();
+        ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+        proxy.setRegistrationId("test");
+        tool.setProxy(proxy);
+        when(toolRepository.findToolByLtiClientId("test")).thenReturn(Optional.of(tool));
         PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
-                .jwt(builder -> builder.audience(Collections.singleton("1")));
+                .jwt(builder -> builder.audience(Collections.singleton("test")));
         // It's possible that we should change this behaviour so that we just return unauthorized in this situation
         mvc.perform(get("/tokens/refresh").with(jwt))
                 .andExpect(status().is3xxRedirection());
@@ -106,6 +113,12 @@ class RefreshControllerTest {
         OAuth2AccessToken token = mock(OAuth2AccessToken.class);
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("test");
 
+        Tool tool = new Tool();
+        ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+        proxy.setRegistrationId("test");
+        tool.setProxy(proxy);
+        when(toolRepository.findToolByLtiClientId("test")).thenReturn(Optional.of(tool));
+
         when(client.getClientRegistration()).thenReturn(registration);
         when(authorizedClientRepository.loadAuthorizedClient(eq("test"), any(), any())).thenReturn(client);
 
@@ -116,7 +129,7 @@ class RefreshControllerTest {
 
         PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder
-                        .audience(Collections.singleton("1"))
+                        .audience(Collections.singleton("test"))
                         .claim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "http://test/")
                 );
         mvc.perform(get("/tokens/refresh").with(jwt))
@@ -125,6 +138,12 @@ class RefreshControllerTest {
 
     @Test
     public void testOAuthIncreaseClientScopes() throws Exception {
+        Tool tool = new Tool();
+        ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+        proxy.setRegistrationId("twoScopes");
+        tool.setProxy(proxy);
+        when(toolRepository.findToolByLtiClientId(anyString())).thenReturn(Optional.of(tool));
+
         OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
         OAuth2AccessToken token = mock(OAuth2AccessToken.class);
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("twoScopes");
@@ -150,6 +169,12 @@ class RefreshControllerTest {
 
     @Test
     public void testOAuthIncreaseTokenScopes() throws Exception {
+        Tool tool = new Tool();
+        ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+        proxy.setRegistrationId("test");
+        tool.setProxy(proxy);
+        when(toolRepository.findToolByLtiClientId(anyString())).thenReturn(Optional.of(tool));
+
         OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
         OAuth2AccessToken token = mock(OAuth2AccessToken.class);
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("test");
@@ -175,6 +200,12 @@ class RefreshControllerTest {
 
     @Test
     public void testOAuthNoClientScopes() throws Exception {
+        Tool tool = new Tool();
+        ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+        proxy.setRegistrationId("noScopes");
+        tool.setProxy(proxy);
+        when(toolRepository.findToolByLtiClientId(anyString())).thenReturn(Optional.of(tool));
+
         OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
         OAuth2AccessToken token = mock(OAuth2AccessToken.class);
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("noScopes");
@@ -200,6 +231,12 @@ class RefreshControllerTest {
 
     @Test
     public void testOAuthNoTokenScopes() throws Exception {
+        Tool tool = new Tool();
+        ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+        proxy.setRegistrationId("test");
+        tool.setProxy(proxy);
+        when(toolRepository.findToolByLtiClientId(anyString())).thenReturn(Optional.of(tool));
+
         OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
         OAuth2AccessToken token = mock(OAuth2AccessToken.class);
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("test");
@@ -223,6 +260,12 @@ class RefreshControllerTest {
 
     @Test
     public void testOAuthNoScopes() throws Exception {
+        Tool tool = new Tool();
+        ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+        proxy.setRegistrationId("noScopes");
+        tool.setProxy(proxy);
+        when(toolRepository.findToolByLtiClientId(anyString())).thenReturn(Optional.of(tool));
+
         OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
         OAuth2AccessToken token = mock(OAuth2AccessToken.class);
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("noScopes");
@@ -246,6 +289,12 @@ class RefreshControllerTest {
 
     @Test
     public void testOAuthScopesMatchDifferentOrder() throws Exception {
+        Tool tool = new Tool();
+        ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+        proxy.setRegistrationId("twoScopes");
+        tool.setProxy(proxy);
+        when(toolRepository.findToolByLtiClientId(anyString())).thenReturn(Optional.of(tool));
+
         OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
         OAuth2AccessToken token = mock(OAuth2AccessToken.class);
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("twoScopes");

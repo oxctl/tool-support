@@ -17,9 +17,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ox.ctl.WebSecurityConfiguration;
 import uk.ac.ox.ctl.canvasproxy.jwt.ProxyJwtConfig;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.RefreshOAuth2AuthorizedClient;
+import uk.ac.ox.ctl.model.Tool;
+import uk.ac.ox.ctl.model.ToolRegistrationProxy;
 import uk.ac.ox.ctl.repository.ToolRepository;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -78,6 +81,12 @@ class CheckControllerTest {
 
     @Test
     public void testOAuthNoToken() throws Exception {
+        Tool tool = new Tool();
+        ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+        proxy.setRegistrationId("test");
+        tool.setProxy(proxy);
+        when(toolRepository.findToolByLtiClientId(anyString())).thenReturn(Optional.of(tool));
+
         PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder.audience(Collections.singleton("1")));
         mvc.perform(post("/tokens/check").with(jwt))
@@ -86,6 +95,12 @@ class CheckControllerTest {
 
     @Test
     public void testOAuthWithToken() throws Exception {
+        Tool tool = new Tool();
+        ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+        proxy.setRegistrationId("test");
+        tool.setProxy(proxy);
+        when(toolRepository.findToolByLtiClientId(anyString())).thenReturn(Optional.of(tool));
+
         OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("test");
 
@@ -104,6 +119,12 @@ class CheckControllerTest {
 
     @Test
     public void testOAuthReturnNoToken() throws Exception {
+        Tool tool = new Tool();
+        ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+        proxy.setRegistrationId("test");
+        tool.setProxy(proxy);
+        when(toolRepository.findToolByLtiClientId(anyString())).thenReturn(Optional.of(tool));
+
         PersistableJwtRequestPostProcessor jwt = new PersistableJwtRequestPostProcessor()
                 .jwt(builder -> builder
                         .audience(Collections.singleton("1"))
@@ -117,6 +138,12 @@ class CheckControllerTest {
     
     @Test
     public void testOAuthReturn() throws Exception {
+        Tool tool = new Tool();
+        ToolRegistrationProxy proxy = new ToolRegistrationProxy();
+        proxy.setRegistrationId("test");
+        tool.setProxy(proxy);
+        when(toolRepository.findToolByLtiClientId(anyString())).thenReturn(Optional.of(tool));
+
         OAuth2AuthorizedClient client = mock(OAuth2AuthorizedClient.class);
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("test");
 

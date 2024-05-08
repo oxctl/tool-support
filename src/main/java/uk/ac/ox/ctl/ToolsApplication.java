@@ -4,7 +4,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import uk.ac.ox.ctl.canvasproxy.AudienceConfiguration;
 import uk.ac.ox.ctl.ltiauth.LtiSettings;
 import uk.ac.ox.ctl.ltiauth.controller.AllowedRoles;
 
@@ -13,9 +12,7 @@ import uk.ac.ox.ctl.ltiauth.controller.AllowedRoles;
 @SpringBootApplication(exclude = OAuth2ClientAutoConfiguration.class)
 @EnableConfigurationProperties({
 		// LTI Config
-		IssuerConfiguration.class, AllowedRoles.class, LtiSettings.class,
-		// Proxy Config (also uses the issuer configuration)
-		 AudienceConfiguration.class})
+		IssuerConfiguration.class, AllowedRoles.class, LtiSettings.class})
 public class ToolsApplication {
 
 	public static void main(String[] args) {
