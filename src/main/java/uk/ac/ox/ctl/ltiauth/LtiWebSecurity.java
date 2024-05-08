@@ -88,6 +88,15 @@ public class LtiWebSecurity {
         return lti.build();
     }
 
+    @Bean
+    @Order(24)
+    public SecurityFilterChain jwksSecurityFilterChain(HttpSecurity http) throws Exception {
+        http.antMatcher("/.well-known/jwks.json")
+                .authorizeRequests(authorize -> authorize.anyRequest().permitAll());
+
+        return http.build();
+    }
+
     private static HttpSecurity secure(HttpSecurity http, BearerTokenResolver tokenResolver, JwtDecoder jwtDecoder) throws Exception {
         http
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
