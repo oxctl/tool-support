@@ -23,7 +23,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import uk.ac.ox.ctl.Issuer;
 import uk.ac.ox.ctl.IssuerConfiguration;
-import uk.ac.ox.ctl.canvasproxy.AudienceConfiguration;
 import uk.ac.ox.ctl.canvasproxy.MultiAudienceConfigResolver;
 import uk.ac.ox.ctl.canvasproxy.ToolPrincipalClientIdResolver;
 import uk.ac.ox.ctl.oauth2.client.web.method.annotation.PrincipalClientIdResolver;
@@ -114,8 +113,8 @@ public class ProxyJwtConfig {
     }
 
     @Bean
-    MultiAudienceConfigResolver multiAudienceConfigResolver(ToolRepository toolRepository, AudienceConfiguration audienceConfiguration) {
-        return new MultiAudienceConfigResolver(toolRepository, audienceConfiguration);
+    MultiAudienceConfigResolver multiAudienceConfigResolver(ToolRepository toolRepository) {
+        return new MultiAudienceConfigResolver (toolRepository);
     }
 
     /**

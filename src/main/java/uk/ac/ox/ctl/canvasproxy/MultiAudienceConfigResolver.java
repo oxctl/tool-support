@@ -14,23 +14,18 @@ import java.util.Optional;
 public class MultiAudienceConfigResolver implements AudienceConfigResolver {
     
     private final ToolRepository toolRepository;
-    private final AudienceConfiguration audienceConfiguration;
 
-    public MultiAudienceConfigResolver(ToolRepository toolRepository, AudienceConfiguration audienceConfiguration) {
+    public MultiAudienceConfigResolver(ToolRepository toolRepository) {
         this.toolRepository = toolRepository;
-        this.audienceConfiguration = audienceConfiguration;
     }
 
     @Override
     public byte[] findHmacSecret(String audience) {
-        // When reading from the properties we use Base64Url encoding.
-        // When reading from the DB we use Base64 encoding.
-        // This will catch someone out, but hopefully we get rid of it at some point.
         Optional<Tool> optionalTool = toolRepository.findToolByLtiClientId(audience);
         return optionalTool
                 .map(Tool::getSecret)
                 .map(secret -> Base64.getDecoder().decode(secret))
-                .orElseGet(() -> audienceConfiguration.findHmacSecret(audience));
+                .orElse(null);
     }
 
     @Override
@@ -38,7 +33,7 @@ public class MultiAudienceConfigResolver implements AudienceConfigResolver {
         Optional<Tool> optionalTool = toolRepository.findToolByLtiClientId(audience);
         return optionalTool
                 .map(Tool::getIssuer)
-                .orElseGet(() -> audienceConfiguration.findIssuer(audience));
+                .orElse(null);
     }
 
     @Override
@@ -46,6 +41,6 @@ public class MultiAudienceConfigResolver implements AudienceConfigResolver {
         Optional<Tool> optionalTool = toolRepository.findToolByLtiClientId(audience);
         return optionalTool
                 .map(tool -> (tool.getProxy() != null) ? tool.getProxy().getRegistrationId() : null)
-                .orElseGet(() -> audienceConfiguration.findProxyRegistration(audience));
+                .orElse(null);
     }
 }
