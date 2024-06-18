@@ -508,6 +508,6 @@ The minimum you need for a proxy registration is:
 
 Unlike the LTI registration the provider details will need to be updated for each host as the endpoints are specific to the instance that is being integrated with.
 
-## Spring Boot Actuator
+## Spring Boot Actuator 
 
 Canvas Tool Support uses Spring Boot Actuator for monitoring. The `health` endpoint is mapped to `/actuator/health`.
