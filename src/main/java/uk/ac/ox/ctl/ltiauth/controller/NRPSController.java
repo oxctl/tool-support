@@ -1,6 +1,5 @@
 package uk.ac.ox.ctl.ltiauth.controller;
 
-import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
@@ -47,16 +46,16 @@ public class NRPSController {
         if (principal instanceof Jwt) {
             Jwt jwt = (Jwt) principal;
             Object o = jwt.getClaims().get(LtiScopes.LTI_NRPS_CLAIM);
-            if (o instanceof JSONObject) {
-                JSONObject json = (JSONObject) o;
-                String contextMembershipsUrl = json.getAsString("context_memberships_url");
+            if (o instanceof Map) {
+                Map<String, ?> json = (Map) o;
+                String contextMembershipsUrl = (String) json.get("context_memberships_url");
                 if (contextMembershipsUrl != null && !contextMembershipsUrl.isEmpty()) {
                     // Got a URL to go to.
                     Object r = jwt.getClaims().get(Claims.RESOURCE_LINK);
                     String resourceLinkId = null;
-                    if (r instanceof JSONObject) {
-                        JSONObject resourceJson = (JSONObject) r;
-                        resourceLinkId = resourceJson.getAsString("id");
+                    if (r instanceof Map) {
+                        Map resourceJson = (Map) r;
+                        resourceLinkId = (String) resourceJson.get("id");
                     }
 
                     // Need to map to from client ID/audience to registration ID.

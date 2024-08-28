@@ -1,7 +1,6 @@
 package uk.ac.ox.ctl.ltiauth.controller;
 
 import jakarta.servlet.ServletException;
-import net.minidev.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +11,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.util.NestedServletException;
 import uk.ac.ox.ctl.lti13.lti.Claims;
 import uk.ac.ox.ctl.lti13.lti.Role;
 import uk.ac.ox.ctl.lti13.nrps.LtiScopes;
@@ -28,8 +25,8 @@ import uk.ac.ox.ctl.ltiauth.TestClientRegistrationConfig;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -74,7 +71,7 @@ class NRPSControllerTest {
 
     @Test
     void testNoClientConfig() {
-        JSONObject nrps = new JSONObject(Collections.singletonMap("context_memberships_url", "http://example.com"));
+        Map nrps = Collections.singletonMap("context_memberships_url", "http://example.com");
         JwtRequestPostProcessor jwt = jwt().jwt(builder ->
                 builder.audience(Collections.singleton("does-not-exist"))
                         .claim(LtiScopes.LTI_NRPS_CLAIM, nrps)
@@ -87,7 +84,7 @@ class NRPSControllerTest {
 
     @Test
     void testNoRoles() throws Exception {
-        JSONObject nrps = new JSONObject(Collections.singletonMap("context_memberships_url", "http://example.com"));
+        Map nrps = Collections.singletonMap("context_memberships_url", "http://example.com");
         JwtRequestPostProcessor jwt = jwt().jwt(builder ->
                 builder.audience(Collections.singleton("1234"))
                         .claim(LtiScopes.LTI_NRPS_CLAIM, nrps)
@@ -97,7 +94,7 @@ class NRPSControllerTest {
 
     @Test
     void testBadRole() throws Exception {
-        JSONObject nrps = new JSONObject(Collections.singletonMap("context_memberships_url", "http://example.com"));
+        Map nrps = Collections.singletonMap("context_memberships_url", "http://example.com");
         List<String> roles = Collections.singletonList(Role.System.NONE);
         JwtRequestPostProcessor jwt = jwt().jwt(builder ->
                 builder.audience(Collections.singleton("1234"))
@@ -109,7 +106,7 @@ class NRPSControllerTest {
 
     @Test
     void testTokenRetrialFailed() throws Exception {
-        JSONObject nrps = new JSONObject(Collections.singletonMap("context_memberships_url", "http://example.com"));
+        Map nrps = Collections.singletonMap("context_memberships_url", "http://example.com");
         List<String> roles = Collections.singletonList(Role.Context.INSTRUCTOR);
         JwtRequestPostProcessor jwt = jwt().jwt(builder ->
                 builder.audience(Collections.singleton("1234"))
