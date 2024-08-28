@@ -1,6 +1,6 @@
 package uk.ac.ox.ctl.ltiauth.controller;
 
-import com.nimbusds.jose.shaded.json.JSONObject;
+import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;

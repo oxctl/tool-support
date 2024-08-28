@@ -3,8 +3,8 @@ package uk.ac.ox.ctl.repository;
 
 import org.springframework.security.oauth2.core.AuthenticationMethod;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 
 @Converter
 public class AuthenticationMethodDBConverter implements AttributeConverter<AuthenticationMethod, String> {

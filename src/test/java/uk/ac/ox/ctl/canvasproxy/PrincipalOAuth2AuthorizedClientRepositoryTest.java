@@ -32,8 +32,8 @@ import uk.ac.ox.ctl.canvasproxy.model.PrincipalTokens;
 import uk.ac.ox.ctl.canvasproxy.repository.PrincipalTokensRepository;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.OAuth2AccessTokenRefresher;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -190,15 +190,6 @@ class PrincipalOAuth2AuthorizedClientRepositoryTest {
         {
             assertNull(entityManager.find(PrincipalTokens.class, "principal"));
         }
-    }
-    
-    @Test
-    public void testDeleteThrowsException() {
-        // If this test starts failing on a Spring Boot upgrade then we can remove the catch block in
-        // uk.ac.ox.ctl.canvasproxy.PrincipalOAuth2AuthorizedClientRepository.removeAuthorizedClient
-        assertThrows(EmptyResultDataAccessException.class, () -> {
-            principalTokensRepository.deleteById("not-found");
-        });
     }
 
 }

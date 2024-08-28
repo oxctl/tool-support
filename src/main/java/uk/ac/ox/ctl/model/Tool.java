@@ -1,28 +1,16 @@
 package uk.ac.ox.ctl.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Index;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.*;
 import uk.ac.ox.ctl.repository.StringSetConverter;
 
-import javax.persistence.Cacheable;
-import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
@@ -39,8 +27,7 @@ import java.util.UUID;
 public class Tool {
 
     @Id
-    @GeneratedValue
-    @Type(type = "uuid-char")
+    @UuidGenerator
     @Column(length = 36)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private UUID id;

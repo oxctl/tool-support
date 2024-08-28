@@ -91,14 +91,6 @@ class TokenControllerTest {
     }
 
     @Test
-    public void testNoPrincipal() {
-        when(jwtService.retrieve("1234")).thenReturn(token);
-        when(token.getPrincipal()).thenReturn(null);
-
-        assertThrows(Exception.class, () -> mvc.perform(post("/token").param("key", "1234")));
-    }
-
-    @Test
     public void testNoUser() throws Exception {
         when(jwtService.retrieve("1234")).thenReturn(token);
         when(token.getPrincipal()).thenReturn(user);

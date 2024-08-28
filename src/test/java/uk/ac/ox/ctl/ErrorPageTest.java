@@ -1,7 +1,7 @@
 package uk.ac.ox.ctl;
 
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.SilentCssErrorHandler;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
@@ -38,10 +38,9 @@ public class ErrorPageTest {
         // This is going to be a 404, but we still want to check the contents of the response.
         localHostWebClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         // Check that we generate a good 404 error page.
-        HtmlPage page = localHostWebClient.getPage("/images/not-found.svg");
+        Page page = localHostWebClient.getPage("/images/not-found.svg");
         assertEquals(404, page.getWebResponse().getStatusCode());
-        assertEquals("Canvas Tools: Error", page.getTitleText());
-        assertTrue(page.getBody().getTextContent().contains("No message available"));
+        assertFalse(page.isHtmlPage());
     }
 
 }

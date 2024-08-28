@@ -29,7 +29,7 @@ public class AdminController {
         this.repository = repository;
     }
 
-    @GetMapping(value = "/tools")
+    @GetMapping(path = {"/tools", "/tools/"})
     public Iterable<Tool> getAllTools() {
         return repository.findAll();
     }
@@ -64,7 +64,7 @@ public class AdminController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @PostMapping("/tools")
+    @PostMapping(path = {"/tools", "/tools/"})
     ResponseEntity<Tool> createTool(@RequestBody Tool newTool) {
         return ResponseEntity.ok(repository.save(newTool));
     }

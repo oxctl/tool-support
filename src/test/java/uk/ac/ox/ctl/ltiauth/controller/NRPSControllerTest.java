@@ -1,6 +1,7 @@
 package uk.ac.ox.ctl.ltiauth.controller;
 
-import com.nimbusds.jose.shaded.json.JSONObject;
+import jakarta.servlet.ServletException;
+import net.minidev.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,7 @@ class NRPSControllerTest {
                         .claim(LtiScopes.LTI_NRPS_CLAIM, nrps)
         );
         // This should get mapped by the exception mapper in production
-        assertThrows(NestedServletException.class, () ->
+        assertThrows(ServletException.class, () ->
                 mvc.perform(get("/nrps/test").with(jwt))
         );
     }

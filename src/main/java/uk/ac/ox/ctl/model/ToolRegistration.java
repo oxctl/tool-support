@@ -3,11 +3,13 @@ package uk.ac.ox.ctl.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.UuidGenerator;
 import org.springframework.security.oauth2.core.AuthenticationMethod;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -19,16 +21,16 @@ import uk.ac.ox.ctl.repository.AuthorizationGrantTypeDBConverter;
 import uk.ac.ox.ctl.repository.ClientAuthenticationMethodDBConverter;
 import uk.ac.ox.ctl.repository.StringSetConverter;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Embeddable;
-import javax.persistence.Embedded;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -47,7 +49,7 @@ import java.util.UUID;
 abstract public class ToolRegistration {
     
     @Id
-    @Type(type = "uuid-char")
+    @UuidGenerator
     @JsonIgnore
     private UUID id;
 
@@ -90,7 +92,7 @@ abstract public class ToolRegistration {
         private UserInfoEndpoint userInfoEndpoint = new UserInfoEndpoint();
         private String jwkSetUri;
         private String issuerUri;
-        @Type(type = "io.hypersistence.utils.hibernate.type.json.JsonType")
+        @Type(JsonType.class)
         @Column(columnDefinition = "json")
         private Map<String, Object> configurationMetadata = Collections.emptyMap();
     }

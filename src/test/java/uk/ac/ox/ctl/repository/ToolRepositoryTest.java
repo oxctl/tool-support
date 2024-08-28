@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.LTIAuthorizationGrantType;
 import uk.ac.ox.ctl.model.Tool;
 import uk.ac.ox.ctl.model.ToolRegistrationLti;
 import uk.ac.ox.ctl.model.ToolRegistrationProxy;
@@ -140,7 +140,7 @@ class ToolRepositoryTest {
             ToolRegistrationLti registration = new ToolRegistrationLti();
             registration.setRegistrationId("test");
             registration.setScopes(Set.of("one", "two", "three"));
-            registration.setAuthorizationGrantType(AuthorizationGrantType.IMPLICIT);
+            registration.setAuthorizationGrantType(LTIAuthorizationGrantType.IMPLICIT);
             registration.setClientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
             registration.getProviderDetails().setConfigurationMetadata(Map.of("key", "value"));
             
@@ -155,7 +155,7 @@ class ToolRepositoryTest {
         {
             ToolRegistrationLti registration = repository.findById(uuid).orElseThrow().getLti();
             assertThat(registration.getScopes()).contains("one", "two", "three");
-            assertEquals(AuthorizationGrantType.IMPLICIT, registration.getAuthorizationGrantType());
+            assertEquals(LTIAuthorizationGrantType.IMPLICIT, registration.getAuthorizationGrantType());
             assertEquals(ClientAuthenticationMethod.CLIENT_SECRET_BASIC, registration.getClientAuthenticationMethod());
             assertThat(registration.getProviderDetails().getConfigurationMetadata()).containsAllEntriesOf(Map.of("key", "value"));
         }

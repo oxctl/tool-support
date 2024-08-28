@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.CrudRepository;
 import uk.ac.ox.ctl.canvasproxy.model.PrincipalTokens;
 
-import javax.persistence.LockModeType;
-import javax.persistence.QueryHint;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import java.util.Optional;
 
 public interface PrincipalTokensRepository extends CrudRepository<PrincipalTokens, String> {
@@ -20,7 +20,7 @@ public interface PrincipalTokensRepository extends CrudRepository<PrincipalToken
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from PrincipalTokens p where p.principal = ?1")
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "10000")})
+    @QueryHints({@QueryHint(name = "jakarta.persistence.lock.timeout", value = "10000")})
     Optional<PrincipalTokens> lockById(String principal);
 
 }

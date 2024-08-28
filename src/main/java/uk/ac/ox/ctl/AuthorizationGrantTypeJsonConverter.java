@@ -2,6 +2,7 @@ package uk.ac.ox.ctl;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.LTIAuthorizationGrantType;
 
 public class AuthorizationGrantTypeJsonConverter {
     public static class Deserialize extends StdConverter<String, AuthorizationGrantType> {
@@ -10,8 +11,8 @@ public class AuthorizationGrantTypeJsonConverter {
             if (AuthorizationGrantType.AUTHORIZATION_CODE.getValue().equalsIgnoreCase(value)) {
                 return AuthorizationGrantType.AUTHORIZATION_CODE;
             }
-            if (AuthorizationGrantType.IMPLICIT.getValue().equalsIgnoreCase(value)) {
-                return AuthorizationGrantType.IMPLICIT;
+            if (LTIAuthorizationGrantType.IMPLICIT.getValue().equalsIgnoreCase(value)) {
+                return LTIAuthorizationGrantType.IMPLICIT;
             }
             if (AuthorizationGrantType.CLIENT_CREDENTIALS.getValue().equalsIgnoreCase(value)) {
                 return AuthorizationGrantType.CLIENT_CREDENTIALS;

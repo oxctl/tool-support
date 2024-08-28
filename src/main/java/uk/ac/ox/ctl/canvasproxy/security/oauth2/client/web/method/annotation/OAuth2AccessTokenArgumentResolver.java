@@ -40,8 +40,8 @@ import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.RefreshOAuth2Aut
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.annotation.RegisteredOAuth2AccessToken;
 import uk.ac.ox.ctl.oauth2.client.web.method.annotation.PrincipalClientIdResolver;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * An implementation of a {@link HandlerMethodArgumentResolver} that is capable of resolving a
