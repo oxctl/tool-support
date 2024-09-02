@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +17,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.regex.Pattern;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 // this was copied from Spring Boot because the autoconfiguration wasn't creating the beans because we have JWT based authentication enabled
 @Configuration
@@ -54,13 +57,12 @@ public class AdminWebSecurity {
     @Bean
     @Order(1)
     public SecurityFilterChain adminConfiguration(HttpSecurity http) throws Exception {
-        http.antMatcher("/admin/**")
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .httpBasic()
-                .and()
-                .authorizeRequests().anyRequest().hasRole("admin");
-        return http.build();
+        return http.securityMatcher("/admin/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .httpBasic(withDefaults())
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().hasRole("admin"))
+                .build();
+        
     }
 }

@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.LTIAuthorizationGrantType;
 import uk.ac.ox.ctl.model.Tool;
 import uk.ac.ox.ctl.model.ToolRegistrationLti;
 import uk.ac.ox.ctl.model.ToolRegistrationProxy;
@@ -91,7 +92,7 @@ public class AdminControllerWebTest {
             lti.setRegistrationId("ltiRegistrationId");
             lti.setRedirectUri("http://server.test");
             lti.setClientAuthenticationMethod(ClientAuthenticationMethod.NONE);
-            lti.setAuthorizationGrantType(AuthorizationGrantType.IMPLICIT);
+            lti.setAuthorizationGrantType(LTIAuthorizationGrantType.IMPLICIT);
             tool.setLti(lti);
             ToolRegistrationProxy proxy = new ToolRegistrationProxy();
             proxy.setClientId("proxyClientId");

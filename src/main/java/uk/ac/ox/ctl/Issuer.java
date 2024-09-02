@@ -1,12 +1,12 @@
 package uk.ac.ox.ctl;
 
-import org.springframework.boot.context.properties.ConstructorBinding;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
+
 import java.net.URL;
 
-@ConstructorBinding
 public class Issuer {
 
     @NotEmpty
@@ -14,6 +14,7 @@ public class Issuer {
     @NotNull
     private final URL jwksUrl;
 
+    @ConstructorBinding
     public Issuer(String issuer, URL jwksUrl) {
         this.issuer = issuer;
         this.jwksUrl = jwksUrl;

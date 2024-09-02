@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfigurationSource;
 import uk.ac.ox.ctl.repository.ToolRepository;
@@ -16,6 +18,7 @@ import uk.ac.ox.ctl.service.ToolCorsConfigurationSource;
 import java.util.Arrays;
 
 @Configuration
+@EnableWebSecurity
 public class WebSecurityConfiguration {
     
     private final Logger log = LoggerFactory.getLogger(WebSecurityConfiguration.class);
@@ -35,17 +38,17 @@ public class WebSecurityConfiguration {
     @Bean
     @Order(Ordered.LOWEST_PRECEDENCE)
     public SecurityFilterChain finalSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(authorize -> authorize
-                .antMatchers(
-                        "/",
-                        "/css/**",
-                        "/images/**",
-                        "/resources/**",
-                        "/actuator/health"
-                ).permitAll() // Allow public endpoints
-                .anyRequest().denyAll() // Deny by default
-        );
-
-        return http.build();
+        return http.securityMatcher(
+                    "/",
+                    "/index.html",
+                    "/css/**",
+                    "/images/**",
+                    "/resources/**",
+                    "/actuator/health",
+                    "/error"
+                )
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .build();
     }
 }

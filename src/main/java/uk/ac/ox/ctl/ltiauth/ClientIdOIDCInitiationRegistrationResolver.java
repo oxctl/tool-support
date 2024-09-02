@@ -3,7 +3,7 @@ package uk.ac.ox.ctl.ltiauth;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OIDCInitiationRegistrationResolver;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Resolves the client registration when the login initiation endpoint is hit by using the client ID from the

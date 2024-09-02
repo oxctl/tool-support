@@ -1,10 +1,10 @@
 package uk.ac.ox.ctl.repository;
 
 
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
 
 @Converter
 public class AuthorizationGrantTypeDBConverter implements AttributeConverter<AuthorizationGrantType, String> {

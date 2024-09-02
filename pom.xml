@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.18</version>
+        <version>3.2.5</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>uk.ac.ox.ctl</groupId>
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>uk.ac.ox.ctl</groupId>
             <artifactId>canvas-spring-oauth2</artifactId>
-            <version>0.6</version>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -66,7 +66,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-jcache</artifactId>
         </dependency>
         <dependency>
@@ -90,9 +90,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.13</version>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
         </dependency>
         <dependency>
             <groupId>com.mysql</groupId>
@@ -101,23 +100,23 @@
         <dependency>
             <groupId>uk.ac.ox.ctl</groupId>
             <artifactId>spring-security-lti13</artifactId>
-            <version>0.1.11</version>
+            <version>0.2.0</version>
         </dependency>
         <dependency>
             <groupId>io.sentry</groupId>
-            <artifactId>sentry-spring-boot-starter</artifactId>
-            <version>6.32.0</version>
+            <artifactId>sentry-spring-boot-starter-jakarta</artifactId>
+            <version>7.14.0</version>
         </dependency>
         <dependency>
             <groupId>io.sentry</groupId>
             <artifactId>sentry-logback</artifactId>
-            <version>6.32.0</version>
+            <version>7.14.0</version>
         </dependency>
         <!-- For persisting maps to JSON -->
         <dependency>
             <groupId>io.hypersistence</groupId>
-            <artifactId>hypersistence-utils-hibernate-55</artifactId>
-            <version>3.1.0</version>
+            <artifactId>hypersistence-utils-hibernate-63</artifactId>
+            <version>3.8.2</version>
         </dependency>
         <!-- Using H2 in development/test -->
         <dependency>
@@ -132,7 +131,7 @@
         <dependency>
             <groupId>com.amazonaws.secretsmanager</groupId>
             <artifactId>aws-secretsmanager-jdbc</artifactId>
-            <version>1.0.11</version>
+            <version>2.0.2</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -170,8 +169,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>10.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -210,8 +210,8 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
                 <configuration>
                     <verbose>false</verbose>
                     <offline>true</offline>
@@ -238,9 +238,9 @@
                         </pluginExtension>
                     </pluginExtensions>
                     <from>
-						<!-- The alpine images are small but don't support arm64 so use ubuntu instead -->
-						<image>eclipse-temurin:17.0.8.1_1-jre-jammy</image>
-						<platforms>
+                        <!-- The alpine images are small but don't support arm64 so use ubuntu instead -->
+                        <image>eclipse-temurin:17.0.8.1_1-jre-jammy</image>
+                        <platforms>
                             <platform>
                                 <architecture>arm64</architecture>
                                 <os>linux</os>
@@ -287,5 +287,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

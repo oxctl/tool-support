@@ -64,18 +64,18 @@ public class CanvasOAuth2ErrorResponseErrorHandler implements ResponseErrorHandl
 	 *
 	 */
 	private static boolean hasErrorCanvas(ClientHttpResponse response) throws IOException {
-		int rawStatusCode = response.getRawStatusCode();
+		int rawStatusCode = response.getStatusCode().value();
 		HttpStatus statusCode = HttpStatus.resolve(rawStatusCode);
 		return HttpStatus.FOUND.equals(statusCode);
 	}
 
 	@Override
 	public void handleError(ClientHttpResponse response) throws IOException {
-		if (HttpStatus.FOUND.value() == response.getRawStatusCode()) {
+		if (HttpStatus.FOUND.value() == response.getStatusCode().value()) {
 			handleErrorCanvas(response);
 		}
-		if (HttpStatus.BAD_REQUEST.value() != response.getRawStatusCode() &&
-				HttpStatus.UNAUTHORIZED.value() != response.getRawStatusCode()) {
+		if (HttpStatus.BAD_REQUEST.value() != response.getStatusCode().value() &&
+				HttpStatus.UNAUTHORIZED.value() != response.getStatusCode().value()) {
 			this.defaultErrorHandler.handleError(response);
 		}
 		// See https://tools.ietf.org/html/rfc6750#section-3

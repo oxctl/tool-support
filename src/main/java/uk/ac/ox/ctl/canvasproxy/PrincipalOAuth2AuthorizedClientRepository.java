@@ -16,8 +16,9 @@ import uk.ac.ox.ctl.canvasproxy.repository.PrincipalTokensRepository;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.OAuth2AccessTokenRefresher;
 import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.endpoint.RefreshOAuth2AuthorizedClient;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.List;
 
 /**
@@ -32,7 +33,7 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
 
     public PrincipalOAuth2AuthorizedClientRepository(
             PrincipalTokensRepository principalTokensRepository,
-            ClientRegistrationRepository clientRegistrationRepository, 
+            ClientRegistrationRepository clientRegistrationRepository,
             OAuth2AccessTokenRefresher auth2AccessTokenRefresher) {
         this.principalTokensRepository = principalTokensRepository;
         this.clientRegistrationRepository = clientRegistrationRepository;
@@ -62,9 +63,9 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
      * This refreshes the access token associated with the authentication.
      *
      * @param clientRegistrationId The client registration ID.
-     * @param authentication The authentication for the current user.
-     * @param request The HTTP Servlet Request.
-     * @param response The HTTP Servlet Response.
+     * @param authentication       The authentication for the current user.
+     * @param request              The HTTP Servlet Request.
+     * @param response             The HTTP Servlet Response.
      * @return The refreshed Oauth2AuthorizedClient or null if the refresh fails.
      */
     @SuppressWarnings("unchecked")
@@ -127,12 +128,7 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
             Authentication authentication,
             HttpServletRequest request,
             HttpServletResponse response) {
-        try {
-            principalTokensRepository.deleteById(toPrincipal(authentication));
-        } catch (EmptyResultDataAccessException e) {
-            // Once we have upgrades to a release that includes this we can drop the catch block (3.1.x, maybe 3.0.x)
-            // https://github.com/spring-projects/spring-data-jpa/issues/2719
-        }
+        principalTokensRepository.deleteById(toPrincipal(authentication));
     }
 
     private String toPrincipal(Authentication authentication) {
@@ -153,7 +149,7 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
             }
             // This is so that if we have multiple tools in the same Canvas instance each tool has a separate pool
             // of tokens it uses.
-            return aud.get(0) + ":"+ persistableJwtAuthenticationToken.getName();
+            return aud.get(0) + ":" + persistableJwtAuthenticationToken.getName();
         }
         return authentication.getName();
     }

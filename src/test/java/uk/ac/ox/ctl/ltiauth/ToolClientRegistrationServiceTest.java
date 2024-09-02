@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.LTIAuthorizationGrantType;
 import uk.ac.ox.ctl.model.Tool;
 import uk.ac.ox.ctl.model.ToolRegistrationLti;
 import uk.ac.ox.ctl.repository.ToolRepository;
@@ -45,7 +45,7 @@ class ToolClientRegistrationServiceTest {
             ToolRegistrationLti lti = new ToolRegistrationLti();
             lti.setRegistrationId("registration-id");
             lti.setClientId("12345");
-            lti.setAuthorizationGrantType(AuthorizationGrantType.IMPLICIT);
+            lti.setAuthorizationGrantType(LTIAuthorizationGrantType.IMPLICIT);
             lti.setRedirectUri("https://sample.test");
             lti.setScopes(Set.of("openid"));
             lti.getProviderDetails().setAuthorizationUri("https://sample.test/auth");
@@ -60,7 +60,7 @@ class ToolClientRegistrationServiceTest {
         assertThat(registration).isNotNull();
         assertThat(registration.getRegistrationId()).isEqualTo("registration-id");
         assertThat(registration.getClientId()).isEqualTo("12345");
-        assertThat(registration.getAuthorizationGrantType()).isEqualTo(AuthorizationGrantType.IMPLICIT);
+        assertThat(registration.getAuthorizationGrantType()).isEqualTo(LTIAuthorizationGrantType.IMPLICIT);
         assertThat(registration.getRedirectUri()).isEqualTo("https://sample.test");
         assertThat(registration.getScopes()).contains("openid");
         assertThat(registration.getProviderDetails()).isNotNull();

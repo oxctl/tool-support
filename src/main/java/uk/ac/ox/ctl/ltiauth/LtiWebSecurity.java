@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -18,19 +18,20 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import uk.ac.ox.ctl.lti13.Lti13Configurer;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
-@EnableWebSecurity
 public class LtiWebSecurity {
 
     private final JWTService jwtService;
-    
+
     @Autowired
     @Qualifier("lti")
     private ClientRegistrationRepository clientRegistrationRepository;
 
     @Autowired
     private ClientRegistrationService clientRegistrationService;
-    
+
     @Value("${lti.repo.state.limit.ip:false}")
     private boolean limitIp;
 
@@ -51,8 +52,8 @@ public class LtiWebSecurity {
     @Bean
     @Order(21)
     public SecurityFilterChain deepLinkingConfiguration(HttpSecurity http, @Qualifier("lti") BearerTokenResolver tokenResolver, @Qualifier("lti") JwtDecoder jwtDecoder) throws Exception {
-            HttpSecurity deepLinking = http.antMatcher("/deep-linking/**");
-            return secure(deepLinking, tokenResolver, jwtDecoder).build();
+        HttpSecurity deepLinking = http.securityMatcher("/deep-linking/**");
+        return secure(deepLinking, tokenResolver, jwtDecoder).build();
     }
 
     /**
@@ -61,51 +62,48 @@ public class LtiWebSecurity {
     @Bean
     @Order(22)
     public SecurityFilterChain nrpsConfiguration(HttpSecurity http, @Qualifier("lti") BearerTokenResolver tokenResolver, @Qualifier("lti") JwtDecoder jwtDecoder) throws Exception {
-            HttpSecurity namesRoles = http.antMatcher("/nrps/**");
-            return secure(namesRoles, tokenResolver, jwtDecoder).build();
+        HttpSecurity namesRoles = http.securityMatcher("/nrps/**");
+        return secure(namesRoles, tokenResolver, jwtDecoder).build();
     }
 
     @Bean
     @Order(22)
     public SecurityFilterChain tokenConfiguration(HttpSecurity http) throws Exception {
-        HttpSecurity token = http.antMatcher("/token");
-        token.cors();
-        token.csrf().disable();
-        token.authorizeRequests().anyRequest().permitAll();
-        return token.build();
+        return http.securityMatcher("/token")
+                .cors(withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
+                .build();
     }
 
     @Bean
     @Order(23)
     public SecurityFilterChain ltiConfiguration(HttpSecurity http) throws Exception {
-        HttpSecurity lti = http.antMatcher("/lti/**");
+        HttpSecurity lti = http.securityMatcher("/lti/**");
         lti.setSharedObject(ClientRegistrationRepository.class, clientRegistrationRepository);
         Lti13Configurer lti13Configurer = new CustomLti13Configurer(jwtService, clientRegistrationService);
         lti13Configurer.limitIpAddresses(limitIp);
         lti.apply(lti13Configurer);
         // We need to allow the LTI launch to happen from anywhere.
-        lti.cors().disable();
+        lti.cors(AbstractHttpConfigurer::disable);
         return lti.build();
     }
 
     @Bean
     @Order(24)
     public SecurityFilterChain jwksSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.antMatcher("/.well-known/jwks.json")
-                .authorizeRequests(authorize -> authorize.anyRequest().permitAll());
-
+        http.securityMatcher("/.well-known/jwks.json")
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
         return http.build();
     }
 
     private static HttpSecurity secure(HttpSecurity http, BearerTokenResolver tokenResolver, JwtDecoder jwtDecoder) throws Exception {
-        http
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .cors().and()
-                .csrf().disable()
-                .oauth2ResourceServer().jwt().decoder(jwtDecoder).and()
-                .bearerTokenResolver(tokenResolver).authenticationEntryPoint(authenticationEntryPoint()).and()
-                .authorizeRequests().anyRequest().authenticated();
-        return http;
+        return http
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.decoder(jwtDecoder)).bearerTokenResolver(tokenResolver).authenticationEntryPoint(authenticationEntryPoint()))
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated());
     }
 
     protected static AuthenticationEntryPoint authenticationEntryPoint() {

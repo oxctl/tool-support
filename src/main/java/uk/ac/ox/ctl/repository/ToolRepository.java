@@ -1,11 +1,11 @@
 package uk.ac.ox.ctl.repository;
 
+import jakarta.persistence.QueryHint;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.CrudRepository;
 import uk.ac.ox.ctl.model.Tool;
 
-import javax.persistence.QueryHint;
 import java.util.Optional;
 import java.util.UUID;
 
