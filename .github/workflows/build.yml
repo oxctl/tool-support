@@ -73,7 +73,7 @@ jobs:
         id: output-message
         run: echo message="$(git log --format=%s -n 1 ${{ env.COMMIT_SHA }})" >> $GITHUB_OUTPUT
       - name: Upload Elastic Beanstalk Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: elasticbeanstalk
           path: elasticbeanstalk
