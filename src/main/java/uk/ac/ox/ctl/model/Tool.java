@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
+import org.hibernate.type.descriptor.jdbc.VarcharJdbcType;
 import uk.ac.ox.ctl.repository.StringSetConverter;
 
 import java.util.Collection;
@@ -30,6 +31,7 @@ public class Tool {
     @UuidGenerator
     @Column(length = 36)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @JdbcType(VarcharJdbcType.class)
     private UUID id;
 
     public void setLti(ToolRegistrationLti lti) {
