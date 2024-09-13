@@ -2,9 +2,6 @@
 
 name: Release
 
-env:
-  JAVA_VERSION: 17
-
 on:
   workflow_dispatch:
     inputs:
@@ -30,7 +27,7 @@ jobs:
       TAG_REF: ${{ steps.set-tags-ref.outputs.TAG_REF }}
     steps:
       # This makes a checkout of the source code
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # This setups the GIT to make pushes
       - name: Sets the author of the release
         run: |
@@ -46,10 +43,9 @@ jobs:
       - id: set-next-release-number
         run: echo "NEXT_RELEASE_NUMBER=${{ env.NEXT_RELEASE_NUMBER }}" >> "$GITHUB_OUTPUT"
       # Setups Java to build the backend.
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version-file: .java-version
           distribution: temurin
           cache: maven
       - name: Build release in non interactive mode
