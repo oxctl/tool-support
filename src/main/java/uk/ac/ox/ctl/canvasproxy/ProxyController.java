@@ -41,12 +41,16 @@ public class ProxyController {
     // If we can control the response when there isn't a token for the current user we may want to make the token required.
     @RequestMapping("/api/**")
     @ResponseBody
-    public ResponseEntity<?> proxy(AbstractOAuth2TokenAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AccessToken() OAuth2AccessToken accessToken) throws URISyntaxException {
+    public ResponseEntity<?> proxy(AbstractOAuth2TokenAuthenticationToken principal, RequestEntity<byte[]> requestEntity, @RegisteredOAuth2AccessToken(required = false) OAuth2AccessToken accessToken) throws URISyntaxException {
         String canvasApiBaseUrl = (String) ((Map) principal.getTokenAttributes().get("https://purl.imsglobal.org/spec/lti/claim/custom")).get(CANVAS_API_BASE_URL);
         if (canvasApiBaseUrl == null || canvasApiBaseUrl.isEmpty()) {
             // The message doesn't make it into he HTTP status, but is in the JSON
             // https://bz.apache.org/bugzilla/show_bug.cgi?id=60362
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CANVAS_API_BASE_URL + " was not in LTI custom claims. Please update LTI configuration.");
+        }
+        if (principal.getName() != null && accessToken == null) {
+            // The user isn't anonymouns so needs a token.
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No token found");
         }
         URI remoteService = URI.create(canvasApiBaseUrl);
         URI requestUrl = requestEntity.getUrl();
@@ -59,7 +63,12 @@ public class ProxyController {
                 requestHeaders.addAll(requestEntity.getHeaders());
                 // If we pass through the wrong host then canvas returns different information.
                 requestHeaders.remove("Host");
-                requestHeaders.setBearerAuth(accessToken.getTokenValue());
+                if (accessToken != null) {
+                    requestHeaders.setBearerAuth(accessToken.getTokenValue());
+                } else {
+                    // The anonymous user doesn't have any access token
+                    requestHeaders.remove(HttpHeaders.AUTHORIZATION);
+                }
                 // Client browsers will say they accept brotli encoding, but we can't proxy that so we only allow gzip and deflate.
                 // Really we shouldn't be trying to de-compress the response and should just pass it straight through.
                 // This is a quick fix.
