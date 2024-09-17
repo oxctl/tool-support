@@ -49,6 +49,10 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
                 clientRegistrationRepository.findByRegistrationId(clientRegistrationId);
         if (clientRegistration != null) {
             String principal = toPrincipal(authentication);
+            if (principal == null) {
+                // If it's the anonymous user
+                return null;
+            }
             oAuth2AuthorizedClient =
                     // Second level caching should catch this lookup by ID.
                     principalTokensRepository
@@ -77,6 +81,9 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
                 clientRegistrationRepository.findByRegistrationId(clientRegistrationId);
         if (clientRegistration != null) {
             String principal = toPrincipal(authentication);
+            if (principal == null) {
+                return null;
+            }
             oAuth2AuthorizedClient =
                     // Second level caching should catch this lookup by ID.
                     principalTokensRepository
@@ -118,7 +125,11 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
             Authentication authentication,
             HttpServletRequest request,
             HttpServletResponse response) {
-        PrincipalTokens userTokens = new PrincipalTokens(toPrincipal(authentication), authorizedClient);
+        String principal = toPrincipal(authentication);
+        if (principal == null) {
+            return;
+        }
+        PrincipalTokens userTokens = new PrincipalTokens(principal, authorizedClient);
         principalTokensRepository.save(userTokens);
     }
 
@@ -128,7 +139,11 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
             Authentication authentication,
             HttpServletRequest request,
             HttpServletResponse response) {
-        principalTokensRepository.deleteById(toPrincipal(authentication));
+        String principal = toPrincipal(authentication);
+        if (principal == null) {
+            return;
+        }
+        principalTokensRepository.deleteById(principal);
     }
 
     private String toPrincipal(Authentication authentication) {
@@ -145,7 +160,8 @@ public class PrincipalOAuth2AuthorizedClientRepository implements OAuth2Authoriz
             }
             // We want to be double sure that we have a name.
             if (persistableJwtAuthenticationToken.getName() == null) {
-                throw new IllegalStateException("JWT name cannot be null");
+                // The name is null for anonymous launches
+                return null;
             }
             // This is so that if we have multiple tools in the same Canvas instance each tool has a separate pool
             // of tokens it uses.
