@@ -50,7 +50,7 @@ public class ProxyController {
         }
         if (principal.getName() != null && accessToken == null) {
             // The user isn't anonymouns so needs a token.
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No token found");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No token found");
         }
         URI remoteService = URI.create(canvasApiBaseUrl);
         URI requestUrl = requestEntity.getUrl();
