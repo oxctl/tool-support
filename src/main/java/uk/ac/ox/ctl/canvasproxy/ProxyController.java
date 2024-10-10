@@ -48,7 +48,10 @@ public class ProxyController {
             // https://bz.apache.org/bugzilla/show_bug.cgi?id=60362
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CANVAS_API_BASE_URL + " was not in LTI custom claims. Please update LTI configuration.");
         }
-
+        if (principal.getName() != null && accessToken == null) {
+            // The user isn't anonymouns so needs a token.
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No token found");
+        }
         URI remoteService = URI.create(canvasApiBaseUrl);
         URI requestUrl = requestEntity.getUrl();
         URI localService = new URI(requestUrl.getScheme(), requestUrl.getUserInfo(), requestUrl.getHost(), requestUrl.getPort(), null, null, null);
