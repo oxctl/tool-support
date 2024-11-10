@@ -1,0 +1,183 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Metadata: {}
+Description: "Create the resources needed before the deployment happens (or shared between frontend/backend)."
+
+Parameters:
+  orgName:
+    Description: "Name of organization - used in naming"
+    Type: String
+    Default: "cad"
+  accountType:
+    Type: "String"
+    Description: "production or non-production account?"
+    AllowedValues:
+      - "prod"
+      - "nonprod"
+  appName:
+    Description: "The EB app to provision"
+    Type: String
+  envType:
+    Description: "The env type: prod, beta, test, etc"
+    Type: String
+    AllowedValues:
+      - "prod"
+      - "beta"
+      - "test"
+      - "staging"
+  namePrefix:
+    Description: "Naming prefix to ensure more likely uniqueness for objects that demand global uniqueness - 'ox'? 'oxuni'? 'ouit'?"
+    Type: String
+    Default: oxcanvas
+
+Resources:
+
+  #create a hosted zone for this app
+  #ToDo: should be in global context only in primary region, will fail in DR region
+  appDomain:
+    Type: "AWS::Route53::HostedZone"
+    Properties:
+      HostedZoneConfig:
+        Comment: !Sub 'Zone for ${appName}-${envType} (${accountType})'
+      Name:
+        Fn::Sub:
+          - "${app}.${dom}"
+          - app: !Ref appName
+            dom:
+              Fn::ImportValue:
+                !Sub "${orgName}-${accountType}-route53-domainname"
+
+
+
+  #ToDo: review this
+  # create NS records in parent r53 domain to make this zone resolvable
+  ## this is important for downstream use of exports
+  #ToDo: should be in global context only in primary region, will fail in DR region
+  r53NSRecords:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId:
+        Fn::ImportValue:
+          !Sub "${orgName}-${accountType}-route53-zoneid"
+      Name:
+        Fn::Sub:
+          - "${app}.${dom}"
+          - app: !Ref appName
+            dom:
+              Fn::ImportValue:
+                !Sub "${orgName}-${accountType}-route53-domainname"
+      ResourceRecords: !GetAtt appDomain.NameServers
+      TTL: 60
+      Type: NS
+
+  # The bucket that holds the archive versions of the frontend.
+  appBucketDist:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${namePrefix}-${appName}-${envType}-${AWS::Region}-${AWS::AccountId}-dist"
+      # Stop this bucket from being public
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
+            BucketKeyEnabled: true
+  #Create a per app ECR private repo
+  #ToDo: Regional context
+  ecrRepo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub "${appName}-${envType}"
+      EncryptionConfiguration:
+        EncryptionType: KMS
+        KmsKey: "alias/aws/ecr"
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: "MUTABLE"
+      EmptyOnDelete: true
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 2,
+                "description": "Keep 50 previous versions of tagged images",
+                "selection": {
+                  "tagStatus": "tagged",
+                  "tagPatternList": [
+                    "*"
+                  ],
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 50
+                },
+                "action": {
+                  "type": "expire"
+                }
+              },
+              {
+                "rulePriority": 3,
+                "description": "Expire untagged images after 30 days",
+                "selection": {
+                  "tagStatus": "untagged",
+                  "countType": "sinceImagePushed",
+                  "countUnit": "days",
+                  "countNumber": 30
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+        RegistryId: !Ref AWS::AccountId
+
+Outputs:
+  #Route53 is now updated automatically ..
+  ## so these records are useful in exports
+  ## .. secrets manager is another option for zoneid
+  appDomainZoneID:
+    Description: "The Route53 Zone ID of the newly created app-subdomain"
+    Value: !Ref appDomain
+    Export:
+      Name: !Sub "${appName}-${accountType}-route53-zoneid"
+  appDomainNameServers:
+    Description: "The Route53 nameservers of the newly created app-subdomain"
+    Value: !Join [",",!GetAtt appDomain.NameServers]
+    Export:
+      Name: !Sub "${appName}-${accountType}-route53-nameservers"
+  appDomainName:
+    Description: "DNS name for service the backend (dynamic API)"
+    Value:
+      Fn::Sub:
+        - "${app}.${dom}"
+        - app: !Ref appName
+          dom:
+            Fn::ImportValue:
+              !Sub "${orgName}-${accountType}-route53-domainname"
+    Export:
+      Name: !Sub "${appName}-${accountType}-route53-domainname"
+  appFrontendDomain:
+    Description: "DNS name for serving the frontend (static tool content)"
+    Value:
+      Fn::Sub:
+        - "static-${app}.${dom}"
+        - app: !Ref appName
+          dom:
+            Fn::ImportValue:
+              !Sub "${orgName}-${accountType}-route53-domainname"
+    Export:
+      Name: !Sub "${appName}-${accountType}-frontend-domain"
+  distBucketName:
+    Description: "The name of the frontend distribution bucket"
+    Value: !Ref appBucketDist
+    Export:
+      Name: !Sub "${AWS::StackName}-dist-bucket-name"
+  ecrRepoARN:
+    Description: "TheARN of the ECR Repo"
+    Value: !GetAtt ecrRepo.RepositoryUri
+    Export:
+      Name: !Sub "${AWS::StackName}-ecr-repo-uri"

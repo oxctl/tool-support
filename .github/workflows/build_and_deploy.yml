@@ -1,0 +1,207 @@
+name: Build and Deploy Backend
+
+on:
+  workflow_call:
+    inputs:
+      account_type:
+        description: 'Prod or nonprod AWS account'
+        type: string
+      app_name:
+        description: 'The name of the app'
+        type: string
+      aws_account_id:
+        description: 'The AWS account id'
+        type: string
+      aws_parameters:
+        description: 'The AWS parameters'
+        type: string
+      aws_region:
+        description: 'The AWS region'
+        type: string
+      do_deploy:
+        description: 'Flag for whether to deploy or not'
+        type: boolean
+      env_type:
+        description: 'The environment type, e.g. test, beta, prod'
+        type: string
+      github_env:
+        description: 'The GitHub environment'
+        type: string
+      ref:
+        description: 'The TAG ref'
+        type: string
+      sha:
+        description: 'SHA of the TAG commit'
+        type: string
+
+jobs:
+  bootstrap:
+    concurrency: bootstrap-${{ inputs.github_env }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      ecr_repo_uri: ${{ steps.query.outputs.ecr_repo_uri }}
+      solution_stack: ${{ steps.query-eb.outputs.solution_stack }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/cad-github-actions-role
+          aws-region: ${{ inputs.aws_region }}
+      - run: echo AWS_STACK_PREFIX="${{ inputs.app_name }}-${{ inputs.env_type }}-${{ inputs.account_type }}" | tee -a $GITHUB_ENV
+      - id: deploy
+        run: aws cloudformation deploy
+          --capabilities CAPABILITY_NAMED_IAM
+          --template-file ./aws/2.bootstrap.yaml
+          --stack-name ${{ env.AWS_STACK_PREFIX }}-bootstrap
+          --parameter-overrides file://aws/${{ inputs.aws_parameters }}.json
+          --no-fail-on-empty-changeset
+          --tags "email-contact=cad-aws@it.ox.ac.uk" "billing=canvas-bau" "application-name=${{ inputs.app_name }}" "environment=${{ inputs.env_type }}"
+      - if: failure() && steps.deploy.outcome != 'success'
+        # If we had a problem attempt to get a useful list of error messages.
+        # YAML seems the most readable in a text console (GitHub Actions log)
+        run: aws cloudformation describe-stack-events
+          --stack-name ${{ env.AWS_STACK_PREFIX }}-bootstrap
+          --output yaml
+      - name: Query Cloudformation exports for ECR repository
+        id: query
+        run: echo ecr_repo_uri=$(aws cloudformation list-exports --query "Exports[?Name=='${{ env.AWS_STACK_PREFIX }}-bootstrap-ecr-repo-uri'].Value" --output text) | tee -a $GITHUB_OUTPUT
+      - name: Query Elastic Beanstalk for latest solution stack
+        id: query-eb
+        run: echo solution_stack=$(aws elasticbeanstalk list-available-solution-stacks --query="(SolutionStacks[?starts_with(@, '64bit Amazon Linux 2023')]|[?ends_with(@, 'running ECS')])[0]" --output text) | tee -a $GITHUB_OUTPUT
+
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    needs: [ bootstrap ]
+    outputs:
+      message: ${{ steps.output-message.outputs.message }}
+    # This is needed for AWS assume role
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      COMMIT_SHA: ${{ inputs.sha }}
+      TAG_REF: ${{ inputs.ref }}
+      DOCKER_REPO: ${{ needs.bootstrap.outputs.ecr_repo_uri }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.COMMIT_SHA }}
+      - uses: actions/setup-java@v4
+        with:
+          java-version-file: '.java-version'
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Build with Maven
+        run: mvn -ntp -B package --file pom.xml
+      - name: Set docker tag
+        run: echo "DOCKER_TAG=github.${GITHUB_REF##*/}.${GITHUB_RUN_NUMBER}" | sed 's/#/-/g' | tee -a $GITHUB_ENV
+      - name: Set docker tag for git tag
+        if: ${{ startsWith(env.TAG_REF, 'refs/tags/') }}
+        # We don't want the run number in the tag.
+        run: echo "DOCKER_TAG=github.${TAG_REF##*/}" | sed 's/#/-/g' | tee -a $GITHUB_ENV
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/cad-github-actions-role  #sandbox account
+          aws-region: ${{ inputs.aws_region }}
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Push to docker repository (ECR)
+        id: push
+        # We set the commit ID on the command line rather than using the plugin.
+        run: mvn -ntp -B -Dimage=${DOCKER_REPO} -Djib.tag=${DOCKER_TAG} -Dgit.commit.id=${{ env.COMMIT_SHA }} jib:build
+      - name: Set message output
+        id: output-message
+        run: echo message="$(git log --format='%h - %s' -n 1 ${{ env.COMMIT_SHA }})" | tee -a $GITHUB_OUTPUT
+      - name: Replace the image in the files
+        env:
+          IMAGE: ${{ env.DOCKER_REPO }}:${{ env.DOCKER_TAG }}
+          APP_NAME: ${{ inputs.app_name }}
+          AWS_REGION: ${{ inputs.aws_region }}
+        run: envsubst < elasticbeanstalk/Dockerrun-template.aws.json > elasticbeanstalk/Dockerrun.aws.json
+      - name: Generate deployment package
+        run: cd elasticbeanstalk; zip -r ../../aws/build/docker.zip . -x '*.git*'
+      - name: Upload AWS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aws-backend
+          path: aws
+          retention-days: 1
+
+  deploy:
+    # Deploying a new stack is very slow, updates to an existing stack should be much faster
+    timeout-minutes: 50
+    runs-on: ubuntu-22.04
+    needs: [ build, bootstrap ]
+    concurrency: backend-${{ inputs.github_env }}
+    # This is needed for AWS assume role
+    permissions:
+      id-token: write
+      contents: read
+      deployments: write
+    env:
+      # We use toJSON here so that we escape quotes in the JSON string (hopefully)
+      APP_VERSION: ${{ toJSON(format('appVersionDesc={0}', needs.build.outputs.message)) }}
+      SOLUTION_STACK: ${{ toJSON(format('solutionStack={0}', needs.bootstrap.outputs.solution_stack)) }}
+    steps:
+      - name: Download AWS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: aws-backend
+      - name: Start deployment
+        uses: bobheadxi/deployments@v1.5.0
+        if: inputs.do_deploy
+        id: deployment
+        with:
+          step: start
+          env: backend-${{ inputs.github_env }}
+          desc: ${{ inputs.github_env }} deploy of ${{ inputs.ref }}
+          ref: ${{ inputs.ref }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        id: aws-credentials
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/cad-github-actions-role
+          aws-region: ${{ inputs.aws_region }}
+          output-credentials: true
+      - run: aws cloudformation package
+          --template-file ./stack.yaml
+          --s3-bucket oxcanvas-${{ inputs.account_type }}-${{ inputs.aws_region }}-${{ inputs.aws_account_id }}
+          --s3-prefix cloudformation-${{ inputs.env_type }}/${{ inputs.app_name }}
+          --output-template-file ./build/stack.yaml
+        # This generates a prefix for the stack based on the parameters
+      - run: echo AWS_STACK_PREFIX="${{ inputs.app_name }}-${{ inputs.env_type }}-${{ inputs.account_type }}" | tee -a $GITHUB_ENV
+        # This is dynamic so we append this to the parameters file
+        # As we've already escaped the values to JSON we should be ok.
+      - run: jq ". += [${APP_VERSION}, ${SOLUTION_STACK}]" < ${{ inputs.aws_parameters }}.json > parameters.json
+      - id: deploy
+        run: aws cloudformation deploy
+          --capabilities CAPABILITY_NAMED_IAM
+          --template-file ./build/stack.yaml
+          --stack-name ${{ env.AWS_STACK_PREFIX }}-backend
+          --parameter-overrides file://parameters.json
+          --no-fail-on-empty-changeset
+          --tags "email-contact=cad-aws@it.ox.ac.uk" "billing=canvas-bau" "application-name=${{ inputs.app_name }}" "environment=${{ inputs.env_type }}"
+      - if: failure() && steps.deploy.outcome != 'success'
+        # If we had a problem attempt to get a useful list of error messages.
+        # YAML seems the most readable in a text console (GitHub Actions log)
+        run: aws cloudformation describe-stack-events
+          --stack-name ${{ env.AWS_STACK_PREFIX }}-backend
+          --output yaml
+      - run: echo VERSION_REF=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.app_name }}-${{ inputs.env_type }}-${{ inputs.account_type }}-backend-version'].Value" --output text) | tee -a $GITHUB_ENV
+      - run: echo RUNNING_VERSION_REF=$(aws elasticbeanstalk describe-environments | jq -r '.Environments | map(select(.EnvironmentName == "${{ inputs.app_name }}-${{ inputs.env_type }}")) | .[] | .VersionLabel') | tee -a $GITHUB_ENV
+      - if: env.VERSION_REF != env.RUNNING_VERSION_REF
+        run: echo "current version does not match deployed version"; exit 1
+      - name: Update deployment status
+        uses: bobheadxi/deployments@v1.5.0
+        if: always() && inputs.do_deploy
+        with:
+          step: finish
+          env: backend-${{ inputs.github_env }}
+          status: ${{ job.status }}
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
