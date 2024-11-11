@@ -1,0 +1,27 @@
+
+name: PR validation of CloudFormation
+on:
+  pull_request:
+    branches: [ 'new-account' ]
+
+env:
+  AWS_REGION: 'eu-west-1'
+  AWS_ACCOUNT_ID: '730335587339'  # Development AWS Account (cad-non-production)
+  
+jobs:
+  validate:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    # This is needed for AWS assume role
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/cad-github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+      # Check that the templates are at least valid.
+      - run: aws cloudformation validate-template --template-body file://aws/stack.yaml
+      - run: aws cloudformation validate-template --template-body file://aws/2.bootstrap.yaml
