@@ -54,8 +54,5 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{inputs.account-id }}:role/${{ env.AWS_GITHUB_ROLE }}
           aws-region: ${{ inputs.region}}
-        # There's no sensible way to have cloudformation empty a bucket
-      - run: echo S3_BUCKET=$(aws cloudformation list-exports --query "Exports[?Name=='${{inputs.stack-prefix}}-bootstrap-dist-bucket-name'].Value" --output text) | tee -a $GITHUB_ENV
-      - run: aws s3 rm s3://${{env.S3_BUCKET}} --recursive
       - run: aws cloudformation delete-stack --stack-name ${{inputs.stack-prefix}}-bootstrap
       - run: aws cloudformation wait stack-delete-complete --stack-name ${{inputs.stack-prefix}}-bootstrap
