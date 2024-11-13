@@ -25,18 +25,6 @@ Parameters:
       - "beta"
       - "test"
       - "staging"
-  drRegion:
-    Type: String
-    Default: "eu-central-1"
-  #should we setup bounce handling for this domain
-  handleBounces:
-    Description: "The env type: prod, beta, test, etc"
-    Type: String
-    Default: "No"
-    AllowedValues:
-      - "Yes"
-      - "No"
-
 
 Conditions:
   isProdEnv: {"Fn::Equals": [!Ref envType, "prod"]}
