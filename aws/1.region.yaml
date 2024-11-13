@@ -48,14 +48,6 @@ Conditions:
 
 Resources:
 
-
-  # Configure more for bounce-handling whenw we have decided
-  sesRuleSet:
-    Condition: setupBounce
-    Type: AWS::SES::ReceiptRuleSet
-    Properties:
-      RuleSetName: !Sub  "${appName}-${accountType}-ruleset"
-
   ## Configure how bounce handling will be managed
   ##ToDo: create bounce hamdling resources for apps that need it
 

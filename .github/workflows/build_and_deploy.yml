@@ -100,10 +100,6 @@ jobs:
         run: mvn -ntp -B package --file pom.xml
       - name: Set docker tag
         run: echo "DOCKER_TAG=github.${GITHUB_REF##*/}.${GITHUB_RUN_NUMBER}" | sed 's/#/-/g' | tee -a $GITHUB_ENV
-      - name: Set docker tag for git tag
-        if: ${{ startsWith(env.TAG_REF, 'refs/tags/') }}
-        # We don't want the run number in the tag.
-        run: echo "DOCKER_TAG=github.${TAG_REF##*/}" | sed 's/#/-/g' | tee -a $GITHUB_ENV
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:

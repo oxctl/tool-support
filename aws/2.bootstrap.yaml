@@ -25,10 +25,6 @@ Parameters:
       - "beta"
       - "test"
       - "staging"
-  namePrefix:
-    Description: "Naming prefix to ensure more likely uniqueness for objects that demand global uniqueness - 'ox'? 'oxuni'? 'ouit'?"
-    Type: String
-    Default: oxcanvas
 
 Resources:
 
@@ -70,22 +66,6 @@ Resources:
       TTL: 60
       Type: NS
 
-  # The bucket that holds the archive versions of the frontend.
-  appBucketDist:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub "${namePrefix}-${appName}-${envType}-${AWS::Region}-${AWS::AccountId}-dist"
-      # Stop this bucket from being public
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: 'AES256'
-            BucketKeyEnabled: true
   #Create a per app ECR private repo
   #ToDo: Regional context
   ecrRepo:
@@ -160,22 +140,6 @@ Outputs:
               !Sub "${orgName}-${accountType}-route53-domainname"
     Export:
       Name: !Sub "${appName}-${accountType}-route53-domainname"
-  appFrontendDomain:
-    Description: "DNS name for serving the frontend (static tool content)"
-    Value:
-      Fn::Sub:
-        - "static-${app}.${dom}"
-        - app: !Ref appName
-          dom:
-            Fn::ImportValue:
-              !Sub "${orgName}-${accountType}-route53-domainname"
-    Export:
-      Name: !Sub "${appName}-${accountType}-frontend-domain"
-  distBucketName:
-    Description: "The name of the frontend distribution bucket"
-    Value: !Ref appBucketDist
-    Export:
-      Name: !Sub "${AWS::StackName}-dist-bucket-name"
   ecrRepoARN:
     Description: "TheARN of the ECR Repo"
     Value: !GetAtt ecrRepo.RepositoryUri

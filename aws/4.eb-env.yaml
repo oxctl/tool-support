@@ -124,52 +124,7 @@ Resources:
     Type: "AWS::Logs::LogGroup"
     Properties:
       LogGroupName: !Sub '/ecs/${appName}-app'
-      RetentionInDays: 90    
-
-  # This is attached to the EB instance role when we're not in a production account to block the sending of
-  # emails through SES unless it is whitelisted.
-  # This allows us to have the policy for prod/dev be the same, but then apply extra restrictions to the dev
-  # deployments
-  sesNonProdBlock:
-    Type: "AWS::IAM::RolePolicy"
-    Condition: isNonProd
-    Properties:
-      # This isn't perfect as we could end up with cross region clashes. Adding the stackname prefix didn't work
-      PolicyName: 'ses-nonprod-block'
-      RoleName: !Ref ebInstanceRole
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Sid: BlockNonAllowedAddresses
-            Effect: Deny
-            Action:
-              - ses:SendRawEmail
-              - ses:SendEmail
-              - ses:SendBounce
-              - ses:SendTemplatedEmail
-              - ses:SendBounce
-              - ses:SendBulkTemplatedEmail
-            Condition:
-              ForAllValues:StringNotLike:
-                ses:Recipients:
-                  - matthew.buckett@it.ox.ac.uk
-                  - adam.marshall@it.ox.ac.uk
-                  - nick.wilson@it.ox.ac.uk
-                  - christopher.johnson@it.ox.ac.uk
-                  - admn3366*@canvas-alias.it.ox.ac.uk
-                  - ouit0196*@canvas-alias.it.ox.ac.uk
-                  - buckett*@canvas-alias.it.ox.ac.uk
-                  - adamm*@canvas-alias.it.ox.ac.uk
-                  - adamm+*@canvas-alias.it.ox.ac.uk
-            Resource:
-              - Fn::Sub:
-                  - "arn:${par}:ses:*:${acc}:identity/*${dom}"
-                  - par: !Ref AWS::Partition
-                    acc: !Ref AWS::AccountId
-                    dom:
-                      Fn::ImportValue:
-                        !Sub "${orgName}-${accountType}-route53-domainname"
-
+      RetentionInDays: 90
 
   appPolicy:
     Type: "AWS::IAM::ManagedPolicy"
@@ -177,23 +132,6 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Sid: SandboxRecipientAddresses
-            Effect: Allow
-            Action:
-              - ses:SendRawEmail
-              - ses:SendEmail
-              - ses:SendBounce
-              - ses:SendTemplatedEmail
-              - ses:SendBounce
-              - ses:SendBulkTemplatedEmail
-            Resource:
-              - Fn::Sub:
-                  - "arn:${par}:ses:*:${acc}:identity/*${dom}"
-                  - par: !Ref AWS::Partition
-                    acc: !Ref AWS::AccountId
-                    dom:
-                      Fn::ImportValue:
-                        !Sub "${orgName}-${accountType}-route53-domainname"
           - Sid: AllowReqdSecretsManagerAccess
             Effect: Allow
             Action:
