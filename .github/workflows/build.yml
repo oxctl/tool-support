@@ -1,138 +1,40 @@
 # This workflow will build a Java project with Maven
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-name: Java CI with Maven
-
-env:
-  AWS_REGION: "eu-west-1"
-  # If AWS account/project changes this should too
-  DOCKER_REPO: 211318693510.dkr.ecr.eu-west-1.amazonaws.com/ctl/canvas-proxy
-  EB_APPLICATION: tool-support
-  EB_ENVIRONMENT: tool-support-dev-env
+name: Backend
+run-name: "Deploy ${{ github.ref }}"
 
 on:
   push:
-    branches: [ master ]
-    tags: [ '*' ]
-  workflow_call:
-    inputs:
-      sha:
-        description: 'SHA of the TAG commit'
-        type: string
-      ref:
-        description: 'The TAG ref'
-        type: string
+    branches: [ 'new-account', 'release', 'dr-*' ]
 
 jobs:
-  build:
-    runs-on: ubuntu-20.04
-    timeout-minutes: 10
+  aws-params:
+    # This attempts to parse the AWS parameters file and load it into JSON that's usable in GitHib Actions.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    # This is needed for AWS assume role
     outputs:
-      tag: ${{ steps.output-tag.outputs.tag }}
-      message: ${{ steps.output-message.outputs.message }}
-    env:
-      # If the SHA and the REF come from inputs, then use them. Otherwise stick with the environment GitHub variables.
-      COMMIT_SHA: ${{ inputs.sha != '' && inputs.sha || github.sha }}
-      TAG_REF: ${{ inputs.ref != '' && inputs.ref || github.ref }}
+      json: ${{ steps.parse.outputs.json }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.COMMIT_SHA }}
-      - uses: actions/setup-java@v4
-        with:
-          java-version-file: .java-version
-          distribution: temurin
-          cache: maven
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
-      - name: Set docker tag
-        # We need a prefix on the tag so that we don't overwrite the shippable tags
-        # This only works on branches.
-        run: echo "DOCKER_TAG=github.${GITHUB_REF##*/}.${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
-      - name: Set docker tag for git tag
-        if: ${{ startsWith(env.TAG_REF, 'refs/tags/') }}
-        # We don't want the run number in the tag.
-        run: echo "DOCKER_TAG=github.${TAG_REF##*/}" >> $GITHUB_ENV
-      - name: Login to Amazon ECR
-        id: login-ecr
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          mask-password: 'true'
-      - name: Push to docker repository (ECR)
-        id: push
-        # We set the commit ID on the command line rather than using the plugin.
-        run: mvn -B -Dimage=${DOCKER_REPO} -Djib.tag=${DOCKER_TAG} -Dgit.commit.id=${{ env.COMMIT_SHA }} jib:build
-      - name: Set image tag output
-        id: output-tag
-        run: echo tag="${DOCKER_TAG}" >> $GITHUB_OUTPUT
-      - name: Set message output
-        id: output-message
-        run: echo message="$(git log --format=%s -n 1 ${{ env.COMMIT_SHA }})" >> $GITHUB_OUTPUT
-      - name: Upload Elastic Beanstalk Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: elasticbeanstalk
-          path: elasticbeanstalk
-          include-hidden-files: true
-          retention-days: 1
-      - name: Authenticate to GitHub Packages (containers)
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-      - name: Push to GitHub Packages
-        run:  |
-          mvn -B \
-          -Djib.tag=${DOCKER_TAG} -Dgit.commit.id=${{ env.COMMIT_SHA }} -Dimage=ghcr.io/oxctl/tool-support \
-          jib:build
+      - id: parse
+        run: |
+          PARAMS=$(jq 'map(split("=")|  { (.[0]|tostring): .[1]} ) | add'  < ./aws/${{ (startsWith(github.ref_name, 'dr-')) && 'dr' || github.ref_name }}.json)
+          echo json=${PARAMS} | tee -a $GITHUB_OUTPUT
 
-  deploy-dev:
-    timeout-minutes: 10
-    concurrency: dev
-    runs-on: ubuntu-20.04
-    needs: build
-    env:
-      TAG: ${{ needs.build.outputs.tag }}
-      MESSAGE: ${{ needs.build.outputs.message }}
-      PORT: 8080
-    steps:
-      - name: Download a Elastic Beanstalk artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: elasticbeanstalk
-      - name: Start deployment
-        uses: bobheadxi/deployments@v1.4.0
-        id: deployment
-        with:
-          step: start
-          env: dev
-      - name: Replace the image in the files
-        env:
-          IMAGE: ${{ env.DOCKER_REPO }}:${{ needs.build.outputs.tag }}
-        run: envsubst < Dockerrun-template.aws.json > Dockerrun.aws.json
-      - name: Generate deployment package
-        run: zip -r deploy.zip . -x '*.git*'
-      - name: Deploy to EB
-        uses: einaregilsson/beanstalk-deploy@v21
-        timeout-minutes: 5
-        with:
-          aws_access_key: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
-          application_name: ${{ env.EB_APPLICATION }}
-          environment_name: ${{ env.EB_ENVIRONMENT }}
-          version_label: ${{ env.TAG }}
-          version_description: ${{ env.MESSAGE }}
-          region: ${{ env.AWS_REGION }}
-          deployment_package: deploy.zip
-      - name: Update deployment status
-        uses: bobheadxi/deployments@v1.4.0
-        if: always()
-        with:
-          step: finish
-          env: ${{ steps.deployment.outputs.env }}
-          status: ${{ job.status }}
-          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
-          auto_inactive: true
-
-
-
+  call-build-and-deploy:
+    uses: ./.github/workflows/build_and_deploy.yml
+    needs: [ aws-params ]
+    with:
+      account_type: ${{ fromJSON(needs.aws-params.outputs.json).accountType }}
+      app_name: ${{ fromJSON(needs.aws-params.outputs.json).appName }}
+      aws_account_id: ${{ fromJSON(needs.aws-params.outputs.json).awsAccountId }}
+      aws_parameters: ${{ (startsWith(github.ref_name, 'dr-')) && 'dr' || github.ref_name }}
+      aws_region: ${{ fromJSON(needs.aws-params.outputs.json).awsRegion }}
+      do_deploy: ${{ (fromJSON(needs.aws-params.outputs.json).envType == 'prod') && true || github.ref_name == github.event.repository.default_branch }}
+      env_type: ${{ fromJSON(needs.aws-params.outputs.json).envType }}
+      github_env: ${{ fromJSON(needs.aws-params.outputs.json).envType }}
+      ref: ${{ github.ref }}
+      sha: ${{ github.sha }}
+    secrets: inherit

@@ -1,0 +1,60 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Create Elastic Beanstalk environment (for beta / prod envtypes).  Assumes the EB application (eb-app.yaml template) has already been created"
+Parameters:
+  appName:
+    Type: String
+    # This can't contain anything than letters and characters, and a dash (-) (as it's used in DB name)
+    AllowedPattern: "^[a-z][a-z0-9-]*$"
+    MaxLength: 20
+  appVersionDesc:
+    Type: String
+    Description: The label for the elastic beanstalk version.
+  envType:
+    Type: String
+  accountType:
+    Type: String
+  snapshotToUse:
+    Type: String
+    Default: ""
+  solutionStack:
+    Type: String
+Resources:
+  AppRegion:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./1.region.yaml
+      Parameters:
+        appName: !Ref appName
+        envType: !Ref envType
+        accountType: !Ref accountType
+  AppRDS:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./3.rds.yaml
+      Parameters:
+        appName: !Ref appName
+        envType: !Ref envType
+        accountType: !Ref accountType
+        snapshotToUse: !Ref snapshotToUse
+  AppEB:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: [AppRegion, AppRDS]
+    Properties:
+      TemplateURL: ./4.eb-env.yaml
+      Parameters:
+        appName: !Ref appName
+        appVersionDesc: !Ref appVersionDesc
+        accountType: !Ref accountType
+        envType: !Ref envType
+        solutionStack: !Ref solutionStack
+Outputs:
+  envRef:
+    Value: !GetAtt AppEB.Outputs.envRef
+    Export:
+      Name: !Sub "${AWS::StackName}-environment"
+  versionRef:
+    # We query this to check that the correct version is deployed to the environment
+    Value: !GetAtt AppEB.Outputs.versionRef
+    Export:
+      Name: !Sub "${AWS::StackName}-version"
