@@ -3,5 +3,6 @@
   "envType=beta",
   "accountType=nonprod",
   "awsRegion=eu-west-1",
-  "awsAccountId=730335587339"
+  "awsAccountId=730335587339",
+  "cfSSLCertARN=arn:aws:acm:us-east-1:730335587339:certificate/dd8737e5-c8e1-4194-9b47-5fa17c856fb3"
 ]

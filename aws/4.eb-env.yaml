@@ -67,6 +67,9 @@ Parameters:
     Description: "String prefix for locating the config in secrets manager"
     Type: String
     Default: "aws-secretsmanager:"
+  cfSSLCertARN:
+    Description: "The wildcard ssl cert arn for cloudfront for this account (eg. for static-<appName>.apps-nonprod.canvas). Check in the cloudformation exports in us-east-1 region"
+    Type: String
   ##ControlTower exports important stuff
   configSecretsPath:
     Description: "The path for the dummy scret to be created.  This allows us to change the path easily"
@@ -646,7 +649,7 @@ Resources:
         PriceClass: "PriceClass_100"
         Enabled: true
         ViewerCertificate:
-          AcmCertificateArn: !Ref "AWS::NoValue"
+          AcmCertificateArn: !Ref cfSSLCertARN
           MinimumProtocolVersion: "TLSv1.2_2021"
           SslSupportMethod: "sni-only"
         Restrictions:
