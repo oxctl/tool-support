@@ -121,7 +121,7 @@ jobs:
           AWS_REGION: ${{ inputs.aws_region }}
         run: envsubst < elasticbeanstalk/Dockerrun-template.aws.json > elasticbeanstalk/Dockerrun.aws.json
       - name: Generate deployment package
-        run: cd elasticbeanstalk; zip -r ../../aws/build/docker.zip . -x '*.git*'
+        run: cd elasticbeanstalk; zip -r ../aws/build/docker.zip . -x '*.git*'
       - name: Upload AWS artifact
         uses: actions/upload-artifact@v4
         with:
