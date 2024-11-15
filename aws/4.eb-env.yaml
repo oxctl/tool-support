@@ -645,11 +645,10 @@ Resources:
                     !Sub "${orgName}-${accountType}-route53-domainname"
         PriceClass: "PriceClass_100"
         Enabled: true
-        ViewerCertificate: {
+        ViewerCertificate:
           AcmCertificateArn: !Ref "AWS::NoValue"
-            MinimumProtocolVersion: "TLSv1.2_2021"
-            SslSupportMethod: "sni-only"
-        }
+          MinimumProtocolVersion: "TLSv1.2_2021"
+          SslSupportMethod: "sni-only"
         Restrictions:
           GeoRestriction:
             RestrictionType: "none"
