@@ -280,10 +280,6 @@ Resources:
           OptionName: "SPRING_MAIL_PROPERTIES_MAIL_SMTP_FROM"
           Value: !FindInMap [ EnvironmentMappings, !Ref envType, mailFrom ]
         - Namespace: "aws:elasticbeanstalk:application:environment"
-          # The URL to the frontend files.
-          OptionName: "TOOL_SUPPORT_UI_ORIGIN"
-          Value: !Join ["", ["https://", Fn::ImportValue: !Sub "${appName}-${accountType}-frontend-domain"]]
-        - Namespace: "aws:elasticbeanstalk:application:environment"
           # The iss value that is required in JWTs. This is different between Canvas prod/beta/test instances.
           OptionName: "JWT_ISSUER"
           Value: !FindInMap [ EnvironmentMappings, !Ref envType, jwtIssuer ]
