@@ -29,7 +29,6 @@ Parameters:
 Conditions:
   isProdEnv: {"Fn::Equals": [!Ref envType, "prod"]}
   isProdAccount: {"Fn::Equals": [!Ref accountType, "prod"]}
-  setupBounce: {"Fn::Equals": [!Ref handleBounces, "Yes"]}
   #isProdRegion: {"Fn::Equals" : [!Ref "AWS::Region", 'eu-west-1']}
   #isDRRegion: {"Fn::Equals" : [!Ref "AWS::Region", 'eu-central-1']}
 
