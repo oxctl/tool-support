@@ -125,6 +125,12 @@ aws cloudformation wait stack-delete-complete --stack-name cad-apps-tool-support
 * Creates a route53 alias record pointing to the CloudFront distribution
   * It's able to do this, by importing the route53 ZoneId for the app subdomain exported by an earlier template
 
+### CloudFormation Parameters
+
+* `cfSSLCertARN` - the ARN of the SSL certificate for cloudfront
+  * issued in one of the account gloal templates
+  * copy that from the exports of the stack built with that template (in Region `us-east-1`)  - `Physical ID` column
+  
 ### CloudFormation Outputs / Exports
 
   * `cfOID` .. the Origin Access Id for the cloudfront distribution .. may be useful later
