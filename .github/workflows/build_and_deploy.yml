@@ -179,7 +179,7 @@ jobs:
         run: aws cloudformation deploy
           --capabilities CAPABILITY_NAMED_IAM
           --template-file ./build/stack.yaml
-          --stack-name ${{ env.AWS_STACK_PREFIX }}-backend
+          --stack-name ${{ env.AWS_STACK_PREFIX }}
           --parameter-overrides file://parameters.json
           --no-fail-on-empty-changeset
           --tags "email-contact=cad-aws@it.ox.ac.uk" "billing=canvas-bau" "application-name=${{ inputs.app_name }}" "environment=${{ inputs.env_type }}"
@@ -187,7 +187,7 @@ jobs:
         # If we had a problem attempt to get a useful list of error messages.
         # YAML seems the most readable in a text console (GitHub Actions log)
         run: aws cloudformation describe-stack-events
-          --stack-name ${{ env.AWS_STACK_PREFIX }}-backend
+          --stack-name ${{ env.AWS_STACK_PREFIX }}
           --output yaml
       - run: echo VERSION_REF=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.app_name }}-${{ inputs.env_type }}-${{ inputs.account_type }}-backend-version'].Value" --output text) | tee -a $GITHUB_ENV
       - run: echo RUNNING_VERSION_REF=$(aws elasticbeanstalk describe-environments | jq -r '.Environments | map(select(.EnvironmentName == "${{ inputs.app_name }}-${{ inputs.env_type }}")) | .[] | .VersionLabel') | tee -a $GITHUB_ENV
