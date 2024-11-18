@@ -1,18 +1,26 @@
 {
-  "AWSEBDockerrunVersion": "1",
-  "Image": {
-    "Name": "${IMAGE}",
-    "Update": "true"
-  },
-  "Ports": [
+  "AWSEBDockerrunVersion": "2",
+  "containerDefinitions": [
     {
-      "ContainerPort": "${PORT}"
+      "name": "application",
+      "image": "${IMAGE}",
+      "essential": true,
+      "memory": 768,
+      "memoryReservation": 512,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 8080
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/${APP_NAME}-app",
+          "awslogs-region": "${AWS_REGION}",
+          "awslogs-stream-prefix": "${APP_NAME}"
+        }
+      }
     }
-  ],
-  "Volumes": [
-    {
-      "HostDirectory": "/opt/application/config",
-      "ContainerDirectory": "/config"
-    }
-    ]
+  ]
 }
