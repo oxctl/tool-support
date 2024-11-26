@@ -41,17 +41,22 @@ public class OAuth2ErrorController {
       throw new OAuth2AccessDeniedException(
           "You must allow access to this tool to use it.", redirectUrl);
     } else if ("invalid_token_response".equals(errorCode)) {
-      throw new AuthenticationServiceException(
+      throw new OAuth2FlowException(
           "Developer keys are mis-configured, check configuration.");
     } else if ("unauthorized_client".equals(errorCode)) {
-      throw new AuthenticationServiceException("This tool isn't enabled for your account.");
+      throw new OAuth2FlowException("This tool isn't enabled for your account.");
+    } else if (errorCode == null) {
+      // We have no errorCode at all and this is probably because the filter didn't run. This can happen if the
+      // user ends up re-visiting the URL returned from granting the access.
+      // It may also be able to happen through concurrency issues or timeout issues.
+      throw new OAuth2FlowException("Unable to retrieve access token, please try again.");
     } else {
       // There is no validation that these parameters are true so we shouldn't output to the end
       // user.
       // They are logged here to help with debugging.
-      log.info("Unknown OAuth2 error: {} : {}", errorCode, errorDescription);
+      log.error("Unknown OAuth2 error: {} : {}, this is not currently handled", errorCode, errorDescription);
       // We end up here when OAuth is misconfigured.
-      throw new RuntimeException("Unknown error("+ errorCode+ "), this should not happen.");
-    }
+      throw new OAuth2FlowException("Unknown error("+ errorCode+ "), this should not happen.");
+    } 
   }
 }
