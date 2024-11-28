@@ -10,16 +10,19 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.FileUrlResource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
+import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerException;
 import uk.ac.ox.ctl.lti13.KeyPairService;
 import uk.ac.ox.ctl.lti13.SingleKeyPairService;
 import uk.ac.ox.ctl.lti13.TokenRetriever;
 import uk.ac.ox.ctl.lti13.nrps.NamesRoleService;
 import uk.ac.ox.ctl.lti13.utils.KeyStoreKeyFactory;
 
-import java.net.MalformedURLException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -31,11 +34,32 @@ public class Lti13Configuration {
 
     private final Logger log = LoggerFactory.getLogger(Lti13Configuration.class);
 
-    /**
-     * The location of the JWK key file.
+    /***
+     * The ID of the secret whose value contains the binary-stored JKS file.
      */
-    @Value("${lti.jwk.location:config/jwk.jks}")
-    private String location;
+    @Value("${jks.secret.id:some-secret-id}")
+    private static String jwtSecretId;
+
+    /**
+     * The binary-stored JWK key file.
+     */
+    @Value("#{T (uk.ac.ox.ctl.ltiauth.Lti13Configuration).getJksFile()}")
+    private byte[] jksFile;
+
+    public static byte[] getJksFile() {
+        try {
+            if (jwtSecretId==null){
+                return null;
+            }
+            SecretsManagerClient secretsClient = SecretsManagerClient.builder()
+                    .region(Region.EU_WEST_1).build();
+            GetSecretValueRequest valueRequest = GetSecretValueRequest.builder()
+                    .secretId(jwtSecretId).build();
+            return secretsClient.getSecretValue(valueRequest).secretBinary().asByteArray();
+        } catch (SecretsManagerException e) {
+            throw new RuntimeException("Failed to retrieve jks file from Secrets Manager", e);
+        }
+    }
 
     /**
      * The password for the JWK key file.
@@ -89,17 +113,15 @@ public class Lti13Configuration {
     public KeyPair keyPair() {
         Resource resource = null;
         try {
-            resource = new FileUrlResource(location);
-            if (resource.exists()) {
+            if (jksFile!=null) {
+                resource = new ByteArrayResource(jksFile);
                 KeyStoreKeyFactory ksFactory = new KeyStoreKeyFactory(resource, storePassword.toCharArray());
-                log.info("Loaded key from "+ location);
+                log.info("Loaded key from "+ jksFile);
                 return ksFactory.getKeyPair("jwt");
             } else {
                 log.info("Generated a keypair, this shouldn't be used in production.");
                 return KeyPairGenerator.getInstance("RSA").generateKeyPair();
             }
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Failed to load jwt");
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Failed to generate keypair");
         }

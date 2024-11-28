@@ -275,6 +275,10 @@ Resources:
           OptionName: "SPRING_CONFIG_IMPORT"
           Value: !Sub "${springConfigPrefix}${appName}/${envType}/${configSecretsPath}"
         - Namespace: "aws:elasticbeanstalk:application:environment"
+          # The Secret Manager name that contains the binary-stored jks file
+          OptionName: "JKS_SECRET_ID"
+          Value: !Sub "${appName}/${envType}/${configSecretsPath}-jks"
+        - Namespace: "aws:elasticbeanstalk:application:environment"
           # The active profiles the app should be using. Normally this will just be AWS
           OptionName: "SPRING_PROFILES_ACTIVE"
           Value: !FindInMap [ EnvironmentMappings, !Ref envType, springProfile ]
@@ -690,6 +694,13 @@ Resources:
       Description: !Sub "${appName}-${envType} - Config Secret"
       KmsKeyId: "alias/aws/secretsmanager"
 
+  envJksConfigSecret:
+    Type: "AWS::SecretsManager::Secret"
+    Properties:
+      #if you change this next below, also change SPRING_CONFIG_IMPORT in EB resource to match
+      Name: !Sub "${appName}/${envType}/${configSecretsPath}-jks"
+      Description: !Sub "${appName}-${envType} - Binary-stored jks file"
+      KmsKeyId: "alias/aws/secretsmanager"
 
   ebTopic:
     Type: "AWS::SNS::Topic"
