@@ -15,6 +15,7 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestClientException;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import uk.ac.ox.ctl.lti13.lti.Claims;
 import uk.ac.ox.ctl.lti13.lti.Role;
 import uk.ac.ox.ctl.lti13.nrps.LtiScopes;
@@ -41,6 +42,9 @@ class NRPSControllerTest {
 
     @MockBean
     private NRPSService nrpsService;
+
+    @MockBean
+    private SecretsManagerClient secretsManagerClient;
     
     @MockBean
     private AllowedRolesService allowedRolesService;

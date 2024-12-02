@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import uk.ac.ox.ctl.ltiauth.Lti13Configuration;
 import uk.ac.ox.ctl.ltiauth.TestClientRegistrationConfig;
 import uk.ac.ox.ctl.ltiauth.LtiWebSecurity;
@@ -29,6 +30,9 @@ class JWKSControllerTest {
     @MockBean
     @Qualifier("lti")
     private JwtDecoder jwtDecoder;
+
+    @MockBean
+    private SecretsManagerClient secretsManagerClient;
     
     @Autowired
     private MockMvc mvc;

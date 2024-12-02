@@ -227,6 +227,10 @@ Client configuration is held in the DB and details of how to update this will be
 
 ## Notes
 
+As well as setting the main secret, the JWKs secret needs to be set.  An example command to do this is this:
+
+aws secretsmanager create-secret --name tool-support/beta/eb-env/jks-config --secret-binary fileb://tools-dev.canvas.ox.ac.uk.jks
+
 ### Proxy Error Handling
 
 If the user removes their token then we get a 401 back from Canvas with a body of:

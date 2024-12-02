@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.LTIAuthorizationGrantType;
 import uk.ac.ox.ctl.model.Tool;
 import uk.ac.ox.ctl.model.ToolRegistrationLti;
@@ -21,6 +23,9 @@ class ToolClientRegistrationServiceTest {
     
     @Autowired
     private TestEntityManager entityManager;
+
+    @MockBean
+    private SecretsManagerClient secretsManagerClient;
     
     @Autowired
     private ToolRepository toolRepository;

@@ -276,8 +276,8 @@ Resources:
           Value: !Sub "${springConfigPrefix}${appName}/${envType}/${configSecretsPath}"
         - Namespace: "aws:elasticbeanstalk:application:environment"
           # The Secret Manager name that contains the binary-stored jks file
-          OptionName: "JKS_SECRET_ID"
-          Value: !Sub "${appName}/${envType}/${configSecretsPath}-jks"
+          OptionName: "JKS_AWS_SECRET_ID"
+          Value: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${appName}/${envType}/${configSecretsPath}-jks"
         - Namespace: "aws:elasticbeanstalk:application:environment"
           # The active profiles the app should be using. Normally this will just be AWS
           OptionName: "SPRING_PROFILES_ACTIVE"
