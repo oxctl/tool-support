@@ -229,7 +229,7 @@ Client configuration is held in the DB and details of how to update this will be
 
 As well as setting the main secret, the JWKs secret needs to be set.  An example command to do this is this:
 
-aws secretsmanager create-secret --name tool-support/beta/eb-env/jks-config --secret-binary fileb://tools-dev.canvas.ox.ac.uk.jks
+aws secretsmanager update-secret --secret-id tool-support/beta/eb-env/config-jks --secret-binary fileb://tools-dev.canvas.ox.ac.uk.jks
 
 ### Proxy Error Handling
 
