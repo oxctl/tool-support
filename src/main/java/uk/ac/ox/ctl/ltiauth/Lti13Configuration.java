@@ -16,7 +16,9 @@ import org.springframework.core.io.FileUrlResource;
 import org.springframework.core.io.Resource;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+import software.amazon.awssdk.services.secretsmanager.model.Filter;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
+import software.amazon.awssdk.services.secretsmanager.model.ListSecretsRequest;
 import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerException;
 import uk.ac.ox.ctl.lti13.KeyPairService;
 import uk.ac.ox.ctl.lti13.SingleKeyPairService;
@@ -103,8 +105,10 @@ public class Lti13Configuration {
     public KeyPair keyPair() {
         Resource resource = null;
         try {
-            GetSecretValueRequest valueRequest = GetSecretValueRequest.builder().secretId(jwtAwsSecretId).build();
-            if (secretsManagerClient.getSecretValue(valueRequest)!=null) {
+            ListSecretsRequest listRequest = ListSecretsRequest.builder()
+                    .filters(Filter.builder().key("name").values(jwtAwsSecretId).build()).build();
+            if (secretsManagerClient.listSecrets(listRequest)!=null && !secretsManagerClient.listSecrets(listRequest).secretList().isEmpty()) {
+                GetSecretValueRequest valueRequest = GetSecretValueRequest.builder().secretId(jwtAwsSecretId).build();
                 byte[] jksFile = secretsManagerClient.getSecretValue(valueRequest).secretBinary().asByteArray();
                 resource = new ByteArrayResource(jksFile);
                 KeyStoreKeyFactory ksFactory = new KeyStoreKeyFactory(resource, storePassword.toCharArray());
