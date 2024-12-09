@@ -11,22 +11,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileUrlResource;
-import org.springframework.core.io.Resource;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
-import software.amazon.awssdk.services.secretsmanager.model.Filter;
-import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
-import software.amazon.awssdk.services.secretsmanager.model.ListSecretsRequest;
-import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerException;
 import uk.ac.ox.ctl.lti13.KeyPairService;
 import uk.ac.ox.ctl.lti13.SingleKeyPairService;
 import uk.ac.ox.ctl.lti13.TokenRetriever;
 import uk.ac.ox.ctl.lti13.nrps.NamesRoleService;
-import uk.ac.ox.ctl.lti13.utils.KeyStoreKeyFactory;
 
-import java.net.MalformedURLException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -39,7 +29,7 @@ public class Lti13Configuration {
     private final Logger log = LoggerFactory.getLogger(Lti13Configuration.class);
 
     @Autowired
-    private SecretsManagerClient secretsManagerClient;
+    private KeyPairGenerationService keyPairGenerationService;
 
     /***
      * The ID of the secret whose value contains the binary-stored JKS file.
@@ -103,34 +93,16 @@ public class Lti13Configuration {
 
     @Bean
     public KeyPair keyPair() {
-        Resource resource = null;
-        try {
-            ListSecretsRequest listRequest = ListSecretsRequest.builder()
-                    .filters(Filter.builder().key("name").values(jwtAwsSecretId).build()).build();
-            if (secretsManagerClient.listSecrets(listRequest)!=null && !secretsManagerClient.listSecrets(listRequest).secretList().isEmpty()) {
-                GetSecretValueRequest valueRequest = GetSecretValueRequest.builder().secretId(jwtAwsSecretId).build();
-                byte[] jksFile = secretsManagerClient.getSecretValue(valueRequest).secretBinary().asByteArray();
-                resource = new ByteArrayResource(jksFile);
-                KeyStoreKeyFactory ksFactory = new KeyStoreKeyFactory(resource, storePassword.toCharArray());
-                log.info("Loaded key from " + jksFile);
-                return ksFactory.getKeyPair("jwt");
-            } else {
-                resource = new FileUrlResource(location);
-                if (resource.exists()) {
-                    KeyStoreKeyFactory ksFactory = new KeyStoreKeyFactory(resource, storePassword.toCharArray());
-                    log.info("Loaded key from "+ location);
-                    return ksFactory.getKeyPair("jwt");
-                } else {
-                    log.info("Generated a keypair, this shouldn't be used in production.");
-                    return KeyPairGenerator.getInstance("RSA").generateKeyPair();
-                }
+        if (keyPairGenerationService.generateKeyPair(jwtAwsSecretId, storePassword, location)!=null){
+            return keyPairGenerationService.generateKeyPair(jwtAwsSecretId, storePassword, location);
+        }
+        else {
+            try {
+                log.info("Generated a keypair, this shouldn't be used in production.");
+                return KeyPairGenerator.getInstance("RSA").generateKeyPair();
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException("Failed to generate keypair");
             }
-        } catch (SecretsManagerException e) {
-            throw new RuntimeException("Failed to retrieve jks file from Secrets Manager using jwk secret id: " + jwtAwsSecretId, e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Failed to generate keypair");
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Failed retrieve jks file from local store " + location);
         }
     }
 

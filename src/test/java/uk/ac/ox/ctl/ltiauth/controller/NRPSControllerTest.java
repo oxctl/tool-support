@@ -20,6 +20,7 @@ import uk.ac.ox.ctl.lti13.lti.Claims;
 import uk.ac.ox.ctl.lti13.lti.Role;
 import uk.ac.ox.ctl.lti13.nrps.LtiScopes;
 import uk.ac.ox.ctl.ltiauth.AllowedRolesService;
+import uk.ac.ox.ctl.ltiauth.KeyPairGenerationService;
 import uk.ac.ox.ctl.ltiauth.Lti13Configuration;
 import uk.ac.ox.ctl.ltiauth.NRPSService;
 import uk.ac.ox.ctl.ltiauth.TestClientRegistrationConfig;
@@ -44,7 +45,7 @@ class NRPSControllerTest {
     private NRPSService nrpsService;
 
     @MockBean
-    private SecretsManagerClient secretsManagerClient;
+    private KeyPairGenerationService keyPairGenerationService;
     
     @MockBean
     private AllowedRolesService allowedRolesService;

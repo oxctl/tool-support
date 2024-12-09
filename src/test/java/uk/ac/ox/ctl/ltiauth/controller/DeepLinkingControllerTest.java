@@ -17,6 +17,7 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+import uk.ac.ox.ctl.ltiauth.KeyPairGenerationService;
 import uk.ac.ox.ctl.ltiauth.Lti13Configuration;
 import uk.ac.ox.ctl.ltiauth.TestClientRegistrationConfig;
 
@@ -42,7 +43,7 @@ class DeepLinkingControllerTest {
     private MockMvc mvc;
 
     @MockBean
-    private SecretsManagerClient secretsManagerClient;
+    private KeyPairGenerationService keyPairGenerationService;
 
     @Test
     void testDenied() throws Exception {

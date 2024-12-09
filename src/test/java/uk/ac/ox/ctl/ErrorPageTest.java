@@ -7,11 +7,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.htmlunit.LocalHostWebClient;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.TestPropertySource;
-import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 
 import java.io.IOException;
 
@@ -23,9 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class ErrorPageTest {
 
     private LocalHostWebClient localHostWebClient;
-
-    @MockBean
-    private SecretsManagerClient secretsManagerClient;
 
     @Autowired
     private Environment environment;
