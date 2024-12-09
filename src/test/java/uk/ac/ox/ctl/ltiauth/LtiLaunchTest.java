@@ -9,6 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.htmlunit.LocalHostWebClient;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.TestPropertySource;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 
 import java.io.IOException;
 
@@ -24,7 +25,7 @@ public class LtiLaunchTest {
 	private Environment environment;
 
 	@MockBean
-	private KeyPairGenerationService keyPairGenerationService;
+	private SecretsManagerClient secretsManagerClient;
 	
 	@BeforeEach
 	public void setUp() {
