@@ -9,15 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
-import uk.ac.ox.ctl.ltiauth.KeyPairGenerationService;
+import uk.ac.ox.ctl.ltiauth.LocalKeyPairLoadingService;
 import uk.ac.ox.ctl.ltiauth.Lti13Configuration;
 import uk.ac.ox.ctl.ltiauth.TestClientRegistrationConfig;
 
@@ -36,14 +34,11 @@ import static uk.ac.ox.ctl.ltiauth.controller.DeepLinkingController.*;
 @WebMvcTest(controllers = DeepLinkingController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "uk\\.ac\\.ox\\.ctl\\.canvasproxy\\..*"))
 @ImportAutoConfiguration(exclude = OAuth2ClientAutoConfiguration.class)
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
-@Import({Lti13Configuration.class, TestClientRegistrationConfig.class})
+@Import({Lti13Configuration.class, TestClientRegistrationConfig.class, LocalKeyPairLoadingService.class})
 class DeepLinkingControllerTest {
 
     @Autowired
     private MockMvc mvc;
-
-    @MockBean
-    private KeyPairGenerationService keyPairGenerationService;
 
     @Test
     void testDenied() throws Exception {

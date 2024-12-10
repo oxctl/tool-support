@@ -5,7 +5,7 @@ import java.security.KeyPair;
 /**
  *  * Service to load the keypair from either a file or secrets manager.
  */
-public interface KeyPairGenerationService {
+public interface KeyPairLoadingService {
 
-    KeyPair generateKeyPair(String storePassword);
+    KeyPair loadKeyPair(String storePassword);
 }

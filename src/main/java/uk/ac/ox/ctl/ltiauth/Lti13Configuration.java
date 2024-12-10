@@ -18,8 +18,6 @@ import uk.ac.ox.ctl.lti13.TokenRetriever;
 import uk.ac.ox.ctl.lti13.nrps.NamesRoleService;
 
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 
@@ -29,7 +27,7 @@ public class Lti13Configuration {
     private final Logger log = LoggerFactory.getLogger(Lti13Configuration.class);
 
     @Autowired
-    private KeyPairGenerationService keyPairGenerationService;
+    private KeyPairLoadingService keyPairLoadingService;
 
     /**
      * The password for the JWK key file.
@@ -81,7 +79,7 @@ public class Lti13Configuration {
 
     @Bean
     public KeyPair keyPair() {
-        return keyPairGenerationService.generateKeyPair(storePassword);
+        return keyPairLoadingService.loadKeyPair(storePassword);
     }
 
     @Bean

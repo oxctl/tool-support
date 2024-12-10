@@ -21,9 +21,9 @@ import java.security.NoSuchAlgorithmException;
 @Service
 @Profile("local")
 @Lazy
-public class LocalKeyPairGenerationService implements KeyPairGenerationService{
+public class LocalKeyPairLoadingService implements KeyPairLoadingService {
 
-    private final Logger log = LoggerFactory.getLogger(LocalKeyPairGenerationService.class);
+    private final Logger log = LoggerFactory.getLogger(LocalKeyPairLoadingService.class);
 
     /**
      * The location of the local JWK key file (if running locally).
@@ -32,7 +32,7 @@ public class LocalKeyPairGenerationService implements KeyPairGenerationService{
     private String location;
 
     @Override
-    public KeyPair generateKeyPair(String storePassword){
+    public KeyPair loadKeyPair(String storePassword){
         try {
             Resource resource = new FileUrlResource(location);
             if (resource.exists()) {

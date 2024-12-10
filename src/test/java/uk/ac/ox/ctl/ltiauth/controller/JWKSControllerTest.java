@@ -13,8 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
-import uk.ac.ox.ctl.ltiauth.KeyPairGenerationService;
+import uk.ac.ox.ctl.ltiauth.LocalKeyPairLoadingService;
 import uk.ac.ox.ctl.ltiauth.Lti13Configuration;
 import uk.ac.ox.ctl.ltiauth.TestClientRegistrationConfig;
 import uk.ac.ox.ctl.ltiauth.LtiWebSecurity;
@@ -25,16 +24,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = JWKSController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "uk\\.ac\\.ox\\.ctl\\.canvasproxy\\..*"))
 @ImportAutoConfiguration(exclude = OAuth2ClientAutoConfiguration.class)
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
-@Import({Lti13Configuration.class, TestClientRegistrationConfig.class, LtiWebSecurity.class})
+@Import({Lti13Configuration.class, TestClientRegistrationConfig.class, LtiWebSecurity.class, LocalKeyPairLoadingService.class})
 class JWKSControllerTest {
 
     @MockBean
     @Qualifier("lti")
     private JwtDecoder jwtDecoder;
 
-    @MockBean
-    private uk.ac.ox.ctl.ltiauth.KeyPairGenerationService KeyPairGenerationService;
-    
     @Autowired
     private MockMvc mvc;
 
