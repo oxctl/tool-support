@@ -2,6 +2,7 @@ package uk.ac.ox.ctl.ltiauth;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.FileUrlResource;
@@ -24,8 +25,14 @@ public class LocalKeyPairGenerationService implements KeyPairGenerationService{
 
     private final Logger log = LoggerFactory.getLogger(LocalKeyPairGenerationService.class);
 
+    /**
+     * The location of the local JWK key file (if running locally).
+     */
+    @Value("${lti.jwk.location:config/jwk.jks}")
+    private String location;
+
     @Override
-    public KeyPair generateKeyPair(String jwtAwsSecretId, String storePassword, String location){
+    public KeyPair generateKeyPair(String storePassword){
         try {
             Resource resource = new FileUrlResource(location);
             if (resource.exists()) {

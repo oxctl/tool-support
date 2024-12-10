@@ -31,18 +31,6 @@ public class Lti13Configuration {
     @Autowired
     private KeyPairGenerationService keyPairGenerationService;
 
-    /***
-     * The ID of the secret whose value contains the binary-stored JKS file.
-     */
-    @Value("${jks.aws.secret.id:jks.aws.secret.id}")
-    private String jwtAwsSecretId;
-
-    /**
-     * The location of the local JWK key file (if running locally).
-     */
-    @Value("${lti.jwk.location:config/jwk.jks}")
-    private String location;
-
     /**
      * The password for the JWK key file.
      */
@@ -93,17 +81,7 @@ public class Lti13Configuration {
 
     @Bean
     public KeyPair keyPair() {
-        if (keyPairGenerationService.generateKeyPair(jwtAwsSecretId, storePassword, location)!=null){
-            return keyPairGenerationService.generateKeyPair(jwtAwsSecretId, storePassword, location);
-        }
-        else {
-            try {
-                log.info("Generated a keypair, this shouldn't be used in production.");
-                return KeyPairGenerator.getInstance("RSA").generateKeyPair();
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException("Failed to generate keypair");
-            }
-        }
+        return keyPairGenerationService.generateKeyPair(storePassword);
     }
 
     @Bean
