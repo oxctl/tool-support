@@ -34,6 +34,9 @@ public class ErrorPageTest {
     @Autowired
     private Environment environment;
 
+    @MockBean
+    private SecretsManagerClient secretsManagerClient;
+
     @BeforeEach
     public void setUp() {
         localHostWebClient = new LocalHostWebClient(environment);
