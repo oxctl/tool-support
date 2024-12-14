@@ -32,10 +32,10 @@ build/
 
 ### VS Code ###
 .vscode/
-.github/application.properties
+config/application.properties
 config/application-*.properties
-.github/jwk.jks
-.github/keystore.p12
+config/jwk.jks
+config/keystore.p12
 proxy.canvas.ox.ac.uk-key.pem
 proxy.canvas.ox.ac.uk.csr
 proxy.canvas.ox.ac.uk-chain.crt
