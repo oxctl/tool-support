@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.ac.ox.ctl.ltiauth.LocalKeyPairLoadingService;
 import uk.ac.ox.ctl.ltiauth.Lti13Configuration;
 import uk.ac.ox.ctl.ltiauth.TestClientRegistrationConfig;
 
@@ -33,7 +34,7 @@ import static uk.ac.ox.ctl.ltiauth.controller.DeepLinkingController.*;
 @WebMvcTest(controllers = DeepLinkingController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "uk\\.ac\\.ox\\.ctl\\.canvasproxy\\..*"))
 @ImportAutoConfiguration(exclude = OAuth2ClientAutoConfiguration.class)
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
-@Import({Lti13Configuration.class, TestClientRegistrationConfig.class})
+@Import({Lti13Configuration.class, TestClientRegistrationConfig.class, LocalKeyPairLoadingService.class})
 class DeepLinkingControllerTest {
 
     @Autowired

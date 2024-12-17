@@ -3,13 +3,18 @@ package uk.ac.ox.ctl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
 class ToolApplicationTests {
-    
+
+    @MockBean
+    private SecretsManagerClient secretsManagerClient;
+
     @Test
     void contextLoads() {
     }

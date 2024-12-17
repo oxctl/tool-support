@@ -7,9 +7,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.htmlunit.LocalHostWebClient;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.TestPropertySource;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+import uk.ac.ox.ctl.ltiauth.LocalKeyPairLoadingService;
+import uk.ac.ox.ctl.ltiauth.Lti13Configuration;
+import uk.ac.ox.ctl.ltiauth.LtiWebSecurity;
+import uk.ac.ox.ctl.ltiauth.TestClientRegistrationConfig;
 
 import java.io.IOException;
 
@@ -18,12 +25,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
+@Import({LocalKeyPairLoadingService.class})
+
 public class ErrorPageTest {
 
     private LocalHostWebClient localHostWebClient;
 
     @Autowired
     private Environment environment;
+
+    @MockBean
+    private SecretsManagerClient secretsManagerClient;
 
     @BeforeEach
     public void setUp() {
