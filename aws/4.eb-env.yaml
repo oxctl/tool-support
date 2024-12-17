@@ -697,7 +697,7 @@ Resources:
   envJksConfigSecret:
     Type: "AWS::SecretsManager::Secret"
     Properties:
-      Name: !Sub "${appName}/${envType}/${configSecretsPath}-jks"
+      Name: !Sub "${appName}/${envType}/jks-${configSecretsPath}"
       Description: !Sub "${appName}-${envType} - Binary-stored jks file"
       KmsKeyId: "alias/aws/secretsmanager"
 
