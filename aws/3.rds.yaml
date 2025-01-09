@@ -120,15 +120,6 @@ Mappings:
       "secretRotationSchedule": "cron(0 5 ? * WED#1 *)"
       "dbloadSchedule": "cron(0 6 ? * 1 *)" #every sunday @ 6am
 
-  RegionMappings:
-    eu-west-1:
-      "replicationRegion": "eu-central-1"
-      "rdsKeyId": "arn:aws:kms:eu-central-1:211125465582:key/bb8c5e12-14fa-4a6a-93be-f9aeff2b1c81"  # temp solution for KMS
-    eu-central-1:
-      "replicationRegion": "eu-west-2"
-      "rdsKeyId": "arn:aws:kms:eu-west-2:211125465582:key/8f92930d-f10e-47c1-a0fe-42536fed03b6"   # temp solution for KMS
-
-
 Conditions:
   isProdRegion: {"Fn::Equals" : [!Ref "AWS::Region", 'eu-west-1']}
   isProdEnv: {"Fn::Equals" : [!Ref envType, 'prod']}
@@ -218,8 +209,6 @@ Resources:
         RequireEachIncludedType: true
         GenerateStringKey: "password"
         SecretStringTemplate: '{"username": "admin"}'
-      ReplicaRegions:
-        - Region: !FindInMap [RegionMappings, !Ref AWS::Region, replicationRegion]
       KmsKeyId: "alias/aws/secretsmanager"
 
   dbInstance:
@@ -251,19 +240,6 @@ Resources:
           - noSnapshot
           - !Ref "AWS::NoValue"
           - !Ref snapshotToUse
-      PreferredBackupWindow: !FindInMap [EnvironmentMappings, !Ref envType,backupWindow]
-      ## don't repliucate snapshots for nonprod
-      AutomaticBackupReplicationRegion:
-        Fn::If:
-          - isNonProdEnv
-          - !Ref AWS::NoValue
-          - !FindInMap [RegionMappings, !Ref AWS::Region, replicationRegion]
-      AutomaticBackupReplicationKmsKeyId:
-        Fn::If:
-          - isNonProdEnv
-          - !Ref AWS::NoValue
-          - !FindInMap [RegionMappings, !Ref AWS::Region, rdsKeyId]
-      BackupRetentionPeriod: !FindInMap [EnvironmentMappings, !Ref envType,backupRetention]  #0 disables RDS automtic backups #ToDo
       AvailabilityZone: !Sub "${AWS::Region}${availabilityZone}"
       DBSubnetGroupName:
         Fn::ImportValue:
