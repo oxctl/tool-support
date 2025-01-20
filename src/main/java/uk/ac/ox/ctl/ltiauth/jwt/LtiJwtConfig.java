@@ -85,6 +85,7 @@ public class LtiJwtConfig {
             // Add the standard static issuers
             List<String> issuers = new ArrayList<>(staticIssuers);
             // Add the issuers for the hmac tokens.
+            // TODO does this mean we're allowing cross tenant impersonation?
             jwt.getAudience().stream().map(ltiMultiAudienceConfigResolver::findIssuer).forEach(issuers::add);
             return issuers;
         }));
@@ -95,7 +96,7 @@ public class LtiJwtConfig {
      * This uses the audience of the JWT to lookup a secret and then if found uses that to check
      * the signature.
      */
-    private static class AudienceHmacJWSKeySelector implements JWSKeySelector<IssuerAndAudienceSecurityContext> {
+    public static class AudienceHmacJWSKeySelector implements JWSKeySelector<IssuerAndAudienceSecurityContext> {
 
         private final MultiAudienceConfigResolver multiAudienceConfigResolver;
 
