@@ -36,6 +36,9 @@ import java.util.Date;
 
 import static javax.xml.crypto.dsig.SignatureMethod.HMAC_SHA256;
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -64,7 +67,6 @@ class ServiceTokenControllerTest {
 
     @BeforeEach
     public void setUp() throws JOSEException {
-        when(multiAudienceConfigResolver.findHmacSecret("test")).thenReturn(secret);
         // Client registration
         ClientRegistration clientRegistration = ClientRegistration
                 .withRegistrationId("test")
@@ -76,7 +78,7 @@ class ServiceTokenControllerTest {
                 .tokenType(OAuth2AccessToken.TokenType.BEARER)
                 .expiresIn(3600)
                 .build();
-        when(tokenRetriever.getToken(clientRegistration)).thenReturn(oauth2TokenResponse);
+        when(tokenRetriever.getToken(eq(clientRegistration), any(String[].class))).thenReturn(oauth2TokenResponse);
 
         // Secret Lookup
         when(multiAudienceConfigResolver.findHmacSecret("test")).thenReturn(secret);
@@ -215,6 +217,18 @@ class ServiceTokenControllerTest {
         ;
     }
 
+    @Test
+    public void noScopes() throws Exception {
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
+        JWTClaimsSet claims = jwtClaims().build();
+        SignedJWT jwt = new SignedJWT(header, claims);
+
+        jwt.sign(new MACSigner(key));
+
+        mvc.perform(post("/service-token").header("Authorization", "Bearer " + jwt.serialize()))
+                .andExpect(status().isBadRequest())
+        ;
+    }
 
     @Test
     public void goodToken() throws Exception {
@@ -224,13 +238,34 @@ class ServiceTokenControllerTest {
 
         jwt.sign(new MACSigner(key));
 
-        mvc.perform(post("/service-token").header("Authorization", "Bearer " + jwt.serialize()))
+        mvc.perform(post("/service-token").param("scopes", "https://example.test").header("Authorization", "Bearer " + jwt.serialize()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.jwt").isString())
                 .andExpect(jsonPath("$.expires").isString())
                 .andExpect(header().doesNotExist("Cookie"))
         ;
+        verify(tokenRetriever).getToken(any(), eq(new String[]{"https://example.test"}));
     }
+
+    @Test
+    public void multipleScopes() throws Exception {
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
+        JWTClaimsSet claims = jwtClaims().build();
+        SignedJWT jwt = new SignedJWT(header, claims);
+
+        jwt.sign(new MACSigner(key));
+
+        mvc.perform(post("/service-token")
+                        .param("scopes", "https://example.test/one", "https://example.test/two").header("Authorization", "Bearer " + jwt.serialize())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.jwt").isString())
+                .andExpect(jsonPath("$.expires").isString())
+                .andExpect(header().doesNotExist("Cookie"))
+        ;
+        verify(tokenRetriever).getToken(any(), eq(new String[]{"https://example.test/one", "https://example.test/two"}));
+    }
+
 
     private static JWTClaimsSet.Builder jwtClaims() {
         return new JWTClaimsSet.Builder()

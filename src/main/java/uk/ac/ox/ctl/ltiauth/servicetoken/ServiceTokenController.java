@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenRespon
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ox.ctl.lti13.TokenRetriever;
 import uk.ac.ox.ctl.ltiauth.ClientRegistrationService;
@@ -31,9 +32,8 @@ public class ServiceTokenController {
         this.tokenRetriever = tokenRetriever;
     }
 
-    // TODO: This should be pulling the token from a form parameter, but maybe we should just use the Authorization header?
     @PostMapping("/service-token")
-    public ResponseEntity<Map<String, Object>> getLtiToken(JwtAuthenticationToken token) throws JOSEException {
+    public ResponseEntity<Map<String, Object>> getLtiToken(JwtAuthenticationToken token, @RequestParam String[] scopes) throws JOSEException {
         Object principal = token.getPrincipal();
         if (principal instanceof Jwt jwt) {
             ClientRegistration clientRegistration = null;
@@ -46,8 +46,7 @@ public class ServiceTokenController {
             if (clientRegistration == null) {
                 throw new IllegalStateException("Failed find client registration for: " + String.join(", ", jwt.getAudience()));
             }
-            // TODO need to pass through scopes.
-            OAuth2AccessTokenResponse tokenResponse = tokenRetriever.getToken(clientRegistration);
+            OAuth2AccessTokenResponse tokenResponse = tokenRetriever.getToken(clientRegistration, scopes);
             return new ResponseEntity<>(Map.of(
                     "jwt", tokenResponse.getAccessToken().getTokenValue(),
                     "expires", tokenResponse.getAccessToken().getExpiresAt()), HttpStatus.OK
