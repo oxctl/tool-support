@@ -61,3 +61,8 @@ Outputs:
     Value: !GetAtt AppEB.Outputs.versionRef
     Export:
       Name: !Sub "${AWS::StackName}-version"
+  dbName:
+    Description: "DB's Name"
+    Value: !GetAtt AppRDS.Outputs.dbName
+    Export:
+      Name: !Sub "${AWS::StackName}-db-name"
