@@ -85,7 +85,6 @@ public class LtiJwtConfig {
             // Add the standard static issuers
             List<String> issuers = new ArrayList<>(staticIssuers);
             // Add the issuers for the hmac tokens.
-            // TODO does this mean we're allowing cross tenant impersonation?
             jwt.getAudience().stream().map(ltiMultiAudienceConfigResolver::findIssuer).forEach(issuers::add);
             return issuers;
         }));
