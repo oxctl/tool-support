@@ -25,7 +25,7 @@ Resources:
   AppRegion:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ./1.region.yaml
+      TemplateURL: ./region.yaml
       Parameters:
         appName: !Ref appName
         envType: !Ref envType
@@ -33,7 +33,7 @@ Resources:
   AppRDS:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ./3.rds.yaml
+      TemplateURL: ./rds.yaml
       Parameters:
         appName: !Ref appName
         envType: !Ref envType
@@ -43,7 +43,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn: [AppRegion, AppRDS]
     Properties:
-      TemplateURL: ./4.eb-env.yaml
+      TemplateURL: ./eb-env.yaml
       Parameters:
         appName: !Ref appName
         appVersionDesc: !Ref appVersionDesc
