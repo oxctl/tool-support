@@ -22,6 +22,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import uk.ac.ox.ctl.ltiauth.MultiAudienceConfigResolver;
+import uk.ac.ox.ctl.ltiauth.jwt.MultiJwtIssuerValidator;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.util.ArrayList;
@@ -67,17 +68,10 @@ public class ServiceTokenSecurity {
 
         List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
         validators.add(new JwtTimestampValidator());
-        validators.add(jwt -> {
-            // For IMS LTI the issuer isn't a URL, but is instead a 
-            String iss = jwt.getClaimAsString("iss");
-            if (iss == null) {
-                return OAuth2TokenValidatorResult.failure(new OAuth2Error("Missing issuer"));
-            }
-            if (!jwt.getAudience().contains(iss)) {
-                return OAuth2TokenValidatorResult.failure(new OAuth2Error("Issuer doesn't match audience"));
-            }
-            return OAuth2TokenValidatorResult.success();
-        });
+        validators.add(new MultiJwtIssuerValidator(jwt -> {
+            // Add the issuers for the hmac tokens.
+            return jwt.getAudience().stream().map(multiAudienceConfigResolver::findIssuer).toList();
+        }));
         jwtDecoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(validators));
 
         return jwtDecoder;

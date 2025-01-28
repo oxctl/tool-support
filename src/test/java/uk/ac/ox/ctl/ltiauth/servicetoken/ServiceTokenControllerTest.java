@@ -82,6 +82,7 @@ class ServiceTokenControllerTest {
 
         // Secret Lookup
         when(multiAudienceConfigResolver.findHmacSecret("test")).thenReturn(secret);
+        when(multiAudienceConfigResolver.findIssuer("test")).thenReturn("https://test");
     }
 
     @Test
@@ -270,7 +271,7 @@ class ServiceTokenControllerTest {
     private static JWTClaimsSet.Builder jwtClaims() {
         return new JWTClaimsSet.Builder()
                 .audience("test")
-                .issuer("test")
+                .issuer("https://test")
                 .notBeforeTime(Date.from(Instant.now()))
                 .expirationTime(Date.from(Instant.now().plus(1, ChronoUnit.HOURS)));
     }
