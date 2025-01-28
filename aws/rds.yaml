@@ -1,7 +1,7 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
 Metadata: {}
-Description: "Creates an RDS DB instance, along with it's option and parameter groups"
+Description: "Creates an RDS DB instance, along with its option and parameter groups"
 
 Parameters:
 
@@ -367,7 +367,6 @@ Resources:
       InsufficientDataActions:
         - !Ref rdsAlarmTopic
 
-
   freeDiskSpaceTooLowAlarm:
     Type: "AWS::CloudWatch::Alarm"
     DependsOn: rdsAlarmSubCST
@@ -663,7 +662,7 @@ Resources:
           APP_NAME: !Ref appName
           ENV_TYPE: !Ref envType
           SECRET_ID: !Ref dbSecretProdRegion
-          S3_BUCKET: #we want the dbdump to go into the nonprod shared S3 buckt
+          S3_BUCKET: #we want the dbdump to go into the nonprod shared S3 bucket
             Fn::Sub:
               - "${prefix}-nonprod-${region}-${accId}"
               - prefix: !Ref namePrefix
@@ -743,7 +742,7 @@ Resources:
 
   ## **dbload starts here**
   #dbload for beta envType .. duplicate for more envTypes
-  ##  deployed but not scheduled .. will be invoked from prod
+  #  deployed but not scheduled .. will be invoked from prod
   dbloadFunctionBeta:
     Condition: isBetaEnv
     Type: "AWS::Lambda::Function"

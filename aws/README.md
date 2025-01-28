@@ -9,21 +9,16 @@
     - [Cloudformation Inputs / Parameters](#cloudformation-inputs--parameters)
     - [Cloudformation Outputs / Exports](#cloudformation-outputs--exports)
     - [Notes](#notes)
-  - [1.region.yaml (AWS Regions: eu-west-1 \& eu-central-1)](#1regionyaml-aws-regions-eu-west-1--eu-central-1)
+  - [region.yaml (AWS Regions: eu-west-1 \& eu-central-1)](#regionyaml-aws-regions-eu-west-1--eu-central-1)
     - [Function](#function-1)
     - [Resources Created](#resources-created-1)
     - [CloudFormation outputs / exports](#cloudformation-outputs--exports-1)
-  - [3.s3-and-cloudfront.yaml (AWS Region: eu-west-1)](#3s3-and-cloudfrontyaml-aws-region-eu-west-1)
-    - [Function / Resources Created](#function--resources-created)
-    - [CloudFormation Parameters](#cloudformation-parameters)
-    - [CloudFormation Outputs / Exports](#cloudformation-outputs--exports-2)
-    - [Notes](#notes-1)
-  - [3.rds.yaml (AWS Region: eu-west-1)](#3rdsyaml-aws-region-eu-west-1)
+  - [rds.yaml (AWS Region: eu-west-1)](#rdsyaml-aws-region-eu-west-1)
     - [Function / Resources Created](#function--resources-created-1)
     - [CloudFormation Parameters](#cloudformation-parameters-1)
     - [CloudFormation Outputs / Exports](#cloudformation-outputs--exports-3)
     - [Notes](#notes-2)
-  - [4.eb-env.yaml (AWS Region: eu-west-1)](#4eb-envyaml-aws-region-eu-west-1)
+  - [eb-env.yaml (AWS Region: eu-west-1)](#eb-envyaml-aws-region-eu-west-1)
     - [Function / Resources Created](#function--resources-created-2)
     - [CloudFormation Parameters](#cloudformation-parameters-2)
     - [CloudFormation Outputs / Exports](#cloudformation-outputs--exports-4)
@@ -98,7 +93,7 @@ aws cloudformation wait stack-delete-complete --stack-name cad-apps-tool-support
 * In future, add other resources that is required globally for this app in all regions
 
 
-## 1.region.yaml (AWS Regions: eu-west-1 & eu-central-1)
+## region.yaml (AWS Regions: eu-west-1 & eu-central-1)
 
 ### Function
 
@@ -144,7 +139,7 @@ aws cloudformation wait stack-delete-complete --stack-name cad-apps-tool-support
   * https://static.manage-courses.apps-nonprod.canvas.ox.ac.uk
 * if there is an index.html file there it will be displayed as a webpage
 
-## 3.rds.yaml (AWS Region: eu-west-1)
+## rds.yaml (AWS Region: eu-west-1)
 
 ### Function / Resources Created
 
@@ -182,7 +177,7 @@ aws cloudformation wait stack-delete-complete --stack-name cad-apps-tool-support
   * `dbloadFunctionBeta`
 * See also the general [Lambda Functions & Sources README](https://github.com/oxctl/aws-shared/blob/main/gitsync-deploy/2.aws-account-region/src/README.md)
 
-## 4.eb-env.yaml (AWS Region: eu-west-1)
+## eb-env.yaml (AWS Region: eu-west-1)
 
 ### Function / Resources Created
 
