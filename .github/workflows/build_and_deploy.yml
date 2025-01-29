@@ -55,7 +55,7 @@ jobs:
       - id: deploy
         run: aws cloudformation deploy
           --capabilities CAPABILITY_NAMED_IAM
-          --template-file ./aws/bootstrap.yaml
+          --template-file ./aws/2.bootstrap.yaml
           --stack-name ${{ env.AWS_STACK_PREFIX }}-bootstrap
           --parameter-overrides file://aws/${{ inputs.aws_parameters }}.json
           --no-fail-on-empty-changeset

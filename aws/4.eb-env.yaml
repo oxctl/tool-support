@@ -95,6 +95,7 @@ Mappings:
       "instanceLogRetentionDays": "90"
       "instanceStreamLogs": "true"
       "healthLogRetentionDays": "7"
+      "healthStreamLogs": "true"
       "springProfile": "aws" #SPRING_PROFILES_ACTIVE
       "mailFrom": "no-reply@tool-support.apps.canvas.ox.ac.uk"
       "jwtIssuer": "https://lti.canvas.ox.ac.uk"
@@ -104,6 +105,7 @@ Mappings:
       "instanceLogRetentionDays": "90"
       "instanceStreamLogs": "true"
       "healthLogRetentionDays": "7"
+      "healthStreamLogs": "false"
       # We have an additional profile that unsets things on the non-prod account
       "springProfile": "aws,nonprod" #SPRING_PROFILES_ACTIVE
       "mailFrom": "no-reply@tool-support.apps-nonprod.canvas.ox.ac.uk"
@@ -368,7 +370,7 @@ Resources:
           Value: !FindInMap [ EnvironmentMappings, !Ref envType, instanceStreamLogs ]
         - Namespace: "aws:elasticbeanstalk:cloudwatch:logs:health"
           OptionName: "HealthStreamingEnabled"
-          Value: "true"
+          Value: !FindInMap [ EnvironmentMappings, !Ref envType, healthStreamLogs ]
         - Namespace: "aws:elasticbeanstalk:cloudwatch:logs:health"
           OptionName: "RetentionInDays"
           Value: !FindInMap [ EnvironmentMappings, !Ref envType, healthLogRetentionDays ]
@@ -679,7 +681,7 @@ Resources:
             Fn::ImportValue: !Sub "${appName}-${accountType}-route53-domainname"
           Type: A
           AliasTarget:
-            HostedZoneId: Z2FDTNDATAQYW2  # AWS provided static vale - cf.
+            HostedZoneId: Z2FDTNDATAQYW2  #AWS provided static vale - cf.
             DNSName: !GetAtt lbCFDistribution.DomainName
     #DependsOn: lbCFDistribution
 
@@ -792,7 +794,7 @@ Resources:
             - Environment update failed
             - Environment update successful
           EnvironmentName:
-            - !Ref Environment
+            - !Ref Environment  #confirm this
       State: ENABLED
       Targets:
         - Id: !Sub "${appName}${envType}envupdates"
