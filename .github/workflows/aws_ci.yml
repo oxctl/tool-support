@@ -24,4 +24,4 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       # Check that the templates are at least valid.
       - run: aws cloudformation validate-template --template-body file://aws/stack.yaml
-      - run: aws cloudformation validate-template --template-body file://aws/2.bootstrap.yaml
+      - run: aws cloudformation validate-template --template-body file://aws/bootstrap.yaml
