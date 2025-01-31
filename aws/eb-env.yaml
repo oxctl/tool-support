@@ -679,7 +679,7 @@ Resources:
             Fn::ImportValue: !Sub "${appName}-${accountType}-route53-domainname"
           Type: A
           AliasTarget:
-            HostedZoneId: Z2FDTNDATAQYW2  #AWS provided static vale - cf.
+            HostedZoneId: Z2FDTNDATAQYW2  # AWS provided static vale - cf.
             DNSName: !GetAtt lbCFDistribution.DomainName
     #DependsOn: lbCFDistribution
 
@@ -792,7 +792,7 @@ Resources:
             - Environment update failed
             - Environment update successful
           EnvironmentName:
-            - !Ref Environment  #confirm this
+            - !Ref Environment
       State: ENABLED
       Targets:
         - Id: !Sub "${appName}${envType}envupdates"
