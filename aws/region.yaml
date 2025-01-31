@@ -36,7 +36,7 @@ Conditions:
 Resources:
 
   ## Configure how bounce handling will be managed
-  ##ToDo: create bounce hamdling resources for apps that need it
+  ## ToDo: create bounce handling resources for apps that need it
 
   ebApplication:
     Type: "AWS::ElasticBeanstalk::Application"
