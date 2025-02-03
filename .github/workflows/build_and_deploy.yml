@@ -103,7 +103,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/cad-github-actions-role  #sandbox account
+          role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/cad-github-actions-role
           aws-region: ${{ inputs.aws_region }}
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
@@ -189,6 +189,15 @@ jobs:
         run: aws cloudformation describe-stack-events
           --stack-name ${{ env.AWS_STACK_PREFIX }}-backend
           --output yaml
+      # There's no way to set expiry on RDS logs so we have to do it outside cloudformation :-(
+      - run: echo DB_NAME=$(aws cloudformation list-exports --query "Exports[?Name=='${{ env.AWS_STACK_PREFIX }}-backend-db-name'].Value" --output text) | tee -a $GITHUB_ENV
+      # The log groups don't always exist (eg slow query log might not have had anything written to it yet),
+      # so we don't fail the build if these fail. This is much simpler than trying to detect if the groups exist and only
+      # then setting the retention. If we were doing something more business critical this wouldn't be an acceptable solution.
+      - run: aws logs put-retention-policy --log-group-name "/aws/rds/instance/${{ env.DB_NAME }}/error" --retention-in-days 90
+        continue-on-error: true
+      - run: aws logs put-retention-policy --log-group-name "/aws/rds/instance/${{ env.DB_NAME }}/slowquery" --retention-in-days 90
+        continue-on-error: true
       - run: echo VERSION_REF=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.app_name }}-${{ inputs.env_type }}-${{ inputs.account_type }}-backend-version'].Value" --output text) | tee -a $GITHUB_ENV
       - run: echo RUNNING_VERSION_REF=$(aws elasticbeanstalk describe-environments | jq -r '.Environments | map(select(.EnvironmentName == "${{ inputs.app_name }}-${{ inputs.env_type }}")) | .[] | .VersionLabel') | tee -a $GITHUB_ENV
       - if: env.VERSION_REF != env.RUNNING_VERSION_REF
