@@ -105,7 +105,7 @@ Mappings:
   EnvironmentMappings:
     prod:
       "backupWindow": "10:18-00:08"  #ToDo: make param ?
-      "backupRetention": "14"  #retain backups for no. of days
+      "backupRetention": "14" # retain backups for no. of days
       "maintenanceWindow": "tue:01:00-tue:04:00"
       "deletionProtection": "true"
       "cloudwatchLogs": "audit,error,slowquery"
@@ -113,7 +113,7 @@ Mappings:
       "dbloadSchedule": "" #just a placeholder
     beta:
       "backupWindow": "10:18-00:08"  #ToDo: make param ?
-      "backupRetention": "7"  #retain backups for no. of days
+      "backupRetention": "7" # retain backups for no. of days
       "maintenanceWindow": "mon:01:00-mon:04:00"
       "deletionProtection": "false"
       "cloudwatchLogs": "error,slowquery"
@@ -357,7 +357,7 @@ Resources:
       #Period: 300
       Period: 1800
       EvaluationPeriods: 3
-      Threshold: 65536000 #64mb ... 128MB = 131072000 ... 262144000 = 256MB
+      Threshold: 65536000 # 64mb ... 128MB = 131072000 ... 262144000 = 256MB
       ComparisonOperator: LessThanOrEqualToThreshold
       Dimensions:
         - Name: DBInstanceIdentifier
@@ -570,6 +570,7 @@ Resources:
 
   rouserSecretRotationSchedule:
     Condition: createROUser
+    
     Type: 'AWS::SecretsManager::RotationSchedule'
     Properties:
       SecretId: !Ref roUserSecret  
@@ -823,4 +824,8 @@ Outputs:
     Value: !GetAtt dbInstance.DBInstanceArn
     Export:
       Name: !Sub "${appName}-${envType}-db-arn"
+  # This was added so that we can set the expiry of the AWS logs created for the RDS instance.
+  dbName:
+    Description: "DB's Name"
+    Value: !Ref dbInstance
 

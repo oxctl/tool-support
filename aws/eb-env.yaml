@@ -92,21 +92,13 @@ Mappings:
   EnvironmentMappings:
     prod:
       "mngdUpdates": "TUE:06:00"
-      "instanceLogRetentionDays": "90"
-      "instanceStreamLogs": "true"
-      "healthLogRetentionDays": "7"
       "springProfile": "aws" #SPRING_PROFILES_ACTIVE
-      "mailFrom": "no-reply@tool-support.apps.canvas.ox.ac.uk"
       "jwtIssuer": "https://lti.canvas.ox.ac.uk"
       "jwtJWKSURI": "https://lti.canvas.ox.ac.uk/.well-known/jwks.json"
     beta:
       "mngdUpdates": "MON:06:00"
-      "instanceLogRetentionDays": "90"
-      "instanceStreamLogs": "true"
-      "healthLogRetentionDays": "7"
       # We have an additional profile that unsets things on the non-prod account
       "springProfile": "aws,nonprod" #SPRING_PROFILES_ACTIVE
-      "mailFrom": "no-reply@tool-support.apps-nonprod.canvas.ox.ac.uk"
       "jwtIssuer": "https://lti-dev.canvas.ox.ac.uk"
       "jwtJWKSURI": "https://lti-dev.canvas.ox.ac.uk/.well-known/jwks.json"
 
@@ -167,33 +159,7 @@ Resources:
             Resource:
               - "arn:aws:elasticbeanstalk:*:*:application/*"
               - "arn:aws:elasticbeanstalk:*:*:environment/*"
-          - Sid: AllowSNSFull  #consider reducing the access level 
-            Effect: Allow
-            Action:
-              - "sns:*"
-            Resource: "*"
-          - Sid: SSMs3SharedBucketPermissions
-            Effect: Allow
-            Action:
-              - s3:GetBucketLocation
-              - s3:PutObject
-              - s3:GetObject
-              - s3:GetEncryptionConfiguration
-              - s3:AbortMultipartUpload
-              - s3:ListMultipartUploadParts
-              - s3:ListBucket
-              - s3:ListBucketMultipartUploads
-            Resource:
-              - Fn::Sub:
-                  - "arn:${AWS::Partition}:s3:::${bucket}"
-                  - bucket:
-                      Fn::ImportValue:
-                        !Sub "${orgName}-${accountType}-shared-bucket1"
-              - Fn::Sub:
-                  - "arn:${AWS::Partition}:s3:::${bucket}/*"
-                  - bucket:
-                      Fn::ImportValue:
-                        !Sub "${orgName}-${accountType}-shared-bucket1"
+
 
   ebInstanceProfile:
     Type: "AWS::IAM::InstanceProfile"
@@ -281,10 +247,6 @@ Resources:
           OptionName: "SPRING_PROFILES_ACTIVE"
           Value: !FindInMap [ EnvironmentMappings, !Ref envType, springProfile ]
         - Namespace: "aws:elasticbeanstalk:application:environment"
-          # The from address to send emails with
-          OptionName: "SPRING_MAIL_PROPERTIES_MAIL_SMTP_FROM"
-          Value: !FindInMap [ EnvironmentMappings, !Ref envType, mailFrom ]
-        - Namespace: "aws:elasticbeanstalk:application:environment"
           # The iss value that is required in JWTs. This is different between Canvas prod/beta/test instances.
           OptionName: "JWT_ISSUER"
           Value: !FindInMap [ EnvironmentMappings, !Ref envType, jwtIssuer ]
@@ -362,16 +324,16 @@ Resources:
           Value: "x86_64"
         - Namespace: "aws:elasticbeanstalk:cloudwatch:logs"
           OptionName: "RetentionInDays"
-          Value: !FindInMap [ EnvironmentMappings, !Ref envType, instanceLogRetentionDays ]
+          Value: "90"
         - Namespace: "aws:elasticbeanstalk:cloudwatch:logs"
           OptionName: "StreamLogs"
-          Value: !FindInMap [ EnvironmentMappings, !Ref envType, instanceStreamLogs ]
+          Value: "true"
         - Namespace: "aws:elasticbeanstalk:cloudwatch:logs:health"
           OptionName: "HealthStreamingEnabled"
           Value: "true"
         - Namespace: "aws:elasticbeanstalk:cloudwatch:logs:health"
           OptionName: "RetentionInDays"
-          Value: !FindInMap [ EnvironmentMappings, !Ref envType, healthLogRetentionDays ]
+          Value: "7"
         - Namespace: "aws:elasticbeanstalk:command"
           OptionName: "DeploymentPolicy"
           Value: !If [isProd, "Immutable", "AllAtOnce"]
