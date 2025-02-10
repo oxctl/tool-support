@@ -537,6 +537,21 @@ Resources:
             Fn::ImportValue: !Sub "${appName}-${accountType}-route53-domainname"
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
+          OptionName: "HostHeaders"
+          Value:
+            Fn::ImportValue: !Sub "lti-${accountType}-route53-domainname"
+        - ResourceName: ":default"
+          Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
+          OptionName: "HostHeaders"
+          Value:
+            Fn::ImportValue: !Sub "proxy-${accountType}-route53-domainname"
+        - ResourceName: ":default"
+          Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
+          OptionName: "HostHeaders"
+          Value:
+            Fn::ImportValue: !Sub "tools-${accountType}-route53-domainname"
+        - ResourceName: ":default"
+          Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
           OptionName: "PathPatterns"
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
