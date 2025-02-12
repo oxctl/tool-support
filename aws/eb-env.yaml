@@ -82,6 +82,15 @@ Parameters:
 
 Mappings:
 
+  AccountTypeMappings:
+    prod:
+      "ltiRootDomainName": "lti"
+      "proxyRootDomainName": "proxy"
+      "toolsRootDomainName": "tools"
+    nonprod:
+      "ltiRootDomainName": "lti-dev"
+      "proxyRootDomainName": "proxy-dev"
+      "toolsRootDomainName": "tools-dev"
   
   #AccountTypeMappings:
   #  prod:
@@ -537,19 +546,22 @@ Resources:
             Fn::ImportValue: !Sub "${appName}-${accountType}-route53-domainname"
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
-          OptionName: "HostHeaders"
-          Value:
-            Fn::ImportValue: !Sub "lti-${accountType}-route53-domainname"
+          OptionName: "LtiHostHeaders"
+          Value: !Sub
+              - "${ltiRootDomainName}.canvas.ox.ac.uk"
+              - domainName: !FindInMap [ AccountTypeMappings, !Ref accountType, ltiRootDomainName ]
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
-          OptionName: "HostHeaders"
-          Value:
-            Fn::ImportValue: !Sub "proxy-${accountType}-route53-domainname"
+          OptionName: "ProxyHostHeaders"
+          Value: !Sub
+            - "${proxyRootDomainName}.canvas.ox.ac.uk"
+            - domainName: !FindInMap [ AccountTypeMappings, !Ref accountType, proxyRootDomainName ]
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
-          OptionName: "HostHeaders"
-          Value:
-            Fn::ImportValue: !Sub "tools-${accountType}-route53-domainname"
+          OptionName: "ToolsHostHeaders"
+          Value: !Sub
+            - "${toolsRootDomainName}.canvas.ox.ac.uk"
+            - domainName: !FindInMap [ AccountTypeMappings, !Ref accountType, toolsRootDomainName ]
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
           OptionName: "PathPatterns"

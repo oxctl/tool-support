@@ -140,24 +140,6 @@ Outputs:
               !Sub "${orgName}-${accountType}-route53-domainname"
     Export:
       Name: !Sub "${appName}-${accountType}-route53-domainname"
-  ltiAppDomainName:
-    Description: "DNS name for service the lti backend (dynamic API)"
-    Value:
-      Fn::ImportValue: !Sub "lti-${orgName}-${accountType}-route53-domainname"
-    Export:
-      Name: !Sub "lti-${accountType}-route53-domainname"
-  proxyAppDomainName:
-    Description: "DNS name for service the proxy backend (dynamic API)"
-    Value:
-      Fn::ImportValue: !Sub "proxy-${orgName}-${accountType}-route53-domainname"
-    Export:
-      Name: !Sub "proxy-${accountType}-route53-domainname"
-  toolsAppDomainName:
-    Description: "DNS name for service the tools backend (dynamic API)"
-    Value:
-      Fn::ImportValue: !Sub "tools-${orgName}-${accountType}-route53-domainname"
-    Export:
-      Name: !Sub "tools-${accountType}-route53-domainname"
   ecrRepoARN:
     Description: "TheARN of the ECR Repo"
     Value: !GetAtt ecrRepo.RepositoryUri
