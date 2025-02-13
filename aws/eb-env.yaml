@@ -548,19 +548,19 @@ Resources:
           Namespace: "aws:elbv2:listenerrule:ltidomain"
           OptionName: "HostHeaders"
           Value: !Sub
-            - "${ltiRootDomainName}.canvas.ox.ac.uk"
+            - "${domainName}.canvas.ox.ac.uk"
             - domainName: !FindInMap [ AccountTypeMappings, !Ref accountType, ltiRootDomainName ]
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:proxydomain"
           OptionName: "HostHeaders"
           Value: !Sub
-            - "${proxyRootDomainName}.canvas.ox.ac.uk"
+            - "${domainName}.canvas.ox.ac.uk"
             - domainName: !FindInMap [ AccountTypeMappings, !Ref accountType, proxyRootDomainName ]
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:toolsdomain"
           OptionName: "HostHeaders"
           Value: !Sub
-            - "${toolsRootDomainName}.canvas.ox.ac.uk"
+            - "${domainName}.canvas.ox.ac.uk"
             - domainName: !FindInMap [ AccountTypeMappings, !Ref accountType, toolsRootDomainName ]
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
