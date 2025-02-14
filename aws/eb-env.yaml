@@ -550,9 +550,9 @@ Resources:
           Value:
             Fn::Sub:
               - !Join [",",
-                       !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, ltiRootDomainName],".", "${dom}" ]],
+                       [!Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, ltiRootDomainName],".", "${dom}" ]],
                        !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, proxyRootDomainName],".", "${dom}" ]],
-                       !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, toolsRootDomainName],".", "${dom}" ]]]
+                       !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, toolsRootDomainName],".", "${dom}" ]]]]
               - dom:
                   Fn::ImportValue: !Sub "${orgName}-${accountType}-route53-domainname"
         - ResourceName: ":default"
