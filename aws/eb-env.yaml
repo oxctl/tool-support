@@ -79,10 +79,6 @@ Parameters:
   solutionStack:
     Description: "Solution stack"
     Type: "String"
-  accountParentDomain:
-    Description: Allows us to override the parent domain, useful in some situations
-    Type: String
-    Default: "canvas.ox.ac.uk"
 
 Mappings:
 
