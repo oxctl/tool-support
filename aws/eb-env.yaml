@@ -553,9 +553,7 @@ Resources:
           Namespace: "aws:elbv2:listenerrule:additionaldomains"
           OptionName: "HostHeaders"
           Value:
-            !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, ltiRootDomainName],".", !Ref accountParentDomain ]],
-              !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, proxyRootDomainName],".", !Ref accountParentDomain ]],
-              !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, toolsRootDomainName],".", !Ref accountParentDomain ]]
+            !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, ltiRootDomainName],".", !Ref accountParentDomain ]]
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
           OptionName: "PathPatterns"
