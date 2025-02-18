@@ -79,6 +79,11 @@ Parameters:
   solutionStack:
     Description: "Solution stack"
     Type: "String"
+  accountParentDomain:
+    Description: Allows us to override the parent domain, useful in some situations
+    Type: String
+    Default: "canvas.ox.ac.uk"
+
 
 Mappings:
 
@@ -548,13 +553,9 @@ Resources:
           Namespace: "aws:elbv2:listenerrule:additionaldomains"
           OptionName: "HostHeaders"
           Value:
-            Fn::Sub:
-              - !Join [",",
-                       [!Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, ltiRootDomainName],".", "${dom}" ]],
-                       !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, proxyRootDomainName],".", "${dom}" ]],
-                       !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, toolsRootDomainName],".", "${dom}" ]]]]
-              - dom:
-                  Fn::ImportValue: !Sub "${orgName}-${accountType}-route53-domainname"
+            !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, ltiRootDomainName],".", !Ref accountParentDomain ]],
+              !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, proxyRootDomainName],".", !Ref accountParentDomain ]],
+              !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, toolsRootDomainName],".", !Ref accountParentDomain ]]
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
           OptionName: "PathPatterns"
