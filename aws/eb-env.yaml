@@ -82,6 +82,15 @@ Parameters:
 
 Mappings:
 
+  AccountTypeMappings:
+    prod:
+      "ltiRootDomainName": "lti"
+      "proxyRootDomainName": "proxy"
+      "toolsRootDomainName": "tools"
+    nonprod:
+      "ltiRootDomainName": "lti-dev"
+      "proxyRootDomainName": "proxy-dev"
+      "toolsRootDomainName": "tools-dev"
   
   #AccountTypeMappings:
   #  prod:
@@ -535,6 +544,17 @@ Resources:
           OptionName: "HostHeaders"
           Value:
             Fn::ImportValue: !Sub "${appName}-${accountType}-route53-domainname"
+        - ResourceName: ":default"
+          Namespace: "aws:elbv2:listenerrule:additionaldomains"
+          OptionName: "HostHeaders"
+          Value:
+            Fn::Sub:
+              - !Join [",",
+                       [!Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, ltiRootDomainName],".", "${dom}" ]],
+                       !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, proxyRootDomainName],".", "${dom}" ]],
+                       !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, toolsRootDomainName],".", "${dom}" ]]]]
+              - dom:
+                  Fn::ImportValue: !Sub "${orgName}-${accountType}-route53-domainname"
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
           OptionName: "PathPatterns"
