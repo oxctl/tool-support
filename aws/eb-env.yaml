@@ -550,11 +550,6 @@ Resources:
           Value:
             Fn::ImportValue: !Sub "${appName}-${accountType}-route53-domainname"
         - ResourceName: ":default"
-          Namespace: "aws:elbv2:listenerrule:additionaldomains1"
-          OptionName: "HostHeaders"
-          Value:
-            !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, ltiRootDomainName],".", !Ref accountParentDomain ]]
-        - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
           OptionName: "PathPatterns"
         - ResourceName: ":default"
@@ -563,6 +558,22 @@ Resources:
           Value: "1"
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
+          OptionName: "Process"
+          Value: "default"
+        - ResourceName: ":default"
+          Namespace: "aws:elbv2:listenerrule:additionaldomains"
+          OptionName: "HostHeaders"
+          Value:
+            !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, ltiRootDomainName],".", !Ref accountParentDomain ]]
+        - ResourceName: ":default"
+          Namespace: "aws:elbv2:listenerrule:additionaldomains"
+          OptionName: "PathPatterns"
+        - ResourceName: ":default"
+          Namespace: "aws:elbv2:listenerrule:additionaldomains"
+          OptionName: "Priority"
+          Value: "2"
+        - ResourceName: ":default"
+          Namespace: "aws:elbv2:listenerrule:additionaldomains"
           OptionName: "Process"
           Value: "default"
 
