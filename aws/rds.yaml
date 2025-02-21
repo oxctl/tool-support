@@ -633,6 +633,8 @@ Resources:
 
   SecretRotationSchedule:
     Type: 'AWS::SecretsManager::RotationSchedule'
+    # This is needed so that the immediate rotate works.
+    DependsOn: rotationLambdaInvokePermission
     Properties:
       SecretId: !Ref dbSecretProdRegion  
       RotateImmediatelyOnUpdate: true
