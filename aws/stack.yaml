@@ -39,6 +39,9 @@ Resources:
         envType: !Ref envType
         accountType: !Ref accountType
         snapshotToUse: !Ref snapshotToUse
+        snsArn:
+          Fn::ImportValue:
+            !Sub "${accountType}-admin-notifications"
   AppEB:
     Type: AWS::CloudFormation::Stack
     DependsOn: [AppRegion, AppRDS]
@@ -51,6 +54,9 @@ Resources:
         envType: !Ref envType
         cfSSLCertARN: !Ref cfSSLCertARN
         solutionStack: !Ref solutionStack
+        snsArn:
+          Fn::ImportValue:
+            !Sub "${accountType}-admin-notifications"
 Outputs:
   envRef:
     Value: !GetAtt AppEB.Outputs.envRef
