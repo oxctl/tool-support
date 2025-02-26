@@ -96,9 +96,9 @@ Parameters:
     Type: "String"
     Description: "The version of the dbdump/dbload code in ECR to run"
     Default: "2"
-  
-
-
+  snsArn:
+    Description: "ARN for the SNS topic to send admin notifications to"
+    Type: String
 
 Mappings:
 
@@ -276,76 +276,9 @@ Resources:
       TargetId: !Ref dbInstance
       TargetType: AWS::RDS::DBInstance
 
-  #Add alarms, sns topics and subscriptions ... only for prod instance
-  rdsAlarmTopic:
-    Type: AWS::SNS::Topic
-    Condition: isProdEnv
-    Properties:
-      DisplayName: !Sub "RDS Alarms for ${appName}-${envType}"
-    DependsOn:
-      - dbInstance
-
-  rdsTopicPolicy:
-    Type: 'AWS::SNS::TopicPolicy'
-    Condition: isProdEnv
-    Properties:
-      PolicyDocument:
-        Id: Id1
-        Version: '2012-10-17'
-        Statement:
-        - Sid: Sid1
-          Effect: Allow
-          Principal:
-            Service: 'rds.amazonaws.com' # Allow RDS Events
-          Action: 'sns:Publish'
-          Resource: !Ref rdsAlarmTopic
-          Condition:
-            StringEquals:
-              'AWS:SourceAccount': !Ref 'AWS::AccountId'
-        - Sid: Sid2
-          Effect: Allow
-          Principal:
-            Service:
-              - events.amazonaws.com
-              - cloudwatch.amazonaws.com
-            #AWS: '*' # Allow CloudWatch Alarms
-          Action: 'sns:Publish'
-          Resource: !Ref rdsAlarmTopic
-          Condition:
-            StringEquals:
-              'AWS:SourceAccount': !Ref 'AWS::AccountId'
-      Topics:
-      - !Ref rdsAlarmTopic
-
-  rdsAlarmSubCST:
-    Type: "AWS::SNS::Subscription"
-    Condition: isProdEnv
-    Properties:
-      TopicArn: !Ref rdsAlarmTopic
-      Endpoint: !Ref supportEmail
-      Protocol: email
-      Region: !Ref AWS::Region
-    DependsOn:
-      - rdsTopicPolicy
-      - dbInstance
-
-  # Subscriptions cannot take multiple email addresses
-  rdsAlarmSubCTL:
-    Type: "AWS::SNS::Subscription"
-    Condition: isProdEnv
-    Properties:
-      TopicArn: !Ref rdsAlarmTopic
-      Endpoint: !Ref supportEmail
-      Protocol: email
-      Region: !Ref AWS::Region
-    DependsOn:
-      - rdsTopicPolicy
-      - dbInstance
-
   #RDS Alarms - adjusted to stop alerts
   freeableMemoryTooLowAlarm:
     Type: AWS::CloudWatch::Alarm
-    DependsOn: rdsAlarmSubCST
     Condition: isProdEnv
     Properties:
       #AlarmDescription: "RDS Alarm: Freeable Memory <= 128MB"
@@ -363,21 +296,20 @@ Resources:
         - Name: DBInstanceIdentifier
           Value: !Ref dbInstance
       AlarmActions:
-        - !Ref rdsAlarmTopic
+        - !Ref snsArn
       InsufficientDataActions:
-        - !Ref rdsAlarmTopic
+        - !Ref snsArn
 
   freeDiskSpaceTooLowAlarm:
     Type: "AWS::CloudWatch::Alarm"
-    DependsOn: rdsAlarmSubCST
     Condition: isProdEnv
     Properties:
       AlarmDescription: !Sub "RDS Alarm: Available Disk Space < 1GB ( ${appName}-${envType} )"
       ActionsEnabled: true
       AlarmActions:
-        - !Ref rdsAlarmTopic
+        - !Ref snsArn
       InsufficientDataActions:
-        - !Ref rdsAlarmTopic
+        - !Ref snsArn
       MetricName: FreeStorageSpace
       Namespace: "AWS/RDS"
       Statistic: "Minimum"
@@ -391,15 +323,14 @@ Resources:
 
   cpuUsageTooHighAlarm:
     Type: "AWS::CloudWatch::Alarm"
-    DependsOn: rdsAlarmSubCST
     Condition: isProdEnv
     Properties:
       AlarmDescription: !Sub "RDS Alarm: Average CPU Utilization > 95% ( ${appName}-${envType} )"
       ActionsEnabled: true
       AlarmActions:
-        - !Ref rdsAlarmTopic
+        - !Ref snsArn
       InsufficientDataActions:
-        - !Ref rdsAlarmTopic
+        - !Ref snsArn
       MetricName: "CPUUtilization"
       Namespace: "AWS/RDS"
       Statistic: "Average"
@@ -413,15 +344,14 @@ Resources:
 
   swapUsageTooHighAlarm:
     Type: "AWS::CloudWatch::Alarm"
-    DependsOn: rdsAlarmSubCST
     Condition: isProdEnv
     Properties:
       AlarmDescription: !Sub "RDS Alarm: Swap Usage >  256MB  ( ${appName}-${envType} )"
       ActionsEnabled: true
       AlarmActions:
-        - !Ref rdsAlarmTopic
+        - !Ref snsArn
       InsufficientDataActions:
-        - !Ref rdsAlarmTopic
+        - !Ref snsArn
       MetricName: "SwapUsage"
       Namespace: "AWS/RDS"
       Statistic: "Average"
@@ -435,15 +365,14 @@ Resources:
 
   highDBConnections:
     Type: "AWS::CloudWatch::Alarm"
-    DependsOn: rdsAlarmSubCST
     Condition: isProdEnv
     Properties:
       AlarmDescription: !Sub "RDS Alarm:  Number of DB Connections >= 500  ( ${appName}-${envType} )"
       ActionsEnabled: true
       AlarmActions:
-        - !Ref rdsAlarmTopic
+        - !Ref snsArn
       InsufficientDataActions:
-        - !Ref rdsAlarmTopic
+        - !Ref snsArn
       MetricName: "DatabaseConnections"
       Namespace: "AWS/RDS"
       Statistic: "Average"
@@ -457,7 +386,6 @@ Resources:
 
   #subscribe to RDS events (prod only)
   rdsEventSub:
-    DependsOn: rdsAlarmSubCST
     Type: 'AWS::RDS::EventSubscription'
     Condition: isProdEnv
     Properties:
@@ -468,7 +396,7 @@ Resources:
       - maintenance
       - notification
       - recovery
-      SnsTopicArn: !Ref rdsAlarmTopic
+      SnsTopicArn: !Ref snsArn
       SourceIds:
         - !Ref dbInstance
         #- !Sub "${appName}-${envType}"

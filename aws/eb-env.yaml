@@ -43,10 +43,6 @@ Parameters:
     Description: "The description for this app version, typically the commit comment for the code version."
     Type: String
     Default: "Unknown"
-  cadEmail:
-    Description: "Contact email for CAD team"
-    Type: String
-    Default:  cad-aws@it.ox.ac.uk
   instanceSize:
     Description: "The ec2 instance size"
     Type: String
@@ -79,6 +75,9 @@ Parameters:
   solutionStack:
     Description: "Solution stack"
     Type: "String"
+  snsArn:
+    Description: "ARN for the SNS topic to send admin notifications to"
+    Type: String
 
 Mappings:
 
@@ -661,83 +660,6 @@ Resources:
       Description: !Sub "${appName}-${envType} - Binary-stored jks file"
       KmsKeyId: "alias/aws/secretsmanager"
 
-  ebTopic:
-    Type: "AWS::SNS::Topic"
-    Properties:
-      DisplayName: !Sub "EB status updates for ${appName}-${envType}"
-      KmsMasterKeyId: "alias/aws/sns"
-
-  ebTopicPolicy:
-    Type: 'AWS::SNS::TopicPolicy'
-    Properties:
-      PolicyDocument:
-        Id: Id1
-        Version: '2012-10-17'
-        Statement:
-        - Sid: "AllowFromAccount"
-          Effect: Allow
-          Principal:
-            AWS: !Ref AWS::AccountId
-          Action: 'sns:Publish'
-          Resource: !Ref ebTopic
-          Condition:
-            StringEquals:
-              'AWS:SourceAccount': !Ref 'AWS::AccountId'
-      Topics:
-      - !Ref ebTopic
-
-  SNSTopicPolicy:
-    Type: "AWS::SNS::TopicPolicy"
-    #Description: ""  #ToDo: is this allowed ?
-    Properties:
-      PolicyDocument:
-        Id: ""
-        Statement:
-          - Sid: AccountWidePermission
-            Effect: Allow
-            Principal:
-              AWS: !Ref AWS::AccountId
-            Action:
-              - SNS:Publish
-              #- SNS:RemovePermission
-              #- SNS:SetTopicAttributes
-              #- SNS:DeleteTopic
-              - SNS:ListSubscriptionsByTopic
-              - SNS:GetTopicAttributes
-              #- SNS:AddPermission
-              - SNS:Subscribe
-            Resource: !Ref ebTopic
-            Condition:
-              StringEquals:
-                AWS:SourceAccount: !Ref AWS::AccountId
-          - Sid: AllowEventBridgePublish
-            Effect: Allow
-            Principal:
-              Service: events.amazonaws.com
-            Action: sns:Publish
-            Resource: !Ref ebTopic
-      Topics:
-      - !Ref ebTopic
-
-  #notify CST
-  ebTopicSubCSST:
-    Type: "AWS::SNS::Subscription"
-    Properties:
-      TopicArn: !Ref ebTopic
-      Endpoint: !Ref csstEmail
-      Protocol: email
-      Region: !Ref AWS::Region
-
-  #notify CAD
-  ebTopicSubCAD:
-    Type: "AWS::SNS::Subscription"
-    Properties:
-      TopicArn: !Ref ebTopic
-      Endpoint: !Ref cadEmail
-      Protocol: email
-      Region: !Ref AWS::Region
-
-
   eventRuleEBEnvUpdates:
     Type: AWS::Events::Rule
     Properties:
@@ -752,14 +674,13 @@ Resources:
         detail:
           Status:
             - Environment update failed
-            - Environment update successful
           EnvironmentName:
             - !Ref Environment
       State: ENABLED
       Targets:
         - Id: !Sub "${appName}${envType}envupdates"
           #Just ref the topic here
-          Arn: !Ref ebTopic
+          Arn: !Ref snsArn
           #Arn: !Sub "arn:$(AWS::Partition):sns:$(AWS::Region):$(AWS::AccountId):${appName}-${envType}-eb-envstatus"
           InputPath: $.detail
 
@@ -778,14 +699,14 @@ Resources:
           Status:
             - Environment health changed
           Severity:
-            - ERROR
+            - WARN
           EnvironmentName:
             - !Ref Environment #!Sub "${appName}-${envType}-env"
       State: ENABLED
       Targets:
         - Id: !Sub "${appName}${envType}healthstatus"
           #Just ref the topic here
-          Arn: !Ref ebTopic
+          Arn: !Ref snsArn
           #Arn: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${appName}-${envType}-eb-envstatus"
           InputPath: $.detail
 
@@ -811,7 +732,7 @@ Resources:
       Targets:
         - Id: !Sub "${appName}${envType}mgdupdates"
           #Just ref the topic here
-          Arn: !Ref ebTopic
+          Arn: !Ref snsArn
           #Arn: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${appName}-${envType}-eb-envstatus"
           InputPath: $.detail
 
