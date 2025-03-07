@@ -222,22 +222,14 @@ Resources:
   Environment:
     Type: "AWS::ElasticBeanstalk::Environment"
     Properties:
-      EnvironmentName: !Sub "${appName}-${envType}"
+      EnvironmentName: !Sub "${appName}-${envType}-env"
       ApplicationName: !Ref appName
       VersionLabel: !Ref ApplicationVersion
-      #SolutionStackName: !Ref ebSolutionStack
-      TemplateName: !Ref appConfigTemplate
+      SolutionStackName: !Ref solutionStack
       Tier:
           Name: "WebServer"
           Type: "Standard"
           Version: "1.0"
-
-  appConfigTemplate:
-    Type: AWS::ElasticBeanstalk::ConfigurationTemplate
-    Properties:
-      ApplicationName: !Ref appName
-      SolutionStackName: !Ref solutionStack
-      Description: !Sub "Config template - ${appName}"
       OptionSettings:
         - Namespace: "aws:elasticbeanstalk:application:environment"
           # The Secret Manager name that contains the database hostname/port/username/password/
