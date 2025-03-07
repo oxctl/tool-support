@@ -586,6 +586,7 @@ Resources:
                 dom:
                   Fn::ImportValue:
                     !Sub "${orgName}-${accountType}-route53-domainname"
+        - !Join [ "",[ !FindInMap [ AccountTypeMappings, !Ref accountType, ltiRootDomainName ],".", !Ref accountParentDomain ] ]
         Origins:
           - DomainName:
               Fn::ImportValue:
