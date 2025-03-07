@@ -84,23 +84,16 @@ Parameters:
     Default: "canvas.ox.ac.uk"
 
 Mappings:
-
   AccountTypeMappings:
     prod:
-      "ltiRootDomainName": "lti"
-      "proxyRootDomainName": "proxy"
-      "toolsRootDomainName": "tools"
+      "ltiName": "lti"
+      "proxyName": "proxy"
+      "toolsName": "tools"
     nonprod:
-      "ltiRootDomainName": "lti-dev"
+      "ltiName": "lti-dev"
       "proxyRootDomainName": "proxy-dev"
-      "toolsRootDomainName": "tools-dev"
+      "toolsName": "tools-dev"
   
-  #AccountTypeMappings:
-  #  prod:
-  #    "cadRootDomainName": "apps"
-  #  nonprod:
-  #    "cadRootDomainName": "apps-nonprod"
-
   EnvironmentMappings:
     prod:
       "mngdUpdates": "TUE:06:00"
@@ -222,7 +215,7 @@ Resources:
   Environment:
     Type: "AWS::ElasticBeanstalk::Environment"
     Properties:
-      EnvironmentName: !Sub "${appName}-${envType}-env"
+      EnvironmentName: !Sub "${appName}-${envType}"
       ApplicationName: !Ref appName
       VersionLabel: !Ref ApplicationVersion
       SolutionStackName: !Ref solutionStack
@@ -554,7 +547,20 @@ Resources:
           Namespace: "aws:elbv2:listenerrule:additionaldomains"
           OptionName: "HostHeaders"
           Value:
-            !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, ltiRootDomainName],".", !Ref accountParentDomain ]]
+            !Join 
+              - ","
+              - - !Sub
+                  - "${ltiName}.${accountParentDomain}"
+                  - ltiName: !FindInMap [ AccountTypeMappings, !Ref accountType, ltiName ]
+                    accountParentDomain: !Ref accountParentDomain
+                - !Sub
+                  - "${proxyRootDomainName}.${accountParentDomain}"
+                  - proxyRootDomainName: !FindInMap [ AccountTypeMappings, !Ref accountType, proxyRootDomainName ]
+                    accountParentDomain: !Ref accountParentDomain
+                - !Sub
+                  - "${toolsName}.${accountParentDomain}"
+                  - toolsName: !FindInMap [ AccountTypeMappings, !Ref accountType, toolsName ]
+                    accountParentDomain: !Ref accountParentDomain
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:additionaldomains"
           OptionName: "PathPatterns"
@@ -586,7 +592,18 @@ Resources:
                 dom:
                   Fn::ImportValue:
                     !Sub "${orgName}-${accountType}-route53-domainname"
-        - !Join [ "",[ !FindInMap [ AccountTypeMappings, !Ref accountType, ltiRootDomainName ],".", !Ref accountParentDomain ] ]
+        - !Sub
+          - "${ltiName}.${accountParentDomain}"
+          - ltiName: !FindInMap [ AccountTypeMappings, !Ref accountType, ltiName ]
+            accountParentDomain: !Ref accountParentDomain
+        - !Sub
+          - "${proxyRootDomainName}.${accountParentDomain}"
+          - proxyRootDomainName: !FindInMap [ AccountTypeMappings, !Ref accountType, proxyRootDomainName ]
+            accountParentDomain: !Ref accountParentDomain
+        - !Sub
+          - "${toolsName}.${accountParentDomain}"
+          - toolsName: !FindInMap [ AccountTypeMappings, !Ref accountType, toolsName ]
+            accountParentDomain: !Ref accountParentDomain 
         Origins:
           - DomainName:
               Fn::ImportValue:
