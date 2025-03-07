@@ -78,9 +78,22 @@ Parameters:
   snsArn:
     Description: "ARN for the SNS topic to send admin notifications to"
     Type: String
+  accountParentDomain:
+    Description: Allows us to override the parent domain, useful in some situations
+    Type: String
+    Default: "canvas.ox.ac.uk"
 
 Mappings:
 
+  AccountTypeMappings:
+    prod:
+      "ltiRootDomainName": "lti"
+      "proxyRootDomainName": "proxy"
+      "toolsRootDomainName": "tools"
+    nonprod:
+      "ltiRootDomainName": "lti-dev"
+      "proxyRootDomainName": "proxy-dev"
+      "toolsRootDomainName": "tools-dev"
   
   #AccountTypeMappings:
   #  prod:
@@ -543,6 +556,22 @@ Resources:
           Value: "1"
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listenerrule:fwd2ebenv"
+          OptionName: "Process"
+          Value: "default"
+        - ResourceName: ":default"
+          Namespace: "aws:elbv2:listenerrule:additionaldomains"
+          OptionName: "HostHeaders"
+          Value:
+            !Join ["",[!FindInMap [AccountTypeMappings, !Ref accountType, ltiRootDomainName],".", !Ref accountParentDomain ]]
+        - ResourceName: ":default"
+          Namespace: "aws:elbv2:listenerrule:additionaldomains"
+          OptionName: "PathPatterns"
+        - ResourceName: ":default"
+          Namespace: "aws:elbv2:listenerrule:additionaldomains"
+          OptionName: "Priority"
+          Value: "2"
+        - ResourceName: ":default"
+          Namespace: "aws:elbv2:listenerrule:additionaldomains"
           OptionName: "Process"
           Value: "default"
 
