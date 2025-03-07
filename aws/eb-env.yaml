@@ -535,7 +535,7 @@ Resources:
         - ResourceName: ":default"
           Namespace: "aws:elbv2:listener:443"
           OptionName: "Rules"
-          Value: "fwd2ebenv"  # use this rule
+          Value: "fwd2ebenv,additionaldomains"  # use this rule
         - ResourceName: ":default"
           # According to the documentation this should disable the default listener but it doesn't seem to.
           Namespace: "aws:elbv2:listener:80"
