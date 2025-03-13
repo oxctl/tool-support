@@ -95,7 +95,7 @@ public class LtiJwtConfig {
      * This uses the audience of the JWT to lookup a secret and then if found uses that to check
      * the signature.
      */
-    private static class AudienceHmacJWSKeySelector implements JWSKeySelector<IssuerAndAudienceSecurityContext> {
+    public static class AudienceHmacJWSKeySelector implements JWSKeySelector<IssuerAndAudienceSecurityContext> {
 
         private final MultiAudienceConfigResolver multiAudienceConfigResolver;
 
