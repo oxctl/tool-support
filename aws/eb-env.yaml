@@ -91,7 +91,7 @@ Mappings:
       "toolsName": "tools"
     nonprod:
       "ltiName": "lti-dev"
-      "proxyRootDomainName": "proxy-dev"
+      "proxyName": "proxy-dev"
       "toolsName": "tools-dev"
   
   EnvironmentMappings:
@@ -554,8 +554,8 @@ Resources:
                   - ltiName: !FindInMap [ AccountTypeMappings, !Ref accountType, ltiName ]
                     accountParentDomain: !Ref accountParentDomain
                 - !Sub
-                  - "${proxyRootDomainName}.${accountParentDomain}"
-                  - proxyRootDomainName: !FindInMap [ AccountTypeMappings, !Ref accountType, proxyRootDomainName ]
+                  - "${proxyName}.${accountParentDomain}"
+                  - proxyName: !FindInMap [ AccountTypeMappings, !Ref accountType, proxyName ]
                     accountParentDomain: !Ref accountParentDomain
                 - !Sub
                   - "${toolsName}.${accountParentDomain}"
@@ -597,8 +597,8 @@ Resources:
           - ltiName: !FindInMap [ AccountTypeMappings, !Ref accountType, ltiName ]
             accountParentDomain: !Ref accountParentDomain
         - !Sub
-          - "${proxyRootDomainName}.${accountParentDomain}"
-          - proxyRootDomainName: !FindInMap [ AccountTypeMappings, !Ref accountType, proxyRootDomainName ]
+          - "${proxyName}.${accountParentDomain}"
+          - proxyName: !FindInMap [ AccountTypeMappings, !Ref accountType, proxyName ]
             accountParentDomain: !Ref accountParentDomain
         - !Sub
           - "${toolsName}.${accountParentDomain}"
