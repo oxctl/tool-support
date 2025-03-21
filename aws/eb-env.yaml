@@ -246,11 +246,11 @@ Resources:
           Value: !FindInMap [ EnvironmentMappings, !Ref envType, springProfile ]
         - Namespace: "aws:elasticbeanstalk:application:environment"
           # The iss value that is required in JWTs. This is different between Canvas prod/beta/test instances.
-          OptionName: "JWT_ISSUER"
+          OptionName: "JWT_ISSUER_LTI_ISSUER"
           Value: !FindInMap [ EnvironmentMappings, !Ref envType, jwtIssuer ]
         - Namespace: "aws:elasticbeanstalk:application:environment"
           # The URL we should use to download the JWKs that we can use to validate the JWT signature.
-          OptionName: "JWT_JWKS_URI"
+          OptionName: "JWT_ISSUER_LTI_JWKSURL"
           Value: !FindInMap [ EnvironmentMappings, !Ref envType, jwtJWKSURI ]
         - Namespace: "aws:elasticbeanstalk:application:environment"
           # The iss that we sign our issued tokens with.
