@@ -4,5 +4,5 @@
   "accountType=prod",
   "awsRegion=eu-west-1",
   "awsAccountId=211125465582",
-  "cfSSLCertARN=arn:aws:acm:us-east-1:211125465582:certificate/de5e7b9c-da4c-40ba-8b4b-68b11c05a445"
+  "cfSSLCertARN=arn:aws:acm:us-east-1:211125465582:certificate/31dd3280-0adf-44c6-9c9e-773aba1a3df5"
 ]
