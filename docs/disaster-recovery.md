@@ -9,8 +9,7 @@ As indicated below, the DNS change (and subsequent smoke test of the tool) shoul
 ## Overview
 
 The whole application is deployed through CloudFormation and this is launched from GitHub Actions. To test
-or recover the service for real, create a specially named branch, enable builds for that branch and push it to GitHub. This should cause
-GitHub Actions to build the application and deploy it to AWS in the DR region using CloudFormation.
+or recover the service for real, create a specially named branch, enable builds for that branch and push it to GitHub. This should cause GitHub Actions to build the application and deploy it to AWS in the DR region using CloudFormation.
 
 ## Requirements
 
