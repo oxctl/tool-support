@@ -213,13 +213,23 @@ Resources:
       # This gets uploaded by `aws cloudformation package`
       SourceBundle: "./build/docker.zip"
 
+  # We use a configuration template so that at environment creation the correct solution stack is used,
+  # but then we can update the value supplied to the stack later and nothing changes (but the stack still deploys). 
+  # Only when the managed updates are applied will the solution stack be updated.
+  EnvironmentTemplate:
+    Type: "AWS::ElasticBeanstalk::ConfigurationTemplate"
+    Properties:
+        ApplicationName: !Ref appName
+        Description: !Sub "Configuration template for ${appName}-${envType}"
+        SolutionStackName: !Ref solutionStack
+
   Environment:
     Type: "AWS::ElasticBeanstalk::Environment"
     Properties:
-      EnvironmentName: !Sub "${appName}-${envType}"
+      EnvironmentName: !Sub "${appName}-${envType}-env"
       ApplicationName: !Ref appName
       VersionLabel: !Ref ApplicationVersion
-      SolutionStackName: !Ref solutionStack
+      TemplateName: !Ref EnvironmentTemplate
       Tier:
           Name: "WebServer"
           Type: "Standard"
