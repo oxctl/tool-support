@@ -100,17 +100,18 @@ Mappings:
       "springProfile": "aws" #SPRING_PROFILES_ACTIVE
       "jwtIssuer": "https://lti.canvas.ox.ac.uk"
       "jwtJWKSURI": "https://lti.canvas.ox.ac.uk/.well-known/jwks.json"
+      "ltiIssuer": "https://lti.canvas.ox.ac.uk"
     beta:
       "mngdUpdates": "MON:06:00"
       # We have an additional profile that unsets things on the non-prod account
       "springProfile": "aws,nonprod" #SPRING_PROFILES_ACTIVE
       "jwtIssuer": "https://lti-dev.canvas.ox.ac.uk"
       "jwtJWKSURI": "https://lti-dev.canvas.ox.ac.uk/.well-known/jwks.json"
+      "ltiIssuer": "https://lti-dev.canvas.ox.ac.uk"
 
 Conditions:
   isProd: {"Fn::Equals": [!Ref envType, "prod"]}
   isNonProd: {"Fn::Not" : [Condition: isProd]}
-  #disableSentry: {"Fn::Equals" : [!Ref disableSentryIO, "Yes"]}  #ToDo: how to disable SENTRY in test deployments now it's in secrets-manager?
 
 
 Resources:
@@ -262,10 +263,9 @@ Resources:
           OptionName: "JWT_JWKS_URI"
           Value: !FindInMap [ EnvironmentMappings, !Ref envType, jwtJWKSURI ]
         - Namespace: "aws:elasticbeanstalk:application:environment"
-          # The hostname that we respond to request on. This is used so we know
-          OptionName: "HOSTNAME"
-          Value:
-            Fn::ImportValue: !Sub "${appName}-${accountType}-route53-domainname"
+          # The iss that we sign our issued tokens with.
+          OptionName: "LTI_ISSUER"
+          Value: !FindInMap [ EnvironmentMappings, !Ref envType, ltiIssuer ]
           # At one point this used to be in a different configuration template but cloudformation doesn't update
           # templates that use `SourceConfiguration` so it was un-updatable. These options are now included in the main
           # configuration template
