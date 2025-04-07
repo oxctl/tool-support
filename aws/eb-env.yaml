@@ -225,7 +225,7 @@ Resources:
   Environment:
     Type: "AWS::ElasticBeanstalk::Environment"
     Properties:
-      EnvironmentName: !Sub "${appName}-${envType}"
+      EnvironmentName: !Sub "${appName}-${envType}-env"
       ApplicationName: !Ref appName
       VersionLabel: !Ref ApplicationVersion
       TemplateName: !Ref EnvironmentTemplate
