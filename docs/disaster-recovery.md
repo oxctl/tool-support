@@ -22,10 +22,14 @@ You must be able to login to, and / or have the relevant access to
 
 Check that:
   - the low-level infrastructure, for example, VPC,  has been deployed to the AWS region where recovery is to happen
-  - the regional stacks exists, see: https://github.com/oxctl/aws-shared/blob/main/docs/disaster_recovery.md
   - GitHub Actions is able to connect to the AWS account (should work if low-level infrastructure is present)
 
 ## Steps
+
+### Deploy the regional stacks
+
+Create the regional stacks, see: https://github.com/oxctl/aws-shared/blob/main/docs/disaster_recovery.md
+
 
 ### Deploy the application
 
@@ -64,6 +68,9 @@ The following can be undertaken via the Github web UI or on your local desktop a
 
 If something didn't work correctly, and you wish to start again there is a GitHub action called `Delete Stack` that will attempt to clean-up everything associated with a deployment. 
 
+
+#### Tear down application
+
 1. in AWS, remove delete protection on the RDS DB (the prodution DB will always have this set)
 
    
@@ -77,5 +84,11 @@ In Github, run the `Delete Stack` Action. In the dialogue box that appears:
 Before removing all the CloudFormation stacks it will empty the created S3 buckets (if there are any) so that the CloudFormation stacks can be successfully deleted (CF will refuse to delete a non-empty S3 bucket).
 
 If the `Delete Stack` Action fails then the stack can be 'force deleted' via the AWS UI.
+
+#### Tear down regional stacks
+
+Remove the regional stacks, see: https://github.com/oxctl/aws-shared/blob/main/docs/disaster_recovery.md
+
+#### Tidy up Github
 
 Once the DR process has been completed, delete the branch, e.g., `dr-tool-support` in Github.
