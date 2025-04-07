@@ -1,0 +1,10 @@
+name: Delete Stack
+
+on:
+  workflow_dispatch:
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "This is a placeholder workflow - run from new-account branch"
