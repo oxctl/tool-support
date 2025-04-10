@@ -1,0 +1,594 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Metadata: {}
+Description: "Creates an RDS DB instance, along with its option and parameter groups"
+
+Parameters:
+
+  orgName:
+    Description:  "org name used in naming"
+    Type: String
+    Default: "cad"
+  accountType:
+    Type: "String"
+    Description: "production or non-production account?"
+    AllowedValues:
+      - "prod"
+      - "nonprod"
+  namePrefix:
+    Description: "Naming prefix for buckets"
+    Type: String
+    Default: oxcanvas
+  appName:
+    Description:  "Name of app"
+    Type: String
+  availabilityZone:
+    Description:  "In which AZ to deploy DB?"
+    Type: "String"
+    AllowedValues:
+      - "a"
+      - "b"
+      #- "c"
+    Default: 'b'
+  envType:
+    Description: "The env type: prod, beta, test, etc"
+    Type: String
+    AllowedValues:
+      - "prod"
+      - "beta"
+      - "test"
+  dbEngineMajorVer:
+    Description: "The mysql major version.  WARNING: only change during planned major version upgrades"
+    Type: String
+    Default: "8.0"
+  dbEngineMinorVer:
+    Description:  "Minor version of mysql engine ... lookup the latest"
+    Type: String
+    Default: "8.0.36"
+  charSet:
+    Description:  "What character set to use? Default to utf8"
+    Type: String
+    Default: "utf8"
+    AllowedValues:
+      - "utf8"
+  ebStorageType:
+    Description:  "What EBS storage type to use ? Default to gp2 as adequate, but allow for choosing gp3 which offers better IOPs/$ for certain use cases"
+    Type: String
+    Default: "gp2"
+    AllowedValues:
+      - "gp2"
+      - "gp3"
+  dbPort:
+    Description:  "The database port. Should be same for all environments"
+    Type: String
+    Default: "3306"
+  dbInstanceSize:
+    Description:  "The size of the instance.  Needs to support encryption"
+    Type: String
+    AllowedValues:
+      - "db.t3.micro" #for all, except user-mgt
+      - "db.t3.small" #for user-mgt
+    Default: "db.t3.micro"
+  snapshotToUse:
+    Description: "This is useful if you need to populate the new DB from an existing manual snapshot or aws backup snapshot. Leave BLANK to create a blank DB. Format of the parameter is the ARN of the snapshot to use. For DR, this is a required parameter or the template will not build on account of backup replication."
+    Type: String
+  supportEmail:
+    Description: "Email for support (Cloud CAD)"
+    Type: String
+    Default: "cad-aws@it.ox.ac.uk"
+  csstSupportEmail:
+    Description: "Email for support (Cloud Services)"
+    Type: String
+    Default: "cloud-services@it.ox.ac.uk"
+  roUserName:
+    Description: "Username for read only user.  Leave blank to create none, type 'default' to create a user named 'rouser', or give a custom name"
+    Type: "String"
+    Default: "default"
+  pythonRuntime:
+    Type: "String"
+    Description: "Which python runtime to use for lambda functions"
+    Default: "python3.9"
+  rouserSchedule:
+    Type: "String"
+    Description: "Schedule the lambda function to execute 5-10 minutes from now: format: at(yyyy-mm-ddThh:mm); eg: at(2024-06-18T12:30).  Timezone is Europe/London (not UTC)"
+    Default: "at(2024-08-09T17:15)"
+  ecrTagVersion:
+    Type: "String"
+    Description: "The version of the dbdump/dbload code in ECR to run"
+    Default: "2"
+  snsArn:
+    Description: "ARN for the SNS topic to send admin notifications to"
+    Type: String
+
+Mappings:
+
+  EnvironmentMappings:
+    prod:
+      "backupWindow": "10:18-00:08"  #ToDo: make param ?
+      "backupRetention": "14" # retain backups for no. of days
+      "maintenanceWindow": "tue:01:00-tue:04:00"
+      "deletionProtection": "true"
+      "cloudwatchLogs": "audit,error,slowquery"
+      "secretRotationSchedule": "cron(0 5 ? * WED#2 *)"
+      "dbloadSchedule": "" #just a placeholder
+    beta:
+      "backupWindow": "10:18-00:08"  #ToDo: make param ?
+      "backupRetention": "7" # retain backups for no. of days
+      "maintenanceWindow": "mon:01:00-mon:04:00"
+      "deletionProtection": "false"
+      "cloudwatchLogs": "error,slowquery"
+      "secretRotationSchedule": "cron(0 5 ? * WED#1 *)"
+      "dbloadSchedule": "cron(0 6 ? * 1 *)" #every sunday @ 6am
+
+Conditions:
+  isProdRegion: {"Fn::Equals" : [!Ref "AWS::Region", 'eu-west-1']}
+  isProdEnv: {"Fn::Equals" : [!Ref envType, 'prod']}
+  isBetaEnv: {"Fn::Equals" : [!Ref envType, 'beta']}
+  isTestEnv: {"Fn::Equals" : [!Ref envType, 'test']}
+  isNonProdEnv: !Or
+    - !Condition isBetaEnv
+    - !Condition isTestEnv
+  isProdAccount: {"Fn::Equals" : [!Ref accountType, 'prod']}
+  isNonProdAccount: {"Fn::Equals" : [!Ref accountType, 'nonprod']}
+  noSnapshot: {"Fn::Equals" : [!Ref snapshotToUse, ""]}
+  ###
+  dontCreateROUser: {"Fn::Equals" : [!Ref roUserName, '']}
+  createROUser: !Not [Condition: dontCreateROUser]
+  defaultROUserName: {"Fn::Equals" : [!Ref roUserName, 'default']}
+
+
+
+Resources:
+
+  dbParamGroup:
+    Type: "AWS::RDS::DBParameterGroup"
+    Properties:
+      DBParameterGroupName:
+        Fn::Sub:
+          - "mysql${ver}-${app}-${env}"
+          - ver: !Select [0, !Split [".", !Ref dbEngineMajorVer]]
+            app: !Ref appName
+            env: !Ref envType
+      Description: !Sub "DB Parameter group for ${appName}-${envType}"
+      Family: !Sub "mysql${dbEngineMajorVer}"
+      Parameters:
+        character_set_client: !Sub "${charSet}"
+        character_set_connection: !Sub "${charSet}"
+        character_set_database: !Sub "${charSet}"
+        character_set_filesystem: !Sub "${charSet}"
+        character_set_results: !Sub "${charSet}"
+        character_set_server: !Sub "${charSet}"
+        general_log: "1"
+        log_output: "FILE"
+        long_query_time: "5"
+        slow_query_log: "1"
+
+  #dbOptionGroup:
+  #  Type: "AWS::RDS::OptionGroup"
+  #  Properties:
+  #    OptionGroupName:
+  #      Fn::Sub:
+  #        - "mysql${ver}-${app}-${env}"
+  #        - ver: !Select [0, !Split [".", !Ref dbEngineMajorVer]]
+  #          app: !Ref appName
+  #          env: !Ref envType
+  #    EngineName: "mysql"
+  #    MajorEngineVersion: !Sub "${dbEngineMajorVer}"
+  #    OptionGroupDescription: !Sub "Option group for ${appName}-${envType}"
+  #    OptionConfigurations:
+  #    - OptionName: "MARIADB_AUDIT_PLUGIN"
+  #      OptionSettings:
+  #      - Name: "SERVER_AUDIT_FILE_PATH"
+  #        Value: "/rdsdbdata/log/audit/"
+  #      - Name: "SERVER_AUDIT_FILE_ROTATIONS"
+  #        Value: "4"
+  #      - Name: "SERVER_AUDIT_QUERY_LOG_LIMIT"
+  #        Value: "1024"
+  #      - Name: "SERVER_AUDIT"
+  #        Value: "FORCE_PLUS_PERMANENT"
+  #      - Name: "SERVER_AUDIT_LOGGING"
+  #        Value: "ON"
+  #      - Name: "SERVER_AUDIT_FILE_ROTATE_SIZE"
+  #        Value: "5000000"
+  #      - Name: "SERVER_AUDIT_EVENTS"
+  #        Value: "CONNECT,QUERY_DCL,QUERY_DDL"
+
+
+  dbSecretProdRegion:
+    Type: "AWS::SecretsManager::Secret"
+    Properties:
+      Name: !Sub "${appName}/${envType}/rds/db-password"
+      GenerateSecretString:
+        ExcludeCharacters: "\"'@/\\"
+        ExcludeLowercase: false
+        ExcludeNumbers: false
+        ExcludePunctuation: false
+        ExcludeUppercase: false
+        IncludeSpace: false
+        PasswordLength: 16
+        RequireEachIncludedType: true
+        GenerateStringKey: "password"
+        SecretStringTemplate: '{"username": "admin"}'
+      KmsKeyId: "alias/aws/secretsmanager"
+
+  dbInstance:
+    Type: "AWS::RDS::DBInstance"
+    #DeletionPolicy: Retain
+    #UpdateReplacePolicy: Retain
+    Properties:
+      Tags:
+        # Enable daily backup to AWS Backup Vault (and replication out of region)
+        - Key: backup
+          Value: daily
+      AllocatedStorage: "20"
+      DBInstanceClass: !Ref dbInstanceSize
+      Engine: "mysql"
+      #NOTE: MasterUsername/Password not used when db is restored from snapshots
+      ##     You inherit what was already there
+      MasterUsername:
+        Fn::Sub: "{{resolve:secretsmanager:${dbSecretProdRegion}::username}}"
+      MasterUserPassword:
+        Fn::Sub: "{{resolve:secretsmanager:${dbSecretProdRegion}::password}}"
+      DBName:
+        # Don't attempt to set a name if restoring from snapshot.
+        Fn::If:
+          - noSnapshot
+          - !Join ["", !Split ["-", !Ref appName]]
+          - !Ref "AWS::NoValue"
+      DBSnapshotIdentifier:
+        Fn::If:
+          - noSnapshot
+          - !Ref "AWS::NoValue"
+          - !Ref snapshotToUse
+      AvailabilityZone: !Sub "${AWS::Region}${availabilityZone}"
+      DBSubnetGroupName:
+        Fn::ImportValue:
+            !Sub "${orgName}-${accountType}-db-subnet-group-private"
+      PreferredMaintenanceWindow: !FindInMap [EnvironmentMappings, !Ref envType,maintenanceWindow]
+      MultiAZ: false
+      #NetworkType: IPV4
+      EngineVersion: !Ref dbEngineMinorVer #"8.0.20"
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      LicenseModel: "general-public-license"
+      PubliclyAccessible: false
+      StorageType: !Ref ebStorageType
+      Port: !Ref dbPort
+      StorageEncrypted: true #encrypt all DBs
+      CopyTagsToSnapshot: true
+      MonitoringInterval: 0
+      EnableIAMDatabaseAuthentication: false
+      EnablePerformanceInsights: false
+      DeletionProtection: !FindInMap [EnvironmentMappings, !Ref envType,deletionProtection]
+      VPCSecurityGroups:
+        - Fn::ImportValue:
+            !Sub "${orgName}-${accountType}-db-sgid"
+      DBParameterGroupName: !Ref dbParamGroup
+      #OptionGroupName: !Ref dbOptionGroup
+      EnableCloudwatchLogsExports:
+        Fn::Split: [",",!FindInMap [EnvironmentMappings, !Ref envType, cloudwatchLogs]]
+      CACertificateIdentifier: "rds-ca-rsa2048-g1" #"rds-ca-2019"
+
+  secretAttachmentProdRegion:
+    Type: "AWS::SecretsManager::SecretTargetAttachment"
+    Properties:
+      SecretId: !Ref dbSecretProdRegion
+      TargetId: !Ref dbInstance
+      TargetType: AWS::RDS::DBInstance
+
+  #RDS Alarms - adjusted to stop alerts
+  freeableMemoryTooLowAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: isProdEnv
+    Properties:
+      #AlarmDescription: "RDS Alarm: Freeable Memory <= 128MB"
+      AlarmDescription: "RDS Alarm: Freeable Memory <= 64MB"
+      Namespace: AWS/RDS
+      MetricName: FreeableMemory
+      Unit: Bytes
+      Statistic: Average
+      #Period: 300
+      Period: 1800
+      EvaluationPeriods: 3
+      Threshold: 65536000 # 64mb ... 128MB = 131072000 ... 262144000 = 256MB
+      ComparisonOperator: LessThanOrEqualToThreshold
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Ref dbInstance
+      AlarmActions:
+        - !Ref snsArn
+      InsufficientDataActions:
+        - !Ref snsArn
+
+  freeDiskSpaceTooLowAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Condition: isProdEnv
+    Properties:
+      AlarmDescription: !Sub "RDS Alarm: Available Disk Space < 1GB ( ${appName}-${envType} )"
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref snsArn
+      InsufficientDataActions:
+        - !Ref snsArn
+      MetricName: FreeStorageSpace
+      Namespace: "AWS/RDS"
+      Statistic: "Minimum"
+      Dimensions:
+      - Name: "DBInstanceIdentifier"
+        Value: !Ref dbInstance
+      Period: 300
+      EvaluationPeriods: 3
+      Threshold: 1024000000   #1GB ... 2048000000 = 2GB,  500000000 = 500mb
+      ComparisonOperator: LessThanThreshold
+
+  cpuUsageTooHighAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Condition: isProdEnv
+    Properties:
+      AlarmDescription: !Sub "RDS Alarm: Average CPU Utilization > 95% ( ${appName}-${envType} )"
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref snsArn
+      InsufficientDataActions:
+        - !Ref snsArn
+      MetricName: "CPUUtilization"
+      Namespace: "AWS/RDS"
+      Statistic: "Average"
+      Dimensions:
+      - Name: "DBInstanceIdentifier"
+        Value: !Ref dbInstance
+      Period: 300
+      EvaluationPeriods: 6
+      Threshold: 95
+      ComparisonOperator: GreaterThanThreshold
+
+  swapUsageTooHighAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Condition: isProdEnv
+    Properties:
+      AlarmDescription: !Sub "RDS Alarm: Swap Usage >  256MB  ( ${appName}-${envType} )"
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref snsArn
+      InsufficientDataActions:
+        - !Ref snsArn
+      MetricName: "SwapUsage"
+      Namespace: "AWS/RDS"
+      Statistic: "Average"
+      Dimensions:
+      - Name: "DBInstanceIdentifier"
+        Value: !Ref dbInstance
+      Period: 300
+      EvaluationPeriods: 3
+      Threshold: 256000000
+      ComparisonOperator: GreaterThanThreshold
+
+  highDBConnections:
+    Type: "AWS::CloudWatch::Alarm"
+    Condition: isProdEnv
+    Properties:
+      AlarmDescription: !Sub "RDS Alarm:  Number of DB Connections >= 500  ( ${appName}-${envType} )"
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref snsArn
+      InsufficientDataActions:
+        - !Ref snsArn
+      MetricName: "DatabaseConnections"
+      Namespace: "AWS/RDS"
+      Statistic: "Average"
+      Dimensions:
+      - Name: "DBInstanceIdentifier"
+        Value: !Ref dbInstance
+      Period: 60
+      EvaluationPeriods: 5
+      Threshold: 500
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+
+  #subscribe to RDS events (prod only)
+  rdsEventSub:
+    Type: 'AWS::RDS::EventSubscription'
+    Condition: isProdEnv
+    Properties:
+      EventCategories:
+      - failover
+      - failure
+      - low storage
+      - maintenance
+      - notification
+      - recovery
+      SnsTopicArn: !Ref snsArn
+      SourceIds:
+        - !Ref dbInstance
+        #- !Sub "${appName}-${envType}"
+      SourceType: 'db-instance'
+
+  #** readonly user lambda
+  ## create an sm secret for readonly user
+  roUserSecret:
+    Type: "AWS::SecretsManager::Secret"
+    Condition: createROUser
+    Properties:
+      Name: !Sub "${appName}/${envType}/rds/rouser"
+      GenerateSecretString:
+        ExcludeCharacters: "\"'@/\\"
+        ExcludeLowercase: false
+        ExcludeNumbers: false
+        ExcludePunctuation: false
+        ExcludeUppercase: false
+        IncludeSpace: false
+        PasswordLength: 16
+        RequireEachIncludedType: true
+        GenerateStringKey: "password"
+        SecretStringTemplate: 
+          Fn::Sub:
+            - '{"engine": "mysql", "username": "${rou}", "masterarn": "${dbsecret}", "host": "${dbhost}"}'
+            - rou: !If [ defaultROUserName, "rouser", !Sub "${roUserName}" ]
+              dbsecret: !Ref dbSecretProdRegion
+              dbhost: !GetAtt dbInstance.Endpoint.Address
+      KmsKeyId: "alias/aws/secretsmanager"
+
+  #Create a readonly user, if indicated
+  roUserFunction:
+    Type: "AWS::Lambda::Function"
+    Condition: createROUser
+    Properties:
+      Description: !Sub "Create a read only user for rds instance for ${appName}-${envType}, for reporting and testing"
+      FunctionName: !Sub "${appName}-${envType}-rouser"
+      Handler: "rouser.create_rouser"
+      Architectures: 
+      - "x86_64"
+      Code: 
+        S3Bucket:
+          Fn::ImportValue: !Sub "${orgName}-${accountType}-shared-bucket1"
+        S3Key: "lambda/rouser/rouser.zip"
+      PackageType: Zip
+      Environment:
+        Variables:
+          APP_NAME: !Ref appName  #this should be instance name
+          ENV_TYPE: !Ref envType
+          ROUSER_SECRET_ID: !Ref roUserSecret
+          #DB_SECRET_ID: !Ref dbSecret
+      MemorySize: 256
+      Role: 
+        Fn::ImportValue: !Sub "${orgName}-${accountType}-readonly-user-role-arn"
+      Runtime: !Ref pythonRuntime
+      Timeout: 300
+      VpcConfig: 
+        SubnetIds:
+          Fn::Split: 
+            - ","
+            - Fn::ImportValue: !Sub "${orgName}-${accountType}-vpc-private-subnets"
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub "${orgName}-${accountType}-lambda-sgid"
+      EphemeralStorage: 
+        Size: 512
+      LoggingConfig:
+        ApplicationLogLevel: INFO
+        LogFormat: JSON
+        SystemLogLevel: DEBUG
+        LogGroup: !Ref rouserLogGroup
+        
+
+  rouserLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Condition: createROUser
+    Properties:
+      LogGroupName: !Sub "/lambda/${appName}-${envType}-rouser"
+      RetentionInDays: 7
+
+  scheduleReadonlyUser:
+    Type: "AWS::Scheduler::Schedule"
+    Condition: createROUser
+    Properties:
+      Name: !Sub "${appName}-${envType}-rouser-onetime-schedule"
+      Description: "Schedule creation of a readonly user for this rds instance"
+      State: "ENABLED"
+      GroupName: "default"
+      ScheduleExpression: !Ref rouserSchedule
+      ScheduleExpressionTimezone: "Europe/London"
+      FlexibleTimeWindow: 
+        Mode: "OFF"
+      Target: 
+        Arn: !GetAtt roUserFunction.Arn
+        RetryPolicy: 
+          MaximumEventAgeInSeconds: 86400
+          MaximumRetryAttempts: 0
+        RoleArn: 
+          Fn::ImportValue: !Sub "${orgName}-${accountType}-lambda-scheduler-role-arn"
+
+  rouserSecretRotationSchedule:
+    Condition: createROUser
+    
+    Type: 'AWS::SecretsManager::RotationSchedule'
+    Properties:
+      SecretId: !Ref roUserSecret  
+      RotateImmediatelyOnUpdate: false
+      RotationRules:
+        ScheduleExpression: !FindInMap [EnvironmentMappings, !Ref envType,secretRotationSchedule]
+      RotationLambdaARN: !GetAtt rotationFunction.Arn
+
+  #** secrets rotation lambda
+  rotationFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Description: !Sub "Rotate rds db secret for ${appName}-${envType}"
+      Environment: 
+        Variables: 
+          EXCLUDE_CHARACTERS: "/@\"'\\"
+          SECRETS_MANAGER_ENDPOINT: !Sub "https://secretsmanager.${AWS::Region}.amazonaws.com"
+          PASSWORD_LENGTH: 16
+      FunctionName: !Sub "${appName}-${envType}-secret-rotation"
+      Handler: "rotate_secret.lambda_handler"
+      Architectures: 
+      - "x86_64"
+      Code: 
+        S3Bucket:
+          Fn::ImportValue: !Sub "${orgName}-${accountType}-shared-bucket1"
+        S3Key: "lambda/smrotation/rotate_secret.zip"
+      PackageType: Zip
+      MemorySize: 256
+      Role: 
+        Fn::ImportValue: !Sub "${orgName}-${accountType}-rotation-function-role-arn"
+      Runtime: !Ref pythonRuntime
+      Timeout: 300
+      VpcConfig: 
+        SubnetIds:
+          Fn::Split: 
+            - ","
+            - Fn::ImportValue: !Sub "${orgName}-${accountType}-vpc-private-subnets"
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub "${orgName}-${accountType}-lambda-sgid"
+      EphemeralStorage: 
+        Size: 512
+      LoggingConfig:
+        ApplicationLogLevel: INFO
+        LogFormat: JSON
+        SystemLogLevel: DEBUG
+        LogGroup: !Ref smrotationLogGroup
+
+  rotationLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref rotationFunction
+      Action: lambda:InvokeFunction
+      Principal: 'secretsmanager.amazonaws.com'
+
+  smrotationLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/lambda/${appName}-${envType}-smrotation"
+      RetentionInDays: 90
+
+  SecretRotationSchedule:
+    Type: 'AWS::SecretsManager::RotationSchedule'
+    # This is needed so that the immediate rotate works.
+    DependsOn: rotationLambdaInvokePermission
+    Properties:
+      SecretId: !Ref dbSecretProdRegion  
+      RotateImmediatelyOnUpdate: true
+      RotationRules:
+        ScheduleExpression: !FindInMap [EnvironmentMappings, !Ref envType,secretRotationSchedule]
+      RotationLambdaARN: !GetAtt rotationFunction.Arn
+
+Outputs:
+
+  dbSecretProdRegion:
+    Description: "DB secret ARN (Secrets Manager), same thing as secret id"
+    Value: !Ref dbSecretProdRegion
+    Export:
+      Name: !Sub "${appName}-${envType}-db-secret"
+  dbEPAddress:
+    Description: "DB's endpoint address"
+    Value: !GetAtt dbInstance.Endpoint.Address
+    Export:
+      Name: !Sub "${appName}-${envType}-db-ep-address"
+  dbARN:
+    Description: "DB's ARN"
+    Value: !GetAtt dbInstance.DBInstanceArn
+    Export:
+      Name: !Sub "${appName}-${envType}-db-arn"
+  # This was added so that we can set the expiry of the AWS logs created for the RDS instance.
+  dbName:
+    Description: "DB's Name"
+    Value: !Ref dbInstance
+

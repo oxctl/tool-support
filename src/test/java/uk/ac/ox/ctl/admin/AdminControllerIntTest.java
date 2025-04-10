@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.test.context.TestPropertySource;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.LTIAuthorizationGrantType;
 import uk.ac.ox.ctl.model.Tool;
 import uk.ac.ox.ctl.model.ToolRegistrationLti;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         "spring.security.user.name=user", "spring.security.user.password=pass1234"
 })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
 public class AdminControllerIntTest {
 
     @TestConfiguration

@@ -21,7 +21,7 @@ public class LtiLaunchTest {
 	
 	@Autowired
 	private Environment environment;
-	
+
 	@BeforeEach
 	public void setUp() {
 		localHostWebClient = new LocalHostWebClient(environment);

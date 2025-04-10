@@ -19,6 +19,7 @@ import uk.ac.ox.ctl.lti13.lti.Claims;
 import uk.ac.ox.ctl.lti13.lti.Role;
 import uk.ac.ox.ctl.lti13.nrps.LtiScopes;
 import uk.ac.ox.ctl.ltiauth.AllowedRolesService;
+import uk.ac.ox.ctl.ltiauth.LocalKeyPairLoadingService;
 import uk.ac.ox.ctl.ltiauth.Lti13Configuration;
 import uk.ac.ox.ctl.ltiauth.NRPSService;
 import uk.ac.ox.ctl.ltiauth.TestClientRegistrationConfig;
@@ -36,12 +37,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = NRPSController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "uk\\.ac\\.ox\\.ctl\\.canvasproxy\\..*"))
 @ImportAutoConfiguration(exclude = OAuth2ClientAutoConfiguration.class)
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
-@Import({Lti13Configuration.class, TestClientRegistrationConfig.class})
+@Import({Lti13Configuration.class, TestClientRegistrationConfig.class, LocalKeyPairLoadingService.class})
 class NRPSControllerTest {
 
     @MockBean
     private NRPSService nrpsService;
-    
+
     @MockBean
     private AllowedRolesService allowedRolesService;
 

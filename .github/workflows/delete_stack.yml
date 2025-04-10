@@ -1,10 +1,58 @@
 name: Delete Stack
+run-name: "Delete ${{ inputs.stack-prefix }} stacks on ${{ inputs.region }} ${{ fromJson(vars.AWS_ACCOUNT_IDS_MAP)[inputs.account-id] }}"
 
+env:
+  AWS_GITHUB_ROLE: 'cad-github-actions-role'
+    
 on:
   workflow_dispatch:
+    inputs:
+      stack-prefix:
+        description: Prefix of stacks to remove
+        type: string
+        required: true
+      account-id:
+        description: AWS Account ID
+        type: string
+        required: true
+      region:
+        description: AWS Region
+        type: string
+        required: true
+        default: eu-west-1
+
 
 jobs:
-  placeholder:
-    runs-on: ubuntu-latest
+  backend:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_STACK_PREFIX: ${{needs.aws-params.outputs.stack-prefix}}
     steps:
-      - run: echo "This is a placeholder workflow - run from new-account branch"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{inputs.account-id }}:role/${{ env.AWS_GITHUB_ROLE }}
+          aws-region: ${{ inputs.region}}
+      - run: aws cloudformation delete-stack --stack-name ${{inputs.stack-prefix}}-backend
+      - run: aws cloudformation wait stack-delete-complete --stack-name ${{inputs.stack-prefix}}-backend
+
+  bootstrap:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    # Only once the backend have been deleted can we remove the bootstrap stack
+    needs: [ backend ]
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_STACK_PREFIX: ${{needs.aws-params.outputs.stack-prefix}}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{inputs.account-id }}:role/${{ env.AWS_GITHUB_ROLE }}
+          aws-region: ${{ inputs.region}}
+      - run: aws cloudformation delete-stack --stack-name ${{inputs.stack-prefix}}-bootstrap
+      - run: aws cloudformation wait stack-delete-complete --stack-name ${{inputs.stack-prefix}}-bootstrap

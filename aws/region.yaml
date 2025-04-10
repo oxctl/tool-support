@@ -1,0 +1,59 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Metadata: {}
+Description: "Creates resources for a given app, in a given region"
+
+Parameters:
+  orgName:
+    Description: "Name of organization - used in naming"
+    Type: String
+    Default: "cad"
+  accountType:
+    Type: "String"
+    Description: "production or non-production account?"
+    AllowedValues:
+      - "prod"
+      - "nonprod"
+  appName:
+    Description: "The app's name"
+    Type: String
+  envType:
+    Description: "The env type: prod, beta, test, etc"
+    Type: String
+    AllowedValues:
+      - "prod"
+      - "beta"
+      - "test"
+      - "staging"
+
+Conditions:
+  isProdEnv: {"Fn::Equals": [!Ref envType, "prod"]}
+  isProdAccount: {"Fn::Equals": [!Ref accountType, "prod"]}
+  #isProdRegion: {"Fn::Equals" : [!Ref "AWS::Region", 'eu-west-1']}
+  #isDRRegion: {"Fn::Equals" : [!Ref "AWS::Region", 'eu-central-1']}
+
+
+Resources:
+
+  ## Configure how bounce handling will be managed
+  ## ToDo: create bounce handling resources for apps that need it
+
+  ebApplication:
+    Type: "AWS::ElasticBeanstalk::Application"
+    Properties:
+      ApplicationName: !Sub "${appName}"
+      ResourceLifecycleConfig:
+        ServiceRole: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/service-role/aws-elasticbeanstalk-service-role"   #aws-elasticbeanstalk-service-role"
+        VersionLifecycleConfig:
+          MaxAgeRule:
+            Enabled: true
+            MaxAgeInDays: 90
+            DeleteSourceFromS3: true
+
+
+Outputs:
+  appName:
+    Description: "The EB Application Name"
+    Value: !Ref ebApplication
+    Export:
+      Name: !Sub "${appName}-${envType}-ebapp"

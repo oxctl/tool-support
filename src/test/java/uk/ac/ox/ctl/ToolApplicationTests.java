@@ -9,7 +9,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(locations = {"classpath:application.properties", "classpath:application-test.properties"})
 class ToolApplicationTests {
-    
+
     @Test
     void contextLoads() {
     }

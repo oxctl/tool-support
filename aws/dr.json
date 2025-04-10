@@ -1,0 +1,9 @@
+[
+  "appName=tool-support-dr",
+  "envType=prod",
+  "accountType=prod",
+  "awsRegion=eu-central-1",
+  "awsAccountId=211125465582",
+  "cfSSLCertARN=arn:aws:acm:us-east-1:211125465582:certificate/de5e7b9c-da4c-40ba-8b4b-68b11c05a445",
+  "snapshotToUse="
+]
