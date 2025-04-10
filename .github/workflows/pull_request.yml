@@ -5,7 +5,7 @@ name: Java CI with Maven (PR)
 
 on:
   pull_request:
-    branches: [ new-account ]
+    branches: [ master ]
 
 jobs:
   build:

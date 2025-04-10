@@ -2,7 +2,7 @@
 name: PR validation of CloudFormation
 on:
   pull_request:
-    branches: [ 'new-account' ]
+    branches: [ 'master' ]
 
 env:
   AWS_REGION: 'eu-west-1'

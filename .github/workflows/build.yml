@@ -6,7 +6,7 @@ run-name: "Deploy ${{ github.ref }}"
 
 on:
   push:
-    branches: [ 'new-account', 'release', 'dr-*' ]
+    branches: [ 'master', 'release', 'dr-*' ]
 
 jobs:
   aws-params:
