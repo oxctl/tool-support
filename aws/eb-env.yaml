@@ -731,7 +731,21 @@ Resources:
           #Just ref the topic here
           Arn: !Ref snsArn
           #Arn: !Sub "arn:$(AWS::Partition):sns:$(AWS::Region):$(AWS::AccountId):${appName}-${envType}-eb-envstatus"
-          InputPath: $.detail
+          InputTransformer:
+            InputPathsMap:
+              Status: "$.detail.Status"
+              EventDate: "$.detail.EventDate"
+              ApplicationName: "$.detail.ApplicationName"
+              Message: "$.detail.Message"
+              EnvironmentName: "$.detail.EnvironmentName"
+              Severity: "$.detail.Severity"
+            InputTemplate: |
+              "Status: <Status>"
+              "EventDate: <EventDate>"
+              "ApplicationName: <ApplicationName>"
+              "Message: <Message>"
+              "EnvironmentName: <EnvironmentName>"
+              "Severity: <Severity>"
 
   eventRuleHealthstatus:
     Type: AWS::Events::Rule
@@ -757,7 +771,21 @@ Resources:
           #Just ref the topic here
           Arn: !Ref snsArn
           #Arn: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${appName}-${envType}-eb-envstatus"
-          InputPath: $.detail
+          InputTransformer:
+            InputPathsMap:
+              Status: "$.detail.Status"
+              EventDate: "$.detail.EventDate"
+              ApplicationName: "$.detail.ApplicationName"
+              Message: "$.detail.Message"
+              EnvironmentName: "$.detail.EnvironmentName"
+              Severity: "$.detail.Severity"
+            InputTemplate: |
+              "Status: <Status>"
+              "EventDate: <EventDate>"
+              "ApplicationName: <ApplicationName>"
+              "Message: <Message>"
+              "EnvironmentName: <EnvironmentName>"
+              "Severity: <Severity>"
 
   eventRuleMgdUpdates:
     Type: AWS::Events::Rule
@@ -783,7 +811,23 @@ Resources:
           #Just ref the topic here
           Arn: !Ref snsArn
           #Arn: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${appName}-${envType}-eb-envstatus"
-          InputPath: $.detail
+          InputTransformer:
+            InputPathsMap:
+              Status: "$.detail.Status"
+              EventDate: "$.detail.EventDate"
+              ApplicationName: "$.detail.ApplicationName"
+              Message: "$.detail.Message"
+              EnvironmentName: "$.detail.EnvironmentName"
+              Severity: "$.detail.Severity"
+              ChangeType: "$.detail.ChangeType"
+            InputTemplate: |
+              "Status: <Status>"
+              "EventDate: <EventDate>"
+              "ApplicationName: <ApplicationName>"
+              "Message: <Message>"
+              "EnvironmentName: <EnvironmentName>"
+              "Severity: <Severity>"
+              "ChangeType: <ChangeType>"
 
 Outputs:
   envUrl:
