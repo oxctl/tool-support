@@ -42,9 +42,9 @@ Parameters:
     Type: String
     Default: "8.0"
   dbEngineMinorVer:
-    Description:  "Minor version of mysql engine ... lookup the latest"
+    Description:  "Minor version of mysql engine will use the latest"
     Type: String
-    Default: "8.0.40"
+    Default: "8.0"
   charSet:
     Description:  "What character set to use? Default to utf8"
     Type: String
@@ -247,7 +247,7 @@ Resources:
       PreferredMaintenanceWindow: !FindInMap [EnvironmentMappings, !Ref envType,maintenanceWindow]
       MultiAZ: false
       #NetworkType: IPV4
-      EngineVersion: !Ref dbEngineMinorVer #"8.0.20"
+      EngineVersion: !Ref dbEngineMinorVer 
       AllowMajorVersionUpgrade: false
       AutoMinorVersionUpgrade: true
       LicenseModel: "general-public-license"
