@@ -515,3 +515,6 @@ Unlike the LTI registration the provider details will need to be updated for eac
 ## Spring Boot Actuator 
 
 Canvas Tool Support uses Spring Boot Actuator for monitoring. The `health` endpoint is mapped to `/actuator/health`.
+
+## Change Log
+On Friday 13 June 2025, this repository was relicensed from Apache 2 to MIT.
