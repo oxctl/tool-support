@@ -5,5 +5,5 @@
   "awsRegion=eu-central-1",
   "awsAccountId=730335587339",
   "cfSSLCertARN=arn:aws:acm:us-east-1:730335587339:certificate/2fa1e57f-778d-4ff3-8ec4-6e5e34fd8c64",
-  "snapshotToUse=arn:aws:rds:eu-central-1:730335587339:snapshot:awsbackup:copyjob-6072caa7-5f04-d0b3-08fa-d82f0f146339"
+  "snapshotToUse="
 ]
