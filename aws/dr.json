@@ -5,5 +5,6 @@
   "awsRegion=eu-central-1",
   "awsAccountId=730335587339",
   "cfSSLCertARN=arn:aws:acm:us-east-1:730335587339:certificate/2fa1e57f-778d-4ff3-8ec4-6e5e34fd8c64",
-  "snapshotToUse="
+  "snapshotToUse=",
+  "drTest=true"
 ]
