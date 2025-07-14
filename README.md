@@ -6,6 +6,7 @@
 
 This is a webapp that supports LTI tools in Canvas. It handles the LTI 1.3 launch and allows tools to retrieve the JWT that is created through the LTI launch. It also allows the management of OAuth2 tokens for accessing Canvas and links them to a LTI tool. This allows a HTML/JS (React) page to get data about the LTI launch and then make `fetch()` requests to Canvas through this tool. This allows a completely static tool that still provides useful functionality. The webapp supports multiple LTI tool at the same time.
 
+
 ## Getting Going
 
 If you just want to run the application and don't need to develop it then you can use the docker setup as outlined in [docs/deploy.md](docs/deploy.md).
@@ -229,7 +230,7 @@ Client configuration is held in the DB and details of how to update this will be
 
 As well as setting the main secret, the JWKs secret needs to be set.  An example command to do this is this:
 
-    aws secretsmanager update-secret --secret-id tool-support/beta/eb-env/config-jks-file --secret-binary fileb://tools-dev.canvas.ox.ac.uk.jks
+    aws secretsmanager update-secret --secret-id tool-support/beta/eb-env/config-jks-file --secret-binary fileb:///Users/adamm/Downloads/tools-dev.canvas.ox.ac.uk.jks
 
 ### Proxy Error Handling
 
