@@ -33,6 +33,8 @@ on:
       sha:
         description: 'SHA of the TAG commit'
         type: string
+      dr_test:
+        type: string
 
 jobs:
   bootstrap:
