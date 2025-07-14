@@ -59,8 +59,9 @@ The following can be undertaken via the Github web UI or on your local desktop a
     the RDS database RDS looks OK
     the application logs do not indicate a problem
 9. :warning: :warning: The FOLLOWING STEPS ARE NOT TO BE DONE WHILST TESTING: 
-10. Update the CNAME(s) in DNS
-11. Check the tool is working in Canvas (Tool Support will need to be in place)
+10. Update the CNAME(s) in DNS (remove `lti`, `proxy` and `tools`)
+11. Remove (or set to "false")  `"drTest=true"` from `aws/dr.json` 
+12. Check the tool is working in Canvas (Tool Support will need to be in place)
 
 
    

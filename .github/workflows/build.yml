@@ -35,6 +35,7 @@ jobs:
       do_deploy: ${{ (fromJSON(needs.aws-params.outputs.json).envType == 'prod') && true || github.ref_name == github.event.repository.default_branch }}
       env_type: ${{ fromJSON(needs.aws-params.outputs.json).envType }}
       github_env: ${{ fromJSON(needs.aws-params.outputs.json).envType }}
+      drTest: ${{ fromJSON(needs.aws-params.outputs.json).drTest }}
       ref: ${{ github.ref }}
       sha: ${{ github.sha }}
     secrets: inherit

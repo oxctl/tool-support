@@ -82,6 +82,13 @@ Parameters:
     Description: Allows us to override the parent domain, useful in some situations
     Type: String
     Default: "canvas.ox.ac.uk"
+  drTest:
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+    Description: "Skip creating CloudFront and Route53 resources for DR testing"
 
 Mappings:
   AccountTypeMappings:
@@ -112,7 +119,7 @@ Mappings:
 Conditions:
   isProd: {"Fn::Equals": [!Ref envType, "prod"]}
   isNonProd: {"Fn::Not" : [Condition: isProd]}
-
+  CreateCFResources: !Equals [!Ref drTest, "false"]
 
 Resources:
 
@@ -602,18 +609,27 @@ Resources:
                 dom:
                   Fn::ImportValue:
                     !Sub "${orgName}-${accountType}-route53-domainname"
-        - !Sub
-          - "${ltiName}.${accountParentDomain}"
-          - ltiName: !FindInMap [ AccountTypeMappings, !Ref accountType, ltiName ]
-            accountParentDomain: !Ref accountParentDomain
-        - !Sub
-          - "${proxyName}.${accountParentDomain}"
-          - proxyName: !FindInMap [ AccountTypeMappings, !Ref accountType, proxyName ]
-            accountParentDomain: !Ref accountParentDomain
-        - !Sub
-          - "${toolsName}.${accountParentDomain}"
-          - toolsName: !FindInMap [ AccountTypeMappings, !Ref accountType, toolsName ]
-            accountParentDomain: !Ref accountParentDomain 
+        - !If
+          - CreateCFResources
+          - !Sub
+            - "${ltiName}.${accountParentDomain}"
+            - ltiName: !FindInMap [ AccountTypeMappings, !Ref accountType, ltiName ]
+              accountParentDomain: !Ref accountParentDomain
+          - !Ref "AWS::NoValue"
+        - !If
+          - CreateCFResources
+          - !Sub
+            - "${proxyName}.${accountParentDomain}"
+            - proxyName: !FindInMap [ AccountTypeMappings, !Ref accountType, proxyName ]
+              accountParentDomain: !Ref accountParentDomain
+          - !Ref "AWS::NoValue"
+        - !If
+          - CreateCFResources
+          - !Sub
+            - "${toolsName}.${accountParentDomain}"
+            - toolsName: !FindInMap [ AccountTypeMappings, !Ref accountType, toolsName ]
+              accountParentDomain: !Ref accountParentDomain
+          - !Ref "AWS::NoValue"
         Origins:
           - DomainName:
               Fn::ImportValue:
