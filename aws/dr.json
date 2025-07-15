@@ -3,8 +3,8 @@
   "envType=prod",
   "accountType=nonprod",
   "awsRegion=eu-central-1",
-  "awsAccountId=730335587339",
-  "cfSSLCertARN=arn:aws:acm:us-east-1:730335587339:certificate/2fa1e57f-778d-4ff3-8ec4-6e5e34fd8c64",
+  "awsAccountId=211125465582",
+  "cfSSLCertARN=arn:aws:acm:eu-west-1:211125465582:certificate/a86c121b-b299-491f-b464-2272d1eed5b2",
   "snapshotToUse=",
   "drTest=true"
 ]
