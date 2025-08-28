@@ -517,5 +517,10 @@ Unlike the LTI registration the provider details will need to be updated for eac
 
 Canvas Tool Support uses Spring Boot Actuator for monitoring. The `health` endpoint is mapped to `/actuator/health`.
 
+## Sentry
+
+Application errors are reported using https://sentry.io for this application. There is one DSNs to be used for both development and production. There's no DSN for local development. Sentry is setup as early as possible in the application to capture as many errors as possible.
+
+
 ## Change Log
 On Friday 13 June 2025, this repository was relicensed from Apache 2 to MIT.
