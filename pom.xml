@@ -159,6 +159,11 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
+            <groupId>uk.ac.ox.it</groupId>
+            <artifactId>spring-boot-actuator-sentry</artifactId>
+            <version>0.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
