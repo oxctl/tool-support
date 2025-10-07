@@ -280,7 +280,7 @@
                     </to>
                     <container>
                         <!-- As we're in docker we really don't want to be running as root -->
-                        <user>nobody:nogroup</user>
+                        <user>nonroot:nonroot</user>
                         <labels>
                             <!-- This is so that published packaged are linked to this repository -->
                             <org.opencontainers.image.source>
