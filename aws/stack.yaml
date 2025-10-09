@@ -21,6 +21,9 @@ Parameters:
     Default: ""
   solutionStack:
     Type: String
+  drTest:
+    Type: String
+    Default: "false"
 Resources:
   AppRegion:
     Type: AWS::CloudFormation::Stack
@@ -54,6 +57,7 @@ Resources:
         envType: !Ref envType
         cfSSLCertARN: !Ref cfSSLCertARN
         solutionStack: !Ref solutionStack
+        drTest: !Ref drTest
         snsArn:
           Fn::ImportValue:
             !Sub "${accountType}-admin-notifications"

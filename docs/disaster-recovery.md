@@ -52,15 +52,17 @@ The following can be undertaken via the Github web UI or on your local desktop a
      it should only use lowercase alphanumeric characters and hyphens,
      it should have a maximum of 20 characters, and,
      the first character must be a letter, and it cannot end with a hyphen or contain two consecutive hyphens.
-5. Once any changes have been comitted, GitHub Actions will start the build automatically (provided the branch name starts with `dr-`). You can check progress https://github.com/oxctl/tool-support/actions
+5. Once any changes have been comitted and pushed to the remote branch, GitHub Actions will start the build automatically (provided the branch name starts with `dr-`). You can check progress https://github.com/oxctl/tool-support/actions
 6. :warning: Take care with this step :warning:. The Cloudformation deployment process will wait for an hour before tearing itself down but the application will not start up until the secrets are in place. :warning: If you are conducting a DR test then it is important that any URLs, secrets, or other credentials are modified (so data isnt written to a production system). A good approach is to monitor the creation of the Elastic Beanstalk 'configuration' secrets in AWS Secrets Manager `${appName}/${envType}/eb-env/config` (e.g., `tool-support-dr/prod/eb-env/config`), and, as soon as it appears (try after 30 mins),  populate with the secrets JSON which is located within 1-Password. So long as the secrets are in place, the application will attempt to start up when it is ready.
+7. The JKS will need setting, this must be done via the command line. Download the JKS from 1-Password and save. Set up AWS command line Access Keys then set the region ```aws configure set region eu-central-1```. Then upload the JKS, for example, ```aws secretsmanager update-secret --secret-id tool-support-dr/prod/eb-env/config-jks-file --secret-binary fileb:///Users/adamm/Downloads/tools.canvas.ox.ac.uk.jks``` 
 8. Check Spring Boot Actuator (https://tool-support-dr.apps.canvas.ox.ac.uk/actuator/health) - everything should be "UP". If there is a problem then it is worth checking that:
     Elastic Beanstalk has started correctly
     the RDS database RDS looks OK
     the application logs do not indicate a problem
 9. :warning: :warning: The FOLLOWING STEPS ARE NOT TO BE DONE WHILST TESTING: 
-10. Update the CNAME(s) in DNS
-11. Check the tool is working in Canvas (Tool Support will need to be in place)
+10. Update the CNAME(s) in DNS (remove `lti`, `proxy` and `tools`)
+11. Remove (or set to "false")  `"drTest=true"` from `aws/dr.json` 
+12. Check the tool is working in Canvas (Tool Support will need to be in place)
 
 
    
