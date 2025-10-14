@@ -90,7 +90,7 @@ public class ProxyController {
         } catch (ResourceAccessException e) {
             // When we get a timeout we should translate it to the correct HTTP message.
             if (e.getCause() instanceof SocketTimeoutException) {
-                throw new ResponseStatusException(HttpStatus.GATEWAY_TIMEOUT);
+                throw new ResponseStatusException(HttpStatus.GATEWAY_TIMEOUT, "Socket timeout accessing " + thirdPartyApi, e);
             }
             log.warn("Failed to load {} exception is: {}", thirdPartyApi, e.getMessage());
             // TODO - Need to fix this so we don't log exception as this will be expected in production

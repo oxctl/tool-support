@@ -21,8 +21,8 @@ public class RestTemplateConfiguration {
     public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder)
     {
         RestTemplate restTemplate = restTemplateBuilder
-                .setConnectTimeout(Duration.ofSeconds(5))
-               .setReadTimeout(Duration.ofSeconds(5))
+                .setConnectTimeout(Duration.ofSeconds(10))
+                .setReadTimeout(Duration.ofSeconds(60))
                 .build();
 
         restTemplate.setErrorHandler(new ResponseErrorHandler() {
