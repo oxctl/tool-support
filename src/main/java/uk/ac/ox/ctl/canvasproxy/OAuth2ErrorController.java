@@ -45,6 +45,9 @@ public class OAuth2ErrorController {
           "Developer keys are mis-configured, check configuration.");
     } else if ("unauthorized_client".equals(errorCode)) {
       throw new OAuth2FlowException("This tool isn't enabled for your account.");
+    } else if ("invalid_client".equals(errorCode)) {
+      // If the client secret is wrong Canvas can return this error when attempting to retrieve the token.
+      throw new OAuth2FlowException("Check client ID and secret are correct.");
     } else if (errorCode == null) {
       // We have no errorCode at all and this is probably because the filter didn't run. This can happen if the
       // user ends up re-visiting the URL returned from granting the access.

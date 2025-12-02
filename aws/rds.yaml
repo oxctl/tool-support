@@ -83,7 +83,7 @@ Parameters:
   pythonRuntime:
     Type: "String"
     Description: "Which python runtime to use for lambda functions"
-    Default: "python3.9"
+    Default: "python3.14"
   rouserSchedule:
     Type: "String"
     Description: "Schedule the lambda function to execute 5-10 minutes from now: format: at(yyyy-mm-ddThh:mm); eg: at(2024-06-18T12:30).  Timezone is Europe/London (not UTC)"
