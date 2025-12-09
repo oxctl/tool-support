@@ -40,7 +40,7 @@ Parameters:
   dbEngineMajorVer:
     Description: "The mysql major version.  WARNING: only change during planned major version upgrades"
     Type: String
-    Default: "8.0"
+    Default: "8.4"
   charSet:
     Description:  "What character set to use? Default to utf8"
     Type: String
@@ -139,12 +139,6 @@ Resources:
   dbParamGroup:
     Type: "AWS::RDS::DBParameterGroup"
     Properties:
-      DBParameterGroupName:
-        Fn::Sub:
-          - "mysql${ver}-${app}-${env}"
-          - ver: !Select [0, !Split [".", !Ref dbEngineMajorVer]]
-            app: !Ref appName
-            env: !Ref envType
       Description: !Sub "DB Parameter group for ${appName}-${envType}"
       Family: !Sub "mysql${dbEngineMajorVer}"
       Parameters:
@@ -244,7 +238,7 @@ Resources:
       MultiAZ: false
       #NetworkType: IPV4
       EngineVersion: !Ref dbEngineMajorVer 
-      AllowMajorVersionUpgrade: false
+      AllowMajorVersionUpgrade: true
       AutoMinorVersionUpgrade: true
       LicenseModel: "general-public-license"
       PubliclyAccessible: false
