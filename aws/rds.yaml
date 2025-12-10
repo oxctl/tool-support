@@ -238,7 +238,7 @@ Resources:
       MultiAZ: false
       #NetworkType: IPV4
       EngineVersion: !Ref dbEngineMajorVer 
-      AllowMajorVersionUpgrade: true
+      AllowMajorVersionUpgrade: false
       AutoMinorVersionUpgrade: true
       LicenseModel: "general-public-license"
       PubliclyAccessible: false
