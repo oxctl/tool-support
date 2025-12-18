@@ -14,6 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.StringUtils;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -53,12 +56,34 @@ public class AdminWebSecurity {
         }
         return NOOP_PASSWORD_PREFIX + password;
     }
+    
+    public CorsConfigurationSource corsConfigurationSource(AdminProperties adminProperties) {
+        if (adminProperties.getCorsOrigins().contains(CorsConfiguration.ALL)) {
+            log.warn("CORS allowed origins is set to '*', this is not recommended for production environments.");
+        }
+        if (adminProperties.getCorsOrigins().isEmpty()) {
+            log.info("No Admin CORS allowed origins configured.");
+        } else {
+            log.info("Admin CORS allowed origins: {}", String.join(", ", adminProperties.getCorsOrigins()));
+        }
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedHeader(CorsConfiguration.ALL);
+        config.addAllowedMethod(CorsConfiguration.ALL);
+        for (String origin : adminProperties.getCorsOrigins()) {
+            config.addAllowedOrigin(origin);
+        }
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/admin/**", config);
+        return source;
+    }
 
     @Bean
     @Order(1)
-    public SecurityFilterChain adminConfiguration(HttpSecurity http) throws Exception {
+    public SecurityFilterChain adminConfiguration(HttpSecurity http, AdminProperties adminProperties) throws Exception {
         return http.securityMatcher("/admin/**")
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource(adminProperties)))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(withDefaults())
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().hasRole("admin"))
