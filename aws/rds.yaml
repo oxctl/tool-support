@@ -91,7 +91,7 @@ Parameters:
   ecrTagVersion:
     Type: "String"
     Description: "The version of the dbdump/dbload code in ECR to run"
-    Default: "2"
+    Default: "3"
   snsArn:
     Description: "ARN for the SNS topic to send admin notifications to"
     Type: String
