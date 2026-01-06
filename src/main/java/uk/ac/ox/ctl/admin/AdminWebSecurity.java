@@ -67,7 +67,6 @@ public class AdminWebSecurity {
             log.info("Admin CORS allowed origins: {}", String.join(", ", adminProperties.getCorsOrigins()));
         }
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
         config.addAllowedHeader(CorsConfiguration.ALL);
         config.addAllowedMethod(CorsConfiguration.ALL);
         for (String origin : adminProperties.getCorsOrigins()) {
