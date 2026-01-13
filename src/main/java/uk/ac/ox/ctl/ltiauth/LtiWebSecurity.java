@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.server.resource.web.DefaultBearerToke
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import uk.ac.ox.ctl.lti13.Lti13Configurer;
+import uk.ac.ox.ctl.ltiauth.pipelines.LtiLaunchEventService;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -24,6 +25,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class LtiWebSecurity {
 
     private final JWTService jwtService;
+    private final LtiLaunchEventService ltiLaunchEventService;
 
     @Autowired
     @Qualifier("lti")
@@ -35,8 +37,9 @@ public class LtiWebSecurity {
     @Value("${lti.repo.state.limit.ip:false}")
     private boolean limitIp;
 
-    public LtiWebSecurity(JWTService jwtService) {
+    public LtiWebSecurity(JWTService jwtService, LtiLaunchEventService ltiLaunchEventService) {
         this.jwtService = jwtService;
+        this.ltiLaunchEventService = ltiLaunchEventService;
     }
 
 
@@ -81,7 +84,7 @@ public class LtiWebSecurity {
     public SecurityFilterChain ltiConfiguration(HttpSecurity http) throws Exception {
         HttpSecurity lti = http.securityMatcher("/lti/**");
         lti.setSharedObject(ClientRegistrationRepository.class, clientRegistrationRepository);
-        Lti13Configurer lti13Configurer = new CustomLti13Configurer(jwtService, clientRegistrationService);
+        Lti13Configurer lti13Configurer = new CustomLti13Configurer(jwtService, clientRegistrationService, ltiLaunchEventService);
         lti13Configurer.limitIpAddresses(limitIp);
         lti.apply(lti13Configurer);
         // We need to allow the LTI launch to happen from anywhere.

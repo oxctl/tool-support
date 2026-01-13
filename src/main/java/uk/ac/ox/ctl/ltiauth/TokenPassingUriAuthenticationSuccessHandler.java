@@ -10,6 +10,8 @@ import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.StateCheckingAuthentica
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import uk.ac.ox.ctl.ltiauth.pipelines.LtiLaunchEventService;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -24,10 +26,12 @@ public class TokenPassingUriAuthenticationSuccessHandler extends StateCheckingAu
     private final Logger log = LoggerFactory.getLogger(TokenPassingUriAuthenticationSuccessHandler.class);
 
     private final JWTService jwtService;
+    private final LtiLaunchEventService ltiLaunchEventService;
 
-    public TokenPassingUriAuthenticationSuccessHandler(OptimisticAuthorizationRequestRepository authorizationRequestRepository, JWTService jwtService) {
+    public TokenPassingUriAuthenticationSuccessHandler(OptimisticAuthorizationRequestRepository authorizationRequestRepository, JWTService jwtService, LtiLaunchEventService ltiLaunchEventService) {
         super(authorizationRequestRepository);
         this.jwtService = jwtService;
+        this.ltiLaunchEventService = ltiLaunchEventService;
     }
 
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
@@ -35,9 +39,11 @@ public class TokenPassingUriAuthenticationSuccessHandler extends StateCheckingAu
             // Because we are just giving the token out to this URL we need to trust that this URL can't be messed with.
             String targetLink = token.getPrincipal().getAttribute("https://purl.imsglobal.org/spec/lti/claim/target_link_uri");
             if (targetLink != null && !targetLink.isEmpty()) {
-                Object obj = jwtService.createJWT(token, getUrl(request));
-                String key = jwtService.store(obj);
                 String origin = getUrl(request);
+                ltiLaunchEventService.publishLaunchEvent(token, targetLink, origin);
+
+                Object obj = jwtService.createJWT(token, origin);
+                String key = jwtService.store(obj);
                 
                 String tokenParam = "token="+key;
                 // We include the server in the parameters so that the client can use this
@@ -88,5 +94,3 @@ public class TokenPassingUriAuthenticationSuccessHandler extends StateCheckingAu
         return url.toString();
     }
 }
-
-

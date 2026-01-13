@@ -15,9 +15,11 @@ import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
 import uk.ac.ox.ctl.ltiauth.ClientRegistrationService;
 import uk.ac.ox.ctl.ltiauth.JWTService;
 import uk.ac.ox.ctl.ltiauth.LtiWebSecurity;
+import uk.ac.ox.ctl.ltiauth.pipelines.LtiLaunchEventConfiguration;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -25,7 +27,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,8 +34,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = TokenController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "uk\\.ac\\.ox\\.ctl\\.canvasproxy\\..*"))
-@Import(LtiWebSecurity.class)
+@Import({LtiWebSecurity.class, LtiLaunchEventConfiguration.class})
 class TokenControllerTest {
+    
+    @MockBean
+    private RestTemplate restTemplate;
 
     OidcIdToken idToken = new OidcIdToken("value", Instant.now(), Instant.now().plus(Duration.ofMinutes(10)), Collections.singletonMap("sub", "1234"));
     @Autowired

@@ -8,6 +8,7 @@ import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OAuth2LoginAuthenticati
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OIDCInitiatingLoginRequestResolver;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OptimisticAuthorizationRequestRepository;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.PathOIDCInitiationRegistrationResolver;
+import uk.ac.ox.ctl.ltiauth.pipelines.LtiLaunchEventService;
 
 /**
  * This overrides the standard configurer to add our token passing redirect along with allowing client
@@ -17,18 +18,20 @@ public class CustomLti13Configurer extends Lti13Configurer {
     
     private final JWTService jwtService;
     private final ClientRegistrationService clientRegistrationService;
+    private final LtiLaunchEventService ltiLaunchEventService;
 
-    public CustomLti13Configurer(JWTService jwtService, ClientRegistrationService clientRegistrationService) {
+    public CustomLti13Configurer(JWTService jwtService, ClientRegistrationService clientRegistrationService, LtiLaunchEventService ltiLaunchEventService) {
         // An alternative is to look these up at configuration time, but that is slightly more messy and less
         // discoverable about what's happening
         this.jwtService = jwtService;
         this.clientRegistrationService = clientRegistrationService;
+        this.ltiLaunchEventService = ltiLaunchEventService;
     }
 
     @Override
     protected OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider, OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
         OAuth2LoginAuthenticationFilter loginFilter = super.configureLoginFilter(clientRegistrationRepository, oidcLaunchFlowAuthenticationProvider, authorizationRequestRepository);
-        loginFilter.setAuthenticationSuccessHandler(new TokenPassingUriAuthenticationSuccessHandler(authorizationRequestRepository, jwtService));
+        loginFilter.setAuthenticationSuccessHandler(new TokenPassingUriAuthenticationSuccessHandler(authorizationRequestRepository, jwtService, ltiLaunchEventService));
         return loginFilter;
     }
 
