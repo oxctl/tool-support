@@ -108,6 +108,7 @@ Mappings:
       "jwtIssuer": "https://lti.canvas.ox.ac.uk"
       "jwtJWKSURI": "https://lti.canvas.ox.ac.uk/.well-known/jwks.json"
       "ltiIssuer": "https://lti.canvas.ox.ac.uk"
+      "uiFrontendUrl": "https://tools-support-prod.canvas-tools.app"
     beta:
       "mngdUpdates": "MON:06:00"
       # We have an additional profile that unsets things on the non-prod account
@@ -115,6 +116,7 @@ Mappings:
       "jwtIssuer": "https://lti-dev.canvas.ox.ac.uk"
       "jwtJWKSURI": "https://lti-dev.canvas.ox.ac.uk/.well-known/jwks.json"
       "ltiIssuer": "https://lti-dev.canvas.ox.ac.uk"
+      "uiFrontendUrl": "https://tools-support-beta.canvas-tools.app"
 
 Conditions:
   isProd: {"Fn::Equals": [!Ref envType, "prod"]}
@@ -273,6 +275,10 @@ Resources:
           # The iss that we sign our issued tokens with.
           OptionName: "LTI_ISSUER"
           Value: !FindInMap [ EnvironmentMappings, !Ref envType, ltiIssuer ]
+        - Namespace: "aws:elasticbeanstalk:application:environment"
+          # The frontend URL that should be able to make requests to the admin backend.
+          OptionName: "ADMIN_CORS_ORIGINS"
+          Value: !FindInMap [ EnvironmentMappings, !Ref envType, uiFrontendUrl ]
           # At one point this used to be in a different configuration template but cloudformation doesn't update
           # templates that use `SourceConfiguration` so it was un-updatable. These options are now included in the main
           # configuration template
