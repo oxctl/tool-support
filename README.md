@@ -435,7 +435,7 @@ curl -u "user:pass1234" -d '{
 
 **DELETE:**
 
-A tool cqan be deleted by citing the tool's ID
+A tool can be deleted by citing the tool's ID
 
 ```
 curl -u "user:pass1234" -X DELETE http://localhost:8080/admin/tools/04a0aa49-a74f-4dd1-96c5-895c8d68d776
