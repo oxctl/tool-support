@@ -355,7 +355,7 @@ To get a specific tool by ID:
 curl -u "user:pass1234" http://localhost:8080/admin/tools/04a0aa49-a74f-4dd1-96c5-895c8d68d776
 ```
 
-The API also supports looks by lti/proxy client ID and registration ID, the supported ID prefixes are:
+The API also supports look ups by lti/proxy client ID and registration ID, the supported ID prefixes are:
  - `ltiClientId:`
  - `ltiRegistrationId:`
  - `proxyClientId:`
@@ -365,8 +365,17 @@ For example to lookup by a client ID of `123450000000000678`:
 ```
 curl -u "user:pass1234" http://localhost:8080/admin/tools/ltiClientId:123450000000000678
 ```
+or for an LTI Registration ID
+
+```
+curl -u "user:pass1234" http://localhost:8080/admin/tools/ltiRegistrationId:my-lovely-lti-tool
+```
+
+All other operations will need to reference the tool's ID so the value should be copied.
 
 **UPDATE:**
+
+An update can be made by citing the tool's ID
 
 ```
 curl -u "user:pass1234" -d '{
@@ -425,6 +434,8 @@ curl -u "user:pass1234" -d '{
 ```
 
 **DELETE:**
+
+A tool can be deleted by citing the tool's ID
 
 ```
 curl -u "user:pass1234" -X DELETE http://localhost:8080/admin/tools/04a0aa49-a74f-4dd1-96c5-895c8d68d776
