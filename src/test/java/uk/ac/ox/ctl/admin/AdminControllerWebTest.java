@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(properties = {"spring.security.user.name=user", "spring.security.user.password=pass1234"}, controllers = AdminController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "uk\\.ac\\.ox\\.ctl\\.(canvasproxy|ltiauth)\\..*"))
-@Import({AdminWebSecurity.class})
+@Import({AdminWebSecurity.class, AdminProperties.class})
 @ImportAutoConfiguration(exclude = {
         OAuth2ClientAutoConfiguration.class
 })
