@@ -108,7 +108,7 @@ Mappings:
       "jwtIssuer": "https://lti.canvas.ox.ac.uk"
       "jwtJWKSURI": "https://lti.canvas.ox.ac.uk/.well-known/jwks.json"
       "ltiIssuer": "https://lti.canvas.ox.ac.uk"
-      "uiFrontendUrl": "https://tools-support-prod.canvas-tools.app"
+      "uiFrontendUrl": "https://tools-ui.canvas-tools.app/"
     beta:
       "mngdUpdates": "MON:06:00"
       # We have an additional profile that unsets things on the non-prod account
@@ -116,7 +116,7 @@ Mappings:
       "jwtIssuer": "https://lti-dev.canvas.ox.ac.uk"
       "jwtJWKSURI": "https://lti-dev.canvas.ox.ac.uk/.well-known/jwks.json"
       "ltiIssuer": "https://lti-dev.canvas.ox.ac.uk"
-      "uiFrontendUrl": "https://tools-support-beta.canvas-tools.app"
+      "uiFrontendUrl": "https://tools-dev-ui.canvas-tools.app/"
 
 Conditions:
   isProd: {"Fn::Equals": [!Ref envType, "prod"]}
