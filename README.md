@@ -87,6 +87,14 @@ The ability to use this endpoint is controlled by configuration which specifies 
 
 The service allows applications to self-sign JWTs making requests to the nrps endpoint. The token for the request must be signed with an HMAC secret which matches that in `uk.ac.ox.ctl.model.Tool.secret`, and must have the same issuer as `uk.ac.ox.ctl.model.Tool.issuer`.
 
+#### Generating a secret
+
+The secret needs to be at least 256 bits long and should be base64 encoded in the JSON when updating a tool. The simplest way to generate a secret is with:
+
+```bash
+head -c 32 < /dev/urandom | base64
+```
+
 ### LTI Deep Linking
 
 There is support in the LTI Server to sign deep linking responses before they get sent back to Canvas. This is so that static tools (without a server side component) can sign a JWT for the deep linking response. The specification for this is at: https://www.imsglobal.org/spec/lti-dl/v2p0
