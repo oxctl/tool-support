@@ -152,6 +152,10 @@ Resources:
         log_output: "FILE"
         long_query_time: "5"
         slow_query_log: "1"
+        # 16MB. This is a reduction from the RDS default, which seems tuned for larger instances.
+        innodb_log_buffer_size: "16777216"
+        # 96MB. Shave a little off the default of 128MB to free some memory.
+        innodb_buffer_pool_size: "100663296"
 
   #dbOptionGroup:
   #  Type: "AWS::RDS::OptionGroup"
