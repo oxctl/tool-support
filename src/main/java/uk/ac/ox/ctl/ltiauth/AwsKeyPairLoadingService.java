@@ -20,7 +20,7 @@ import java.security.KeyPair;
  * Service to generate a key pair from jks file in AWS Secrets Manager.
  */
 @Service
-@Profile("!local")
+@Profile("aws")
 @Lazy
 public class AwsKeyPairLoadingService implements KeyPairLoadingService {
 

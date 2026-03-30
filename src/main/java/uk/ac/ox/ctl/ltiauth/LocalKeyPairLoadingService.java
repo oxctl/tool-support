@@ -19,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
  *  * Service to generate a key pair from a local jks file.
  */
 @Service
-@Profile("local")
+@Profile("!aws")
 @Lazy
 public class LocalKeyPairLoadingService implements KeyPairLoadingService {
 
