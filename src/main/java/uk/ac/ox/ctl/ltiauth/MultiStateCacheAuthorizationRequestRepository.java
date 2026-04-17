@@ -27,7 +27,7 @@ public class MultiStateCacheAuthorizationRequestRepository implements Authorizat
 
     public MultiStateCacheAuthorizationRequestRepository(Duration duration, int concurrencyLevel) {
         store = CacheBuilder.newBuilder()
-                .expireAfterAccess(duration)
+                .expireAfterWrite(duration)
                 .concurrencyLevel(concurrencyLevel)
                 .maximumSize(MAX_AUTHORIZATION_REQUESTS)
                 .build();
@@ -75,7 +75,14 @@ public class MultiStateCacheAuthorizationRequestRepository implements Authorizat
         Assert.notNull(request, "request cannot be null");
         Assert.notNull(response, "response cannot be null");
         if (authorizationRequest == null) {
-            removeAuthorizationRequest(request, response);
+            String state = request.getParameter(OAuth2ParameterNames.STATE);
+            if (state != null) {
+                removeAuthorizationRequest(request, response);
+            }
+            // Some Spring Security flows call saveAuthorizationRequest(null, ...) on the
+            // initial authorization request, before any state parameter exists on the request.
+            // In that case there is no key available for targeted removal, so this is
+            // intentionally a no-op rather than an implicit best-effort delete.
             return;
         }
 

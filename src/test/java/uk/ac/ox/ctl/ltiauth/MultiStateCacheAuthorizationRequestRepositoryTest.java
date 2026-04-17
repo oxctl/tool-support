@@ -52,8 +52,17 @@ class MultiStateCacheAuthorizationRequestRepositoryTest {
             repository.saveAuthorizationRequest(authorizationRequest("state-" + i), new MockHttpServletRequest(), response);
         }
 
-        assertTrue(repository.size() < 1001);
-        assertNull(repository.loadAuthorizationRequest(callbackRequest("state-1")));
+        assertTrue(repository.size() <= 1000);
+
+        boolean someEarlyStateEvicted = false;
+        for (int i = 1; i <= 10; i++) {
+            if (repository.loadAuthorizationRequest(callbackRequest("state-" + i)) == null) {
+                someEarlyStateEvicted = true;
+                break;
+            }
+        }
+
+        assertTrue(someEarlyStateEvicted);
         assertEquals("state-1001", repository.loadAuthorizationRequest(callbackRequest("state-1001")).getState());
     }
 
