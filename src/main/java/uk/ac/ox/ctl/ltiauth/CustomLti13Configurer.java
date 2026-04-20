@@ -9,6 +9,8 @@ import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OIDCInitiatingLoginRequ
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OptimisticAuthorizationRequestRepository;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.PathOIDCInitiationRegistrationResolver;
 
+import java.time.Duration;
+
 /**
  * This overrides the standard configurer to add our token passing redirect along with allowing client
  * registration lookups by client ID instead of requiring a custom path (although that's still supported).
@@ -23,6 +25,14 @@ public class CustomLti13Configurer extends Lti13Configurer {
         // discoverable about what's happening
         this.jwtService = jwtService;
         this.clientRegistrationService = clientRegistrationService;
+    }
+
+    @Override
+    protected OptimisticAuthorizationRequestRepository configureRequestRepository() {
+        MultiStateCacheAuthorizationRequestRepository repository =
+                new MultiStateCacheAuthorizationRequestRepository(Duration.ofMinutes(1), 2);
+        repository.setLimitIpAddress(limitIpAddresses);
+        return new StatelessOptimisticAuthorizationRequestRepository(repository);
     }
 
     @Override
