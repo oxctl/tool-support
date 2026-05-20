@@ -19,7 +19,10 @@ import uk.ac.ox.ctl.canvasproxy.security.oauth2.client.annotation.RegisteredOAut
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This proxy just sends requests on to Canvas. All it does is add the bearer token for the user.
@@ -85,8 +88,14 @@ public class ProxyController {
 
                 // We don't want to pass through cookies from Canvas.
                 httpHeaders.remove("Set-Cookie");
-                // If Canvas sends back Chunked, we don't want to send that back to the client.
-                httpHeaders.remove("Transfer-Encoding");
+                Set<String> hopByHopHeaders = new HashSet<>(Set.of("Connection", "Keep-Alive", "Proxy-Authenticate",
+                        "Proxy-Authorization", "TE", "Trailer", "Transfer-Encoding", "Upgrade"));
+                response.getHeaders().getOrEmpty("Connection").stream()
+                        .flatMap(connectionValue -> Arrays.stream(connectionValue.split(",")))
+                        .map(String::trim)
+                        .filter(headerName -> !headerName.isEmpty())
+                        .forEach(hopByHopHeaders::add);
+                hopByHopHeaders.forEach(httpHeaders::remove);
                 return new ResponseEntity<>(response.getBody().readAllBytes(), httpHeaders, response.getStatusCode());
             });
         } catch (ResourceAccessException e) {
