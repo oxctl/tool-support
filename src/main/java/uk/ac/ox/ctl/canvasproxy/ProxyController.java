@@ -85,6 +85,8 @@ public class ProxyController {
 
                 // We don't want to pass through cookies from Canvas.
                 httpHeaders.remove("Set-Cookie");
+                // If Canvas sends back Chunked, we don't want to send that back to the client.
+                httpHeaders.remove("Transfer-Encoding");
                 return new ResponseEntity<>(response.getBody().readAllBytes(), httpHeaders, response.getStatusCode());
             });
         } catch (ResourceAccessException e) {
