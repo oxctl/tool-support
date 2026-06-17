@@ -3,11 +3,15 @@ package uk.ac.ox.ctl.ltiauth;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import uk.ac.ox.ctl.lti13.Lti13Configurer;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcLaunchFlowAuthenticationProvider;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OAuth2AuthorizationRequestRedirectFilter;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OAuth2LoginAuthenticationFilter;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OIDCInitiatingLoginRequestResolver;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OptimisticAuthorizationRequestRepository;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.PathOIDCInitiationRegistrationResolver;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.StateAuthorizationRequestRepository;
+
+import java.time.Duration;
 
 /**
  * This overrides the standard configurer to add our token passing redirect along with allowing client
@@ -23,6 +27,16 @@ public class CustomLti13Configurer extends Lti13Configurer {
         // discoverable about what's happening
         this.jwtService = jwtService;
         this.clientRegistrationService = clientRegistrationService;
+    }
+
+    @Override
+    protected OptimisticAuthorizationRequestRepository configureRequestRepository() {
+        HttpSessionOAuth2AuthorizationRequestRepository sessionRepository = new HttpSessionOAuth2AuthorizationRequestRepository();
+        // We override the default HttpSession repository to allow concurrent logins to be stored.
+        sessionRepository.setMaxConcurrentLogins(10);
+        StateAuthorizationRequestRepository stateRepository = new StateAuthorizationRequestRepository(Duration.ofMinutes(1));
+        stateRepository.setLimitIpAddress(limitIpAddresses);
+        return new OptimisticAuthorizationRequestRepository( sessionRepository, stateRepository );
     }
 
     @Override

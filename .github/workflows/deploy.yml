@@ -33,16 +33,8 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
       TAG: ${{ inputs.tag }}
     steps:
-      - name: Start deployment
-        uses: bobheadxi/deployments@v1.4.0
-        id: deployment
-        with:
-          step: start
-          env: prod
-          desc: Production deploy of ${{ env.TAG }}
-          ref: refs/tags/${{ env.TAG }}
       - name: Deploy to EB
-        uses: einaregilsson/beanstalk-deploy@v21
+        uses: einaregilsson/beanstalk-deploy@v22
         timeout-minutes: 15
         with:
           aws_access_key: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
@@ -53,11 +45,3 @@ jobs:
           region: ${{ env.AWS_REGION }}
       - name: Save version in secrets manager
         run: aws secretsmanager update-secret --secret-id ${{ vars.VERSION_SECRET }} --secret-string github.${{ env.TAG }}
-      - name: Update deployment status
-        uses: bobheadxi/deployments@v1.4.0
-        if: always()
-        with:
-          step: finish
-          env: ${{ steps.deployment.outputs.env }}
-          status: ${{ job.status }}
-          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
