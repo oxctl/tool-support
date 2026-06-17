@@ -17,7 +17,7 @@ jobs:
     outputs:
       json: ${{ steps.parse.outputs.json }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - id: parse
         run: |
           PARAMS=$(jq 'map(split("=")|  { (.[0]|tostring): .[1]} ) | add'  < ./aws/${{ (startsWith(github.ref_name, 'dr-')) && 'dr' || github.ref_name }}.json)
@@ -32,7 +32,6 @@ jobs:
       aws_account_id: ${{ fromJSON(needs.aws-params.outputs.json).awsAccountId }}
       aws_parameters: ${{ (startsWith(github.ref_name, 'dr-')) && 'dr' || github.ref_name }}
       aws_region: ${{ fromJSON(needs.aws-params.outputs.json).awsRegion }}
-      do_deploy: ${{ (fromJSON(needs.aws-params.outputs.json).envType == 'prod') && true || github.ref_name == github.event.repository.default_branch }}
       env_type: ${{ fromJSON(needs.aws-params.outputs.json).envType }}
       github_env: ${{ fromJSON(needs.aws-params.outputs.json).envType }}
       dr_test: ${{ fromJSON(needs.aws-params.outputs.json).drTest }}
