@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: create pull request
         # https://cli.github.com/manual/gh_pr_create
         run: gh pr create -B release -H master --label 'release' --title 'Release Request' --body 'Created by Github action'
