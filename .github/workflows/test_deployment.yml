@@ -1,0 +1,49 @@
+
+# This waits for the backend to be available and then performs the deployment tests.
+# The deployment tests are available in the 'deployment' folder in the root of the project.
+
+name: Test Deployment
+run-name: "Test deployment for the  ${{ inputs.execution-environment }} environment"
+
+on:
+  workflow_call:
+    inputs:
+      execution-environment:
+        description: "Environment"
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      execution-environment:
+        type: choice
+        description: "Environment"
+        required: true
+        default: 'BETA'
+        options:
+        - BETA
+        - PROD
+
+jobs:
+  deployment-tests:
+    # Only run the checks when on the default or release branch
+    if: github.ref_name == 'master' || github.ref_name == 'release' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    environment: ${{ inputs.execution-environment }}
+    env:
+      URL: ${{ vars.URL }}
+    defaults:
+      run:
+        working-directory: deployment
+    steps:
+      - uses: actions/checkout@v6
+      - name: Wait the backend to startup up and serve the index
+        run: curl -I --show-error --silent --retry 10 --retry-connrefused --retry-delay 10 ${{ env.URL }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: 'deployment/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+      - run: npm ci
+      - run: npm run install-browsers
+      - run: npm test
