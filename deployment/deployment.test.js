@@ -2,10 +2,12 @@ import { test, expect } from '@playwright/test'
 import 'dotenv/config'
 
 test('smoke check: JWKS endpoint returns a valid JWK Set', async ({ request }) => {
-  const jwksUrl = process.env.JWKS_URL
-  if (!jwksUrl) {
-    throw new Error("JWKS_URL not configured.")
+  const url = process.env.URL
+  if (!url) {
+    throw new Error("URL not configured.")
   }
+
+  const jwksUrl = new URL('/.well-known/jwks.json', url).toString()
 
   const response = await request.get(jwksUrl)
   expect(response.ok()).toBeTruthy()
