@@ -1,0 +1,17 @@
+{
+  "name": "tool-support-deployment-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Playwright smoke tests for deployed tool-support endpoints",
+  "scripts": {
+    "install-browsers": "npx playwright install --with-deps chromium",
+    "test": "playwright test",
+    "test:ci": "CI=true npm test",
+    "test:report": "npx playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "dotenv": "^17.4.2"
+  }
+}
