@@ -319,9 +319,6 @@ Resources:
         - Namespace: "aws:autoscaling:launchconfiguration"
           OptionName: "InstanceType"
           Value: !Ref instanceSize
-        - Namespace: "aws:autoscaling:launchconfiguration"
-          OptionName: "SSHSourceRestriction"
-          Value: "tcp,22,22,0.0.0.0/0"
         - ResourceName: "AWSEBEC2LaunchTemplate"
           Namespace: "aws:autoscaling:launchconfiguration"
           OptionName: "SecurityGroups"
@@ -357,10 +354,6 @@ Resources:
         - Namespace: "aws:elasticbeanstalk:command"
           OptionName: "DeploymentPolicy"
           Value: !If [isProd, "Immutable", "AllAtOnce"]
-        - Namespace: "aws:elasticbeanstalk:control"
-          OptionName: "DefaultSSHPort"
-          Value: "22"
-          #  Fn::ImportValue: !Sub "${orgName}-${accountType}-ssh-port"
         ## LOad Balancer bits
         - Namespace: "aws:elasticbeanstalk:environment"
           OptionName: "EnvironmentType"
