@@ -78,6 +78,9 @@ Parameters:
   snsArn:
     Description: "ARN for the SNS topic to send admin notifications to"
     Type: String
+  availabilityZone:
+    Type: String
+    Description: The availability zone to use for Elastic Beanstalk.
   accountParentDomain:
     Description: Allows us to override the parent domain, useful in some situations
     Type: String
@@ -290,7 +293,7 @@ Resources:
           Namespace: "aws:ec2:vpc"
           OptionName: "Subnets"
           Value:
-            Fn::ImportValue: !Sub "${orgName}-${accountType}-vpc-private-subnets"
+            Fn::ImportValue: !Sub "${orgName}-${accountType}-vpc-private-subnet-${availabilityZone}"
         - ResourceName: "AWSEBAutoScalingLaunchConfiguration"
           Namespace: "aws:ec2:vpc"
           OptionName: "AssociatePublicIpAddress"
