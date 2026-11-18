@@ -199,7 +199,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>32.0.0-jre</version>
+            <version>33.7.1-jre</version>
         </dependency>
     </dependencies>
 
@@ -282,6 +282,10 @@
                     <container>
                         <!-- As we're in docker we really don't want to be running as root -->
                         <user>nonroot:nonroot</user>
+                        <jvmFlags>
+                            <!-- Disable the base 64 optimisations because of Java4Shell -->
+                            <jvmFlag>-XX:-UseBASE64Intrinsics</jvmFlag>
+                        </jvmFlags>
                         <labels>
                             <!-- This is so that published packaged are linked to this repository -->
                             <org.opencontainers.image.source>
